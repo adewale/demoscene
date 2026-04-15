@@ -1,0 +1,11 @@
+.agents/
+.claude/
+.pi/
+.git/
+.wrangler/
+coverage/
+dist/
+node_modules/
+playwright-report/
+test-results/
+skills-lock.json

@@ -1,0 +1,137 @@
+import { and, desc, eq, inArray } from "drizzle-orm";
+
+import type { ProjectRecord, ProjectWithProducts } from "../domain";
+import {
+  sortCloudflareProducts,
+  type CloudflareProduct,
+} from "../lib/wrangler/parse";
+
+import { projectProducts, projects } from "./schema";
+
+type Database = ReturnType<typeof import("./client").createDb>;
+
+function attachProducts(
+  projectRows: (typeof projects.$inferSelect)[],
+  productRows: (typeof projectProducts.$inferSelect)[],
+): ProjectWithProducts[] {
+  const productsBySlug = new Map<string, CloudflareProduct[]>();
+
+  for (const row of productRows) {
+    const existing = productsBySlug.get(row.projectSlug) ?? [];
+    existing.push({ key: row.productKey, label: row.productLabel });
+    productsBySlug.set(row.projectSlug, existing);
+  }
+
+  return projectRows.map((row) => ({
+    slug: row.slug,
+    owner: row.owner,
+    repo: row.repo,
+    repoUrl: row.repoUrl,
+    homepageUrl: row.homepageUrl,
+    branch: row.branch,
+    wranglerPath: row.wranglerPath,
+    wranglerFormat: row.wranglerFormat,
+    readmeMarkdown: row.readmeMarkdown,
+    readmePreviewMarkdown: row.readmePreviewMarkdown,
+    previewImageUrl: row.previewImageUrl,
+    firstSeenAt: row.firstSeenAt,
+    lastSeenAt: row.lastSeenAt,
+    products: sortCloudflareProducts(productsBySlug.get(row.slug) ?? []),
+  }));
+}
+
+export async function upsertProject(
+  db: Database,
+  project: ProjectRecord,
+): Promise<void> {
+  await db
+    .insert(projects)
+    .values(project)
+    .onConflictDoUpdate({
+      target: projects.slug,
+      set: {
+        repoUrl: project.repoUrl,
+        homepageUrl: project.homepageUrl,
+        branch: project.branch,
+        wranglerPath: project.wranglerPath,
+        wranglerFormat: project.wranglerFormat,
+        readmeMarkdown: project.readmeMarkdown,
+        readmePreviewMarkdown: project.readmePreviewMarkdown,
+        previewImageUrl: project.previewImageUrl,
+        firstSeenAt: project.firstSeenAt,
+        lastSeenAt: project.lastSeenAt,
+      },
+    });
+}
+
+export async function replaceProjectProducts(
+  db: Database,
+  projectSlug: string,
+  productsForProject: CloudflareProduct[],
+): Promise<void> {
+  await db
+    .delete(projectProducts)
+    .where(eq(projectProducts.projectSlug, projectSlug));
+
+  if (productsForProject.length === 0) {
+    return;
+  }
+
+  await db.insert(projectProducts).values(
+    productsForProject.map((product) => ({
+      projectSlug,
+      productKey: product.key,
+      productLabel: product.label,
+    })),
+  );
+}
+
+export async function deleteProjectBySlug(
+  db: Database,
+  slug: string,
+): Promise<void> {
+  await db.delete(projects).where(eq(projects.slug, slug));
+}
+
+export async function getProjectByOwnerRepo(
+  db: Database,
+  owner: string,
+  repo: string,
+): Promise<ProjectWithProducts | null> {
+  const projectRows = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.owner, owner), eq(projects.repo, repo)));
+
+  if (projectRows.length === 0) {
+    return null;
+  }
+
+  const productRows = await db
+    .select()
+    .from(projectProducts)
+    .where(eq(projectProducts.projectSlug, projectRows[0].slug));
+
+  return attachProducts(projectRows, productRows)[0] ?? null;
+}
+
+export async function listProjects(
+  db: Database,
+): Promise<ProjectWithProducts[]> {
+  const projectRows = await db
+    .select()
+    .from(projects)
+    .orderBy(desc(projects.firstSeenAt));
+
+  if (projectRows.length === 0) {
+    return [];
+  }
+
+  const slugs = projectRows.map((project) => project.slug);
+  const productRows = await db
+    .select()
+    .from(projectProducts)
+    .where(inArray(projectProducts.projectSlug, slugs));
+
+  return attachProducts(projectRows, productRows);
+}

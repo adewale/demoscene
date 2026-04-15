@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "demoscene",
+  "main": "src/index.tsx",
+  "compatibility_date": "2026-04-14",
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "demoscene-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "preview_database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "triggers": {
+    "crons": ["0 12 * * *"],
+  },
+  "vars": {
+    "APP_NAME": "demoscene",
+  },
+}

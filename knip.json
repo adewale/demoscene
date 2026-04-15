@@ -1,0 +1,7 @@
+{
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx,d.ts}"],
+  "ignoreDependencies": [
+    "@secretlint/secretlint-rule-preset-recommend",
+    "cloudflare"
+  ]
+}

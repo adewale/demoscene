@@ -1,0 +1,253 @@
+# Roadmap
+
+Ordered feature roadmap extracted from the spec, with dependencies and guardrails-based completion criteria.
+
+## Status
+
+- `planned`
+- `in_progress`
+- `done`
+
+## Global Definition Of Done
+
+No feature is `done` until all apply:
+
+- code is implemented and wired into the app
+- required routes, scheduler hooks, and D1 migrations are reachable
+- tests were added or updated for changed production code
+- React UI states have component-level coverage where applicable
+- fast check passes: format, lint, type check, unit tests
+- full suite passes: fast check plus integration tests, contract checks for JSON routes, accessibility checks for UI, screenshot or E2E coverage for public pages, SAST, dependency audit, secrets scan, dead-code detection, duplicate-code detection, and coverage floor
+- docs stay aligned with the shipped behavior
+
+## Order
+
+| ID  | Feature                                  | Depends on | Status  |
+| --- | ---------------------------------------- | ---------- | ------- |
+| F0  | Delivery baseline and guardrails         | -          | planned |
+| F1  | Source repo registry and fetch client    | F0         | planned |
+| F2  | Wrangler detection and product inference | F1         | planned |
+| F3  | Persistence and sync pipeline            | F1, F2     | planned |
+| F4  | Read APIs                                | F3         | planned |
+| F5  | Public feed page                         | F4         | planned |
+| F6  | Project detail page                      | F4         | planned |
+| F7  | Support routes and indexing              | F4, F6     | planned |
+
+## Features
+
+### F0. Delivery baseline and guardrails
+
+Status: `planned`
+
+Scope:
+
+- Cloudflare Worker project scaffold
+- Hono app scaffold
+- React SSR scaffold
+- D1 setup and migration flow
+- Drizzle setup and migration flow
+- fast check command
+- full suite command
+- baseline test setup for unit, component, and integration tests
+- baseline static analysis and security checks
+
+Done when:
+
+- project has a runnable Worker entrypoint
+- Hono can serve a React SSR route
+- D1 is configured and migrations can be applied
+- fast and full verification commands exist and fail correctly on errors
+- at least one smoke test covers a read route and one scheduled path
+
+Quality gates:
+
+- format, lint, type check, unit tests
+- component tests run with React Testing Library
+- integration test for Worker + D1 wiring
+- SAST, dependency audit, secrets scan, dead-code detection, duplicate-code detection, and coverage floor are part of the full suite
+
+### F1. Source repo registry and fetch client
+
+Status: `planned`
+
+Depends on: `F0`
+
+Scope:
+
+- source-controlled list of `https://github.com/:owner/:repo` URLs
+- parser and validator for repo URLs
+- fetch helpers for repo HTML, raw README, and raw Wrangler files
+- `main` then `master` fallback
+
+Done when:
+
+- invalid repo URLs are rejected
+- fetch logic tries the documented URLs in the documented order
+- repo-not-found is detected cleanly
+- homepage extraction from repo HTML is implemented
+
+Quality gates:
+
+- unit tests for URL parsing and branch fallback
+- integration tests using fixed public fixtures or mocked HTTP responses with realistic payloads
+
+### F2. Wrangler detection and product inference
+
+Status: `planned`
+
+Depends on: `F1`
+
+Scope:
+
+- top-level-only Wrangler detection
+- support `wrangler.toml`, `wrangler.json`, `wrangler.jsonc`
+- parse config and infer Cloudflare products for icon display
+
+Done when:
+
+- repos without a top-level Wrangler config are excluded
+- nested configs are ignored
+- supported Wrangler formats parse correctly
+- inferred product metadata is normalized for UI use
+
+Quality gates:
+
+- fixture-driven unit tests for TOML, JSON, and JSONC inputs
+- negative tests for missing config, malformed config, and nested-only config
+
+### F3. Persistence and sync pipeline
+
+Status: `planned`
+
+Depends on: `F1`, `F2`
+
+Scope:
+
+- D1 tables for projects and inferred products
+- scheduled sync at `12:00 UTC`
+- new-project discovery
+- initial README fetch and storage
+- bounded README preview derivation and storage
+- homepage and preview media storage
+- repo removal when it can no longer be found
+- ignore later README changes
+
+Done when:
+
+- first discovery creates one persistent project record
+- repeated syncs are idempotent
+- missing repos are removed from the site data
+- later README changes do not overwrite stored README content
+- feed preview Markdown is derived once and stays stable with the stored README
+- homepage and preview media can refresh independently of README
+
+Quality gates:
+
+- integration tests for first sync, repeat sync, repo removal, and README immutability
+- migration test or schema verification for D1 tables
+
+### F4. Read APIs
+
+Status: `planned`
+
+Depends on: `F3`
+
+Scope:
+
+- `/feed.json`
+- `/projects/:owner/:repo.json`
+
+Done when:
+
+- feed payload returns all public projects in stable order
+- feed payload returns card-ready data including preview Markdown and product metadata
+- project payload returns one project with full README markdown, preview Markdown, homepage, preview media, and product metadata
+- missing projects return the intended not-found response
+
+Quality gates:
+
+- integration tests for both JSON routes
+- contract tests for stable JSON payload shape
+- response shape assertions for product icons, links, and stored README markdown
+
+### F5. Public feed page
+
+Status: `planned`
+
+Depends on: `F4`
+
+Scope:
+
+- `/` page
+- React SSR card list for all discovered projects
+- product icons derived from Wrangler inference
+- Markdown preview rendering for stored README previews
+- homepage links and preview media
+- visual cues from the spec
+
+Done when:
+
+- feed cards clearly show Cloudflare product icons
+- bounded Markdown previews render safely and legibly
+- homepage links are visible and usable
+- layout works on desktop and mobile
+
+Quality gates:
+
+- React Testing Library coverage for card states and icon strip rendering
+- integration test for server-rendered feed output
+- accessibility checks for links, headings, and color contrast
+- E2E coverage for loading the public feed and following a project link
+- screenshot or visual regression coverage for the feed
+
+### F6. Project detail page
+
+Status: `planned`
+
+Depends on: `F4`
+
+Scope:
+
+- `/projects/:owner/:repo`
+- React SSR persistent detail page per project
+
+Done when:
+
+- page shows the stored README markdown, homepage link, preview media, and product icons
+- route is stable and directly shareable
+- missing projects render the intended not-found state
+
+Quality gates:
+
+- React Testing Library coverage for full Markdown document rendering states
+- integration test for the detail route
+- accessibility checks for the rendered Markdown content
+- E2E coverage for direct navigation to a project page
+- screenshot or visual regression coverage for the detail page
+
+### F7. Support routes and indexing
+
+Status: `planned`
+
+Depends on: `F4`, `F6`
+
+Scope:
+
+- `/robots.txt`
+- `/sitemap.xml`
+
+Done when:
+
+- sitemap includes the feed and all project detail pages
+- robots output is valid for a public site
+
+Quality gates:
+
+- unit or integration tests for both support routes
+
+## Out Of Scope For This Roadmap
+
+- auth
+- GitHub API usage
+- nested Wrangler config support
+- README refresh after first discovery
