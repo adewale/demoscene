@@ -1,13 +1,15 @@
 import type { AppEnv, ProjectRecord } from "./domain";
-import { TRACKED_REPOSITORIES } from "./config/repositories";
+import { TEAM_MEMBERS, type TeamMember } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
   deleteProjectBySlug,
   getProjectByOwnerRepo,
+  listProjects,
   replaceProjectProducts,
   upsertProject,
 } from "./db/queries";
 import {
+  discoverRepositoriesForTeamMember,
   fetchFirstAvailableRawFile,
   fetchRepositoryPage,
   README_FILE_NAMES,
@@ -27,6 +29,7 @@ type SyncOptions = {
   fetch?: FetchLike;
   now?: Date;
   repositories?: string[];
+  teamMembers?: TeamMember[];
 };
 
 function getWranglerFormat(fileName: string): string {
@@ -48,76 +51,141 @@ export async function syncRepositories(
   const fetchImpl = options.fetch ?? fetch;
   const now = (options.now ?? new Date()).toISOString();
   const db = createDb(env.DB);
-  const repositories = [
-    ...new Set(options.repositories ?? TRACKED_REPOSITORIES),
-  ];
+  const repositories = options.repositories
+    ? [...new Set(options.repositories)]
+    : await resolveTrackedRepositories(
+        db,
+        fetchImpl,
+        options.teamMembers ?? TEAM_MEMBERS,
+      );
 
   for (const repositoryUrl of repositories) {
-    const repository = parseRepositoryUrl(repositoryUrl);
-    const repoPage = await fetchRepositoryPage(fetchImpl, repository);
-
-    if (repoPage.status === 404) {
-      await deleteProjectBySlug(db, repository.slug);
-      continue;
+    try {
+      await syncRepository(db, fetchImpl, repositoryUrl, now);
+    } catch (error) {
+      console.error(`Failed to sync repository ${repositoryUrl}`, error);
     }
+  }
+}
 
-    if (!repoPage.ok || repoPage.html === null) {
-      continue;
+async function resolveTrackedRepositories(
+  db: ReturnType<typeof createDb>,
+  fetchImpl: FetchLike,
+  teamMembers: TeamMember[],
+): Promise<string[]> {
+  const repositories = new Set<string>();
+  const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
+
+  for (const teamMember of teamMembers) {
+    try {
+      const discoveredRepositories = await discoverRepositoriesForTeamMember(
+        fetchImpl,
+        teamMember,
+      );
+
+      for (const repositoryUrl of discoveredRepositories) {
+        repositories.add(repositoryUrl);
+      }
+    } catch (error) {
+      console.error(
+        `Failed to discover repositories for ${teamMember.login}`,
+        error,
+      );
     }
+  }
 
-    const repoMetadata = extractRepositoryPageMetadata(repoPage.html);
-    const wranglerFile = await fetchFirstAvailableRawFile(
+  const existingProjects = await listProjects(db);
+
+  for (const project of existingProjects) {
+    if (teamLogins.has(project.owner)) {
+      repositories.add(project.repoUrl);
+    }
+  }
+
+  return [...repositories].sort();
+}
+
+async function syncRepository(
+  db: ReturnType<typeof createDb>,
+  fetchImpl: FetchLike,
+  repositoryUrl: string,
+  now: string,
+): Promise<void> {
+  const repository = parseRepositoryUrl(repositoryUrl);
+  const repoPage = await fetchRepositoryPage(fetchImpl, repository);
+
+  if (repoPage.kind === "not_found") {
+    await deleteProjectBySlug(db, repository.slug);
+    return;
+  }
+
+  if (repoPage.kind !== "found") {
+    return;
+  }
+
+  const repoMetadata = extractRepositoryPageMetadata(repoPage.html);
+  const wranglerFile = await fetchFirstAvailableRawFile(
+    fetchImpl,
+    repository,
+    WRANGLER_FILE_NAMES,
+  );
+
+  if (wranglerFile.kind === "transient_error") {
+    return;
+  }
+
+  if (wranglerFile.kind === "not_found") {
+    await deleteProjectBySlug(db, repository.slug);
+    return;
+  }
+
+  const wranglerConfig = parseWranglerConfig(
+    wranglerFile.file.contents,
+    wranglerFile.file.fileName,
+  );
+  const products = inferCloudflareProducts(wranglerConfig);
+  const existing = await getProjectByOwnerRepo(
+    db,
+    repository.owner,
+    repository.repo,
+  );
+
+  let readmeMarkdown = existing?.readmeMarkdown ?? "";
+  let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
+
+  if (!existing) {
+    const readmeFile = await fetchFirstAvailableRawFile(
       fetchImpl,
       repository,
-      WRANGLER_FILE_NAMES,
+      README_FILE_NAMES,
     );
 
-    if (!wranglerFile) {
-      await deleteProjectBySlug(db, repository.slug);
-      continue;
+    if (readmeFile.kind === "transient_error") {
+      return;
     }
 
-    const wranglerConfig = parseWranglerConfig(
-      wranglerFile.contents,
-      wranglerFile.fileName,
-    );
-    const products = inferCloudflareProducts(wranglerConfig);
-    const existing = await getProjectByOwnerRepo(
-      db,
-      repository.owner,
-      repository.repo,
-    );
-
-    let readmeMarkdown = existing?.readmeMarkdown ?? "";
-    let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
-
-    if (!existing) {
-      const readmeFile = await fetchFirstAvailableRawFile(
-        fetchImpl,
-        repository,
-        README_FILE_NAMES,
-      );
-      readmeMarkdown = readmeFile?.contents ?? "";
+    if (readmeFile.kind === "found") {
+      readmeMarkdown = readmeFile.file.contents;
       readmePreviewMarkdown = deriveMarkdownPreview(readmeMarkdown);
     }
-
-    const project: ProjectRecord = {
-      slug: repository.slug,
-      owner: repository.owner,
-      repo: repository.repo,
-      repoUrl: repository.url,
-      homepageUrl: repoMetadata.homepageUrl,
-      branch: wranglerFile.branch,
-      wranglerPath: wranglerFile.fileName,
-      wranglerFormat: getWranglerFormat(wranglerFile.fileName),
-      readmeMarkdown,
-      readmePreviewMarkdown,
-      previewImageUrl: repoMetadata.previewImageUrl,
-      firstSeenAt: existing?.firstSeenAt ?? now,
-      lastSeenAt: now,
-    };
-
-    await upsertProject(db, project);
-    await replaceProjectProducts(db, project.slug, products);
   }
+
+  const project: ProjectRecord = {
+    slug: repository.slug,
+    owner: repository.owner,
+    repo: repository.repo,
+    repoUrl: repository.url,
+    homepageUrl: repoMetadata.homepageUrl,
+    branch: wranglerFile.file.branch,
+    wranglerPath: wranglerFile.file.fileName,
+    wranglerFormat: getWranglerFormat(wranglerFile.file.fileName),
+    readmeMarkdown,
+    readmePreviewMarkdown,
+    previewImageUrl: repoMetadata.previewImageUrl,
+    firstSeenAt: existing?.firstSeenAt ?? now,
+    lastSeenAt: now,
+  };
+
+  await upsertProject(db, project);
+  await replaceProjectProducts(db, project.slug, products);
 }

@@ -11,24 +11,47 @@ import { AppShell } from "./components/AppShell";
 import { FeedPage } from "./components/FeedPage";
 import { ProjectDetailPage } from "./components/ProjectDetailPage";
 
+type ProjectPathParts = {
+  owner: string;
+  repo: string;
+};
+
 function renderHtml(markup: ReactNode): string {
   return `<!DOCTYPE html>${renderToString(markup)}`;
 }
 
-function extractProjectPathParts(url: string) {
+function decodeProjectSegment(segment: string | undefined): string | null {
+  return segment ? decodeURIComponent(segment) : null;
+}
+
+function extractProjectPathParts(url: string): ProjectPathParts | null {
   const segments = new URL(url).pathname.split("/").filter(Boolean);
-  const owner = segments[1] ?? null;
-  const rawRepo = segments[2] ?? null;
+  const owner = decodeProjectSegment(segments[1]);
+  const repo = decodeProjectSegment(segments[2]);
+
+  return owner && repo ? { owner, repo } : null;
+}
+
+function extractProjectJsonPathParts(url: string): ProjectPathParts | null {
+  const parts = extractProjectPathParts(url);
+
+  if (!parts || !parts.repo.endsWith(".json")) {
+    return null;
+  }
 
   return {
-    owner,
-    repo: rawRepo?.replace(/\.json$/, "") ?? null,
+    owner: parts.owner,
+    repo: parts.repo.slice(0, -".json".length),
   };
 }
 
-async function loadProjectFromRequest(c: Context<{ Bindings: AppEnv }>) {
+async function loadProjectFromRequest(
+  c: Context<{ Bindings: AppEnv }>,
+  pathParts: ProjectPathParts | null,
+) {
   const db = createDb(c.env.DB);
-  const { owner, repo } = extractProjectPathParts(c.req.url);
+  const owner = pathParts?.owner;
+  const repo = pathParts?.repo;
 
   if (!owner || !repo) {
     return null;
@@ -62,20 +85,20 @@ export function createApp() {
     return c.json({ items });
   });
 
-  app.get("/projects/:owner/:repo{.+\\.json}", async (c) => {
-    const item = await loadProjectFromRequest(c);
-
-    if (!item) {
-      return c.json({ error: "Not found" }, 404);
-    }
-
-    return c.json(item);
-  });
-
-  app.get("/projects/:owner/:repo", async (c) => {
-    const project = await loadProjectFromRequest(c);
+  app.get("/projects/*", async (c) => {
+    const isJsonRequest = new URL(c.req.url).pathname.endsWith(".json");
+    const project = await loadProjectFromRequest(
+      c,
+      isJsonRequest
+        ? extractProjectJsonPathParts(c.req.url)
+        : extractProjectPathParts(c.req.url),
+    );
 
     if (!project) {
+      if (isJsonRequest) {
+        return c.json({ error: "Not found" }, 404);
+      }
+
       return c.html(
         renderHtml(
           <AppShell
@@ -90,6 +113,10 @@ export function createApp() {
         ),
         404,
       );
+    }
+
+    if (isJsonRequest) {
+      return c.json(project);
     }
 
     return c.html(

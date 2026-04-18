@@ -9,7 +9,7 @@ Smallest concrete architecture:
 - React SSR for HTML pages
 - one scheduled handler
 - one D1 database
-- one source-controlled repo list in the codebase
+- one source-controlled team account list in the codebase
 - Drizzle for schema and query typing
 
 The Worker does two jobs:
@@ -21,32 +21,41 @@ The Worker does two jobs:
 
 ### Source list
 
-- a file in the repo contains the canonical list of public GitHub repo URLs
-- the sync only considers repos in that list
+- a file in the repo contains the canonical list of public GitHub team accounts
+- the sync discovers public repos for those accounts from GitHub HTML
 
 ### Sync worker
 
 Runs every day at `12:00 UTC`.
 
-For each repo URL:
+For each sync run:
 
-1. Parse `owner` and `repo` from `https://github.com/:owner/:repo`.
-2. Fetch the public repo page HTML.
-3. If the repo page is missing, remove the repo from D1 and from the public site.
-4. Extract the repo homepage from the repo page HTML.
-5. Try the top-level Wrangler config URLs in a fixed order.
-6. If no top-level Wrangler config exists, the repo is not shown in the site.
-7. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
-8. Infer Cloudflare products from the Wrangler config.
-9. Create or update the project record.
-10. Refresh homepage and preview media metadata on later runs.
-11. Ignore later README changes.
+1. Fetch each configured team account's public repositories pages.
+2. Discover repo URLs from those HTML pages.
+3. Union those repo URLs with already-known projects for the tracked team, so removals and refreshes are still checked.
+4. Parse `owner` and `repo` from each repo URL.
+5. Fetch the public repo page HTML.
+6. If the repo page is missing, remove the repo from D1 and from the public site.
+7. Extract the repo homepage from the repo page HTML.
+8. Try the top-level Wrangler config URLs in a fixed order.
+9. If no top-level Wrangler config exists, the repo is not shown in the site.
+10. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
+11. Infer Cloudflare products from the Wrangler config.
+12. Create or update the project record.
+13. Refresh homepage and preview media metadata on later runs.
+14. Ignore later README changes.
+15. Continue processing other repos even if one repo or account fails.
 
 ## Fetch Strategy
 
 No GitHub API is used.
 
-For each repo URL `https://github.com/:owner/:repo`:
+For each team account `https://github.com/:owner?tab=repositories`:
+
+- fetch paginated repositories pages directly from GitHub HTML
+- discover repo URLs from repository anchors in that HTML
+
+For each discovered repo URL `https://github.com/:owner/:repo`:
 
 - check branch `main` first, then `master`
 - try these README URLs:
@@ -174,4 +183,5 @@ Both JSON routes should expose the full Markdown and the bounded preview needed 
 - newly discovered Cloudflare repos become feed entries
 - README is fetched once on first discovery
 - later README changes are ignored
+- transient upstream failures do not remove existing projects or abort the full sync
 - if a repo cannot be found, remove it from D1 and from the site

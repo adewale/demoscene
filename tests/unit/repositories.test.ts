@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildRawFileCandidates,
+  buildRepositoriesPageUrl,
+  extractRepositoryUrlsFromAccountPage,
   normalizeRepositoryUrl,
   parseRepositoryUrl,
 } from "../../src/lib/github/repositories";
@@ -38,6 +40,12 @@ describe("parseRepositoryUrl", () => {
     expect(() =>
       parseRepositoryUrl("https://example.com/cloudflare/workers-sdk"),
     ).toThrow();
+  });
+
+  it("rejects GitHub URLs that are not repo paths", () => {
+    expect(() =>
+      parseRepositoryUrl("https://github.com/cloudflare/workers-sdk/tree/main"),
+    ).toThrow("Repository URL must match");
   });
 
   it("normalizes trailing slashes", () => {
@@ -90,5 +98,67 @@ describe("buildRawFileCandidates", () => {
         url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/master/wrangler.toml",
       },
     ]);
+  });
+});
+
+describe("GitHub account discovery", () => {
+  it("builds repository listing URLs", () => {
+    expect(buildRepositoriesPageUrl("adewale", 2)).toBe(
+      "https://github.com/adewale?page=2&tab=repositories",
+    );
+  });
+
+  it("extracts repository URLs and pagination from account HTML", () => {
+    const html = `
+      <html>
+        <body>
+          <a itemprop="name codeRepository" href="/adewale/demo-one">demo-one</a>
+          <a data-hovercard-type="repository" href="/adewale/demo-two">demo-two</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories">Next</a>
+        </body>
+      </html>
+    `;
+
+    expect(extractRepositoryUrlsFromAccountPage(html, "adewale")).toEqual({
+      hasNextPage: true,
+      repositoryUrls: [
+        "https://github.com/adewale/demo-one",
+        "https://github.com/adewale/demo-two",
+      ],
+    });
+  });
+
+  it("handles single-quoted attributes and ignores non-repo links", () => {
+    const html = `
+      <html>
+        <body>
+          <a itemprop='name codeRepository' href='/adewale/demo-three'>demo-three</a>
+          <a itemprop='name codeRepository'>missing-href</a>
+          <a data-hovercard-type='repository' href='/someone-else/demo-four'>demo-four</a>
+          <a href='/adewale/not-a-repo'>not-a-repo</a>
+          <a aria-label='Next' href='/adewale?page=2&tab=repositories'>Next</a>
+        </body>
+      </html>
+    `;
+
+    expect(extractRepositoryUrlsFromAccountPage(html, "adewale")).toEqual({
+      hasNextPage: true,
+      repositoryUrls: ["https://github.com/adewale/demo-three"],
+    });
+  });
+
+  it("reports no pagination when no next-page hint exists", () => {
+    const html = `
+      <html>
+        <body>
+          <a itemprop="name codeRepository" href="/adewale/demo-five">demo-five</a>
+        </body>
+      </html>
+    `;
+
+    expect(extractRepositoryUrlsFromAccountPage(html, "adewale")).toEqual({
+      hasNextPage: false,
+      repositoryUrls: ["https://github.com/adewale/demo-five"],
+    });
   });
 });

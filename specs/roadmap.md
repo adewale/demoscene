@@ -17,7 +17,7 @@ No feature is `done` until all apply:
 - tests were added or updated for changed production code
 - React UI states have component-level coverage where applicable
 - fast check passes: format, lint, type check, unit tests
-- full suite passes: fast check plus integration tests, contract checks for JSON routes, accessibility checks for UI, screenshot or E2E coverage for public pages, SAST, dependency audit, secrets scan, dead-code detection, duplicate-code detection, and coverage floor
+- full suite passes: fast check plus integration tests, contract checks for JSON routes, accessibility checks for UI, screenshot or E2E coverage for public pages, SAST, dependency audit, secrets scan, dead-code detection, duplicate-code detection, unit/component coverage floor, and reported worker integration coverage
 - docs stay aligned with the shipped behavior
 
 ## Order
@@ -45,7 +45,7 @@ Scope:
 - Hono app scaffold
 - React SSR scaffold
 - D1 setup and migration flow
-- Drizzle setup and migration flow
+- Drizzle ORM setup
 - fast check command
 - full suite command
 - baseline test setup for unit, component, and integration tests
@@ -74,7 +74,8 @@ Depends on: `F0`
 
 Scope:
 
-- source-controlled list of `https://github.com/:owner/:repo` URLs
+- source-controlled list of GitHub team accounts
+- repo discovery from public GitHub repositories pages
 - parser and validator for repo URLs
 - fetch helpers for repo HTML, raw README, and raw Wrangler files
 - `main` then `master` fallback
@@ -82,6 +83,7 @@ Scope:
 Done when:
 
 - invalid repo URLs are rejected
+- team account discovery yields repo URLs from GitHub HTML
 - fetch logic tries the documented URLs in the documented order
 - repo-not-found is detected cleanly
 - homepage extraction from repo HTML is implemented
@@ -126,6 +128,7 @@ Scope:
 - D1 tables for projects and inferred products
 - scheduled sync at `12:00 UTC`
 - new-project discovery
+- per-repo error isolation
 - initial README fetch and storage
 - bounded README preview derivation and storage
 - homepage and preview media storage
@@ -136,7 +139,9 @@ Done when:
 
 - first discovery creates one persistent project record
 - repeated syncs are idempotent
+- one bad repo or account does not abort the rest of the sync
 - missing repos are removed from the site data
+- transient upstream failures do not remove existing projects
 - later README changes do not overwrite stored README content
 - feed preview Markdown is derived once and stays stable with the stored README
 - homepage and preview media can refresh independently of README

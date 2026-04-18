@@ -6,12 +6,13 @@ Purpose:
 
 Input:
 
-- a source-controlled list of public GitHub repository URLs
+- a source-controlled list of public GitHub team accounts
 - no auth
 - no GitHub API
 
 Fetch rules:
 
+- for each team account `https://github.com/:owner?tab=repositories`, fetch public repository listing pages directly from GitHub HTML and discover repository URLs from those pages
 - for each repo URL `https://github.com/:owner/:repo`, try branch `main` first, then `master`
 - README URLs:
   - `https://raw.githubusercontent.com/:owner/:repo/main/README.md`
@@ -28,6 +29,7 @@ Fetch rules:
 Sync:
 
 - run every day at 12:00 UTC
+- discover public repos for each configured team account before checking individual repos
 - for each repo, check only the top-level Wrangler config; supported filenames are `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
 - treat a repo as a Cloudflare project if one of those top-level Wrangler config files exists
 - if a Cloudflare repo is discovered for the first time, create a new feed entry
@@ -35,6 +37,7 @@ Sync:
 - infer which Cloudflare primitives and products the repo uses from that top-level Wrangler config, for example Workers, Pages, D1, KV, R2, Durable Objects, Queues, Workflows, Vectorize, or AI
 - fetch and store the repo homepage and lightweight preview media when available
 - ignore later README changes
+- transient upstream failures must not remove existing projects or abort the full sync
 - if a repo cannot be found, remove it from the site
 
 Output:

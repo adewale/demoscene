@@ -1,6 +1,6 @@
 # demoscene
 
-Public Cloudflare app that turns a source-controlled list of public GitHub repos into a feed of Cloudflare projects.
+Public Cloudflare app that turns a source-controlled list of team GitHub accounts into a feed of Cloudflare projects.
 
 ## Chosen Stack
 
@@ -9,7 +9,7 @@ Public Cloudflare app that turns a source-controlled list of public GitHub repos
 - Hono
 - React SSR
 - D1
-- Drizzle
+- Drizzle ORM
 - `react-markdown` with sanitization
 - Vitest
 - React Testing Library
@@ -20,9 +20,10 @@ Public Cloudflare app that turns a source-controlled list of public GitHub repos
 ## Scope
 
 - run a scheduled sync every day at `12:00 UTC`
-- read a source-controlled list of public GitHub repo URLs
+- read a source-controlled list of public GitHub team accounts
 - do not use auth
 - do not use the GitHub API
+- discover public repos from each team member's GitHub repositories page
 - treat a repo as a Cloudflare project if it has a top-level `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc`
 - infer Cloudflare products from that Wrangler config and show them as icons on feed cards
 - fetch and store the repo README once
@@ -41,7 +42,12 @@ Public Cloudflare app that turns a source-controlled list of public GitHub repos
 
 ## Fetch Rules
 
-For each repo URL `https://github.com/:owner/:repo`:
+For each team account `https://github.com/:owner?tab=repositories`:
+
+- fetch public repository listing pages directly from GitHub HTML
+- discover repository URLs without the GitHub API
+
+For each discovered repo URL `https://github.com/:owner/:repo`:
 
 - try branch `main` first, then `master`
 - README URLs:

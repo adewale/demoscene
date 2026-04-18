@@ -9,7 +9,7 @@ Use a server-first React stack on Cloudflare:
 - Hono
 - React SSR
 - D1
-- Drizzle
+- Drizzle ORM
 
 This keeps the app simple at runtime while giving the feed and project pages a strong card-oriented component model.
 
@@ -21,7 +21,6 @@ Application:
 - `react`
 - `react-dom`
 - `drizzle-orm`
-- `drizzle-kit`
 - `react-markdown`
 - `rehype-sanitize`
 - `remark-gfm`
@@ -43,7 +42,7 @@ Testing:
 - Hono matches the route shape cleanly
 - React SSR gives the feed a reusable card system without turning the app into a client-heavy SPA
 - D1 is enough for the project records and inferred products
-- Drizzle adds typed schema and query safety without changing the runtime model
+- Drizzle ORM adds typed schema and query safety without changing the runtime model
 - React Markdown plus sanitization fits the requirement to render stored README content safely
 - the test stack supports unit, property, component, integration, contract, accessibility, visual, and E2E coverage
 
