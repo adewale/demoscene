@@ -1,12 +1,5 @@
 const GITHUB_HOST = "github.com";
 const BRANCHES = ["main", "master"] as const;
-const REPOSITORY_LINK_ATTRIBUTES = [
-  'data-hovercard-type="repository"',
-  "data-hovercard-type='repository'",
-  'itemprop="name codeRepository"',
-  "itemprop='name codeRepository'",
-];
-
 export type ParsedRepositoryUrl = {
   owner: string;
   repo: string;
@@ -52,9 +45,21 @@ function extractAttribute(tag: string, attribute: string): string | null {
   return null;
 }
 
+function parseSpaceSeparatedAttribute(value: string | null): string[] {
+  return value ? value.toLowerCase().split(/\s+/).filter(Boolean) : [];
+}
+
 function isRepositoryAnchorTag(tag: string): boolean {
-  return REPOSITORY_LINK_ATTRIBUTES.some((attribute) =>
-    tag.includes(attribute),
+  const itempropTokens = parseSpaceSeparatedAttribute(
+    extractAttribute(tag, "itemprop"),
+  );
+  const hovercardType = extractAttribute(
+    tag,
+    "data-hovercard-type",
+  )?.toLowerCase();
+
+  return (
+    itempropTokens.includes("coderepository") || hovercardType === "repository"
   );
 }
 
@@ -91,11 +96,19 @@ export function extractRepositoryUrlsFromAccountPage(
   }
 
   return {
-    hasNextPage:
-      html.includes('rel="next"') ||
-      html.includes("rel='next'") ||
-      html.includes('aria-label="Next"') ||
-      html.includes("aria-label='Next'"),
+    hasNextPage: (html.match(/<(a|span)\b[^>]*>/gi) ?? []).some((tag) => {
+      const href = extractAttribute(tag, "href");
+      const relTokens = parseSpaceSeparatedAttribute(
+        extractAttribute(tag, "rel"),
+      );
+      const ariaLabel =
+        extractAttribute(tag, "aria-label")?.toLowerCase() ?? "";
+
+      return (
+        Boolean(href) &&
+        (relTokens.includes("next") || ariaLabel.includes("next"))
+      );
+    }),
     repositoryUrls: [...repositoryUrls].sort(),
   };
 }

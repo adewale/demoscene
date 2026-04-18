@@ -8,6 +8,8 @@ import {
   normalizeRepositoryUrl,
   parseRepositoryUrl,
 } from "../../src/lib/github/repositories";
+import ACCOUNT_LAST_PAGE_FIXTURE from "../fixtures/github/profile-repositories-adewale-last-page.html?raw";
+import ACCOUNT_PAGE_FIXTURE from "../fixtures/github/profile-repositories-adewale-page-1.html?raw";
 
 const ownerArbitrary = fc
   .array(fc.constantFrom(..."abcdefghijklmnopqrstuvwxyz0123456789-"), {
@@ -160,5 +162,58 @@ describe("GitHub account discovery", () => {
       hasNextPage: false,
       repositoryUrls: ["https://github.com/adewale/demo-five"],
     });
+  });
+
+  it("extracts repo URLs and next-page state from a realistic account fixture", () => {
+    expect(
+      extractRepositoryUrlsFromAccountPage(ACCOUNT_PAGE_FIXTURE, "adewale"),
+    ).toEqual({
+      hasNextPage: true,
+      repositoryUrls: [
+        "https://github.com/adewale/bobbin",
+        "https://github.com/adewale/cf-workers-design-system",
+      ],
+    });
+  });
+
+  it("detects a realistic last page with no next link", () => {
+    expect(
+      extractRepositoryUrlsFromAccountPage(
+        ACCOUNT_LAST_PAGE_FIXTURE,
+        "adewale",
+      ),
+    ).toEqual({
+      hasNextPage: false,
+      repositoryUrls: [
+        "https://github.com/adewale/fibonacci_durable_object",
+        "https://github.com/adewale/next-starter-template",
+      ],
+    });
+  });
+
+  it("dedupes and sorts arbitrary valid repo anchors", () => {
+    fc.assert(
+      fc.property(
+        fc.array(repoArbitrary, { minLength: 1, maxLength: 8 }),
+        (repos) => {
+          const html = repos
+            .concat(repos[0] ?? [])
+            .map(
+              (repo) =>
+                `<a href="/adewale/${repo}" itemprop="name codeRepository">${repo}</a>`,
+            )
+            .join("\n");
+
+          expect(
+            extractRepositoryUrlsFromAccountPage(html, "adewale")
+              .repositoryUrls,
+          ).toEqual(
+            [...new Set(repos)]
+              .sort()
+              .map((repo) => `https://github.com/adewale/${repo}`),
+          );
+        },
+      ),
+    );
   });
 });

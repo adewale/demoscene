@@ -1,4 +1,4 @@
-import type { AppEnv, ProjectRecord } from "./domain";
+import type { AppEnv, ProjectRecord, SyncSummary } from "./domain";
 import { TEAM_MEMBERS, type TeamMember } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
@@ -32,6 +32,19 @@ type SyncOptions = {
   teamMembers?: TeamMember[];
 };
 
+type SyncOutcome =
+  | "added"
+  | "ignored"
+  | "removed"
+  | "skipped_transiently"
+  | "updated";
+
+type DiscoveryResult = {
+  accountsScanned: number;
+  repositories: string[];
+  reposDiscovered: number;
+};
+
 function getWranglerFormat(fileName: string): string {
   if (fileName.endsWith(".toml")) {
     return "toml";
@@ -44,47 +57,109 @@ function getWranglerFormat(fileName: string): string {
   return "json";
 }
 
+function createEmptySummary(
+  accountsScanned = 0,
+  reposDiscovered = 0,
+): SyncSummary {
+  return {
+    accountsScanned,
+    reposAdded: 0,
+    reposDiscovered,
+    reposRemoved: 0,
+    reposSkippedTransiently: 0,
+    reposUpdated: 0,
+  };
+}
+
+function applyOutcome(summary: SyncSummary, outcome: SyncOutcome): void {
+  if (outcome === "added") {
+    summary.reposAdded += 1;
+    return;
+  }
+
+  if (outcome === "updated") {
+    summary.reposUpdated += 1;
+    return;
+  }
+
+  if (outcome === "removed") {
+    summary.reposRemoved += 1;
+    return;
+  }
+
+  if (outcome === "skipped_transiently") {
+    summary.reposSkippedTransiently += 1;
+  }
+}
+
+function normalizeDiscoveryResult(
+  discovery: DiscoveryResult | string[],
+): DiscoveryResult {
+  if (Array.isArray(discovery)) {
+    return {
+      accountsScanned: 0,
+      repositories: discovery,
+      reposDiscovered: 0,
+    };
+  }
+
+  return discovery;
+}
+
 export async function syncRepositories(
   env: AppEnv,
   options: SyncOptions = {},
-): Promise<void> {
+): Promise<SyncSummary> {
   const fetchImpl = options.fetch ?? fetch;
   const now = (options.now ?? new Date()).toISOString();
   const db = createDb(env.DB);
-  const repositories = options.repositories
-    ? [...new Set(options.repositories)]
-    : await resolveTrackedRepositories(
-        db,
-        fetchImpl,
-        options.teamMembers ?? TEAM_MEMBERS,
-      );
+  const discovery = normalizeDiscoveryResult(
+    options.repositories
+      ? [...new Set(options.repositories)]
+      : await resolveTrackedRepositories(
+          db,
+          fetchImpl,
+          options.teamMembers ?? TEAM_MEMBERS,
+        ),
+  );
+  const summary = createEmptySummary(
+    discovery.accountsScanned,
+    discovery.reposDiscovered,
+  );
 
-  for (const repositoryUrl of repositories) {
+  for (const repositoryUrl of discovery.repositories) {
     try {
-      await syncRepository(db, fetchImpl, repositoryUrl, now);
+      applyOutcome(
+        summary,
+        await syncRepository(db, fetchImpl, repositoryUrl, now),
+      );
     } catch (error) {
       console.error(`Failed to sync repository ${repositoryUrl}`, error);
     }
   }
+
+  return summary;
 }
 
 async function resolveTrackedRepositories(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
   teamMembers: TeamMember[],
-): Promise<string[]> {
-  const repositories = new Set<string>();
+): Promise<DiscoveryResult> {
+  const discoveredRepositories = new Set<string>();
+  const repositoriesToProcess = new Set<string>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
 
   for (const teamMember of teamMembers) {
     try {
-      const discoveredRepositories = await discoverRepositoriesForTeamMember(
+      const accountRepositories = await discoverRepositoriesForTeamMember(
         fetchImpl,
         teamMember,
       );
 
-      for (const repositoryUrl of discoveredRepositories) {
-        repositories.add(repositoryUrl);
+      for (const repositoryUrl of accountRepositories) {
+        repositoriesToProcess.add(repositoryUrl);
+        discoveredRepositories.add(repositoryUrl);
       }
     } catch (error) {
       console.error(
@@ -98,11 +173,15 @@ async function resolveTrackedRepositories(
 
   for (const project of existingProjects) {
     if (teamLogins.has(project.owner)) {
-      repositories.add(project.repoUrl);
+      repositoriesToProcess.add(project.repoUrl);
     }
   }
 
-  return [...repositories].sort();
+  return {
+    accountsScanned: teamMembers.length,
+    repositories: [...repositoriesToProcess].sort(),
+    reposDiscovered: discoveredRepositories.size,
+  };
 }
 
 async function syncRepository(
@@ -110,17 +189,26 @@ async function syncRepository(
   fetchImpl: FetchLike,
   repositoryUrl: string,
   now: string,
-): Promise<void> {
+): Promise<SyncOutcome> {
   const repository = parseRepositoryUrl(repositoryUrl);
+  const existing = await getProjectByOwnerRepo(
+    db,
+    repository.owner,
+    repository.repo,
+  );
   const repoPage = await fetchRepositoryPage(fetchImpl, repository);
 
   if (repoPage.kind === "not_found") {
+    if (!existing) {
+      return "ignored";
+    }
+
     await deleteProjectBySlug(db, repository.slug);
-    return;
+    return "removed";
   }
 
   if (repoPage.kind !== "found") {
-    return;
+    return "skipped_transiently";
   }
 
   const repoMetadata = extractRepositoryPageMetadata(repoPage.html);
@@ -131,12 +219,16 @@ async function syncRepository(
   );
 
   if (wranglerFile.kind === "transient_error") {
-    return;
+    return "skipped_transiently";
   }
 
   if (wranglerFile.kind === "not_found") {
+    if (!existing) {
+      return "ignored";
+    }
+
     await deleteProjectBySlug(db, repository.slug);
-    return;
+    return "removed";
   }
 
   const wranglerConfig = parseWranglerConfig(
@@ -144,11 +236,6 @@ async function syncRepository(
     wranglerFile.file.fileName,
   );
   const products = inferCloudflareProducts(wranglerConfig);
-  const existing = await getProjectByOwnerRepo(
-    db,
-    repository.owner,
-    repository.repo,
-  );
 
   let readmeMarkdown = existing?.readmeMarkdown ?? "";
   let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
@@ -161,7 +248,7 @@ async function syncRepository(
     );
 
     if (readmeFile.kind === "transient_error") {
-      return;
+      return "skipped_transiently";
     }
 
     if (readmeFile.kind === "found") {
@@ -188,4 +275,6 @@ async function syncRepository(
 
   await upsertProject(db, project);
   await replaceProjectProducts(db, project.slug, products);
+
+  return existing ? "updated" : "added";
 }

@@ -10,6 +10,7 @@ import { projectPath } from "./lib/paths";
 import { AppShell } from "./components/AppShell";
 import { FeedPage } from "./components/FeedPage";
 import { ProjectDetailPage } from "./components/ProjectDetailPage";
+import { syncRepositories } from "./sync";
 
 type ProjectPathParts = {
   owner: string;
@@ -22,6 +23,15 @@ function renderHtml(markup: ReactNode): string {
 
 function decodeProjectSegment(segment: string | undefined): string | null {
   return segment ? decodeURIComponent(segment) : null;
+}
+
+function areDebugRoutesEnabled(url: string, env: AppEnv): boolean {
+  const hostname = new URL(url).hostname;
+  return (
+    env.ENABLE_DEBUG_ROUTES === "true" ||
+    hostname === "127.0.0.1" ||
+    hostname === "localhost"
+  );
 }
 
 function extractProjectPathParts(url: string): ProjectPathParts | null {
@@ -83,6 +93,14 @@ export function createApp() {
     const db = createDb(c.env.DB);
     const items = await listProjects(db);
     return c.json({ items });
+  });
+
+  app.get("/debug/sync", async (c) => {
+    if (!areDebugRoutesEnabled(c.req.url, c.env)) {
+      return c.notFound();
+    }
+
+    return c.json(await syncRepositories(c.env));
   });
 
   app.get("/projects/*", async (c) => {

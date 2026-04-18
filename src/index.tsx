@@ -14,6 +14,10 @@ export default {
     env: AppEnv,
     ctx: ExecutionContext,
   ) {
-    ctx.waitUntil(syncRepositories(env));
+    ctx.waitUntil(
+      syncRepositories(env).then((summary) => {
+        console.log(JSON.stringify({ event: "sync.summary", ...summary }));
+      }),
+    );
   },
 };

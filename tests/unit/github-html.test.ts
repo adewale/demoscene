@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { extractRepositoryPageMetadata } from "../../src/lib/github/html";
+import REPOSITORY_PAGE_FIXTURE from "../fixtures/github/repository-page-cloudflare-workers-sdk.html?raw";
 
 describe("extractRepositoryPageMetadata", () => {
   it("extracts homepage and preview image from repository HTML", () => {
@@ -37,5 +38,13 @@ describe("extractRepositoryPageMetadata", () => {
     expect(extractRepositoryPageMetadata(html).homepageUrl).toBe(
       "https://demo.example.com?foo=1&bar=2",
     );
+  });
+
+  it("extracts homepage metadata from a realistic repository About block", () => {
+    expect(extractRepositoryPageMetadata(REPOSITORY_PAGE_FIXTURE)).toEqual({
+      homepageUrl: "https://developers.cloudflare.com/workers/",
+      previewImageUrl:
+        "https://opengraph.githubassets.com/6d972d5d4cd6462200f45fa620d20d17ce090eaa2abe65ed0c76580ee135081e/cloudflare/workers-sdk",
+    });
   });
 });

@@ -37,6 +37,7 @@ Public Cloudflare app that turns a source-controlled list of team GitHub account
 - `/projects/:owner/:repo`
 - `/feed.json`
 - `/projects/:owner/:repo.json`
+- `/debug/sync` for local/manual verification
 - `/robots.txt`
 - `/sitemap.xml`
 
@@ -61,6 +62,12 @@ For each discovered repo URL `https://github.com/:owner/:repo`:
   - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.jsonc`
   - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.jsonc`
 - homepage is extracted from the public repo page HTML at `https://github.com/:owner/:repo`
+
+## Sync Observability
+
+- scheduled runs emit a sync summary to logs
+- the summary includes accounts scanned and repos discovered, added, updated, removed, and skipped transiently
+- `GET /debug/sync` runs a manual sync and returns the same summary JSON when debug routes are enabled or the app is running on `localhost` / `127.0.0.1`
 
 ## Docs
 

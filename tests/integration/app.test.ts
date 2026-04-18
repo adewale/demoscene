@@ -2,6 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppEnv } from "../../src/domain";
+import { app } from "../../src/index";
 import worker, { syncRepositories } from "../../src/index";
 import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
 
@@ -188,7 +189,7 @@ binding = "DB"
   });
 
   it("discovers public repos from the configured team accounts", async () => {
-    await syncRepositories(testEnv, {
+    const summary = await syncRepositories(testEnv, {
       fetch: createMockFetch({
         "https://github.com/adewale?page=1&tab=repositories": {
           body: `
@@ -215,6 +216,13 @@ binding = "DB"
 
     expect(payload.items).toHaveLength(1);
     expect(payload.items[0]?.repoUrl).toBe("https://github.com/adewale/demo");
+    expect(summary).toEqual(
+      expect.objectContaining({
+        accountsScanned: 1,
+        reposAdded: 1,
+        reposDiscovered: 1,
+      }),
+    );
   });
 
   it("continues syncing later repos when one configured repo is invalid", async () => {
@@ -326,6 +334,10 @@ binding = "DB"
     vi.stubGlobal("fetch", mockFetch as typeof fetch);
     const waitUntil = vi.fn();
 
+    const consoleLog = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => undefined);
+
     worker.scheduled?.(
       {
         cron: "0 12 * * *",
@@ -341,6 +353,49 @@ binding = "DB"
 
     expect(waitUntil).toHaveBeenCalledTimes(1);
     await waitUntil.mock.calls[0][0];
+    expect(consoleLog).toHaveBeenCalledWith(
+      expect.stringContaining('"event":"sync.summary"'),
+    );
+    consoleLog.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("exposes a local debug sync route only when enabled", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch(
+        buildDemoRepositoryResponses({
+          repoPageBody: buildRepositoryHomepageHtml("https://demo.example.com"),
+        }),
+      ) as typeof fetch,
+    );
+
+    const disabledResponse = await app.fetch(
+      new Request("https://example.com/debug/sync"),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "false" },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+    const enabledResponse = await app.fetch(
+      new Request("https://example.com/debug/sync"),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+
+    expect(disabledResponse.status).toBe(404);
+    expect(enabledResponse.status).toBe(200);
+    await expect(enabledResponse.json()).resolves.toEqual(
+      expect.objectContaining({
+        accountsScanned: expect.any(Number),
+        reposDiscovered: expect.any(Number),
+      }),
+    );
+
     vi.unstubAllGlobals();
   });
 });

@@ -33,12 +33,10 @@ describe("ProjectCard", () => {
     expect(
       screen.getByRole("heading", { name: "demo-scene" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Cloudflare products")).toHaveTextContent(
-      "Workers",
-    );
-    expect(screen.getByLabelText("Cloudflare products")).toHaveTextContent(
-      "D1",
-    );
+    expect(
+      screen.getByLabelText("Workers").querySelector("svg"),
+    ).not.toBeNull();
+    expect(screen.getByLabelText("D1").querySelector("svg")).not.toBeNull();
     expect(
       screen.getByRole("img", { name: "demo-scene preview" }),
     ).toBeInTheDocument();
@@ -63,8 +61,8 @@ describe("ProjectCard", () => {
     );
 
     expect(
-      within(container).queryByRole("img", { name: "demo-scene preview" }),
-    ).not.toBeInTheDocument();
+      within(container).getByText("Preview unavailable"),
+    ).toBeInTheDocument();
     expect(
       within(container).queryByRole("link", { name: "Visit homepage" }),
     ).not.toBeInTheDocument();
@@ -101,6 +99,9 @@ describe("ProjectDetailPage", () => {
     expect(
       within(container).queryByRole("link", { name: "Visit homepage" }),
     ).not.toBeInTheDocument();
+    expect(
+      within(container).getByText("Preview unavailable"),
+    ).toBeInTheDocument();
     expect(
       within(container).getByRole("link", { name: "Open GitHub repo" }),
     ).toHaveAttribute("href", "https://github.com/acme/demo-scene");

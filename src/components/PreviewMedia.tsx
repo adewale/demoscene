@@ -5,7 +5,18 @@ type PreviewMediaProps = {
 
 export function PreviewMedia({ alt, previewImageUrl }: PreviewMediaProps) {
   if (!previewImageUrl) {
-    return null;
+    return (
+      <div className="preview-media preview-media-fallback">
+        <div
+          aria-label="Preview unavailable"
+          className="preview-fallback-art"
+          role="img"
+        >
+          <span>Preview unavailable</span>
+          <small>README and links still available</small>
+        </div>
+      </div>
+    );
   }
 
   return (

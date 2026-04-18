@@ -126,14 +126,37 @@ const styles = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 42px;
-    padding: 7px 10px;
+    width: 46px;
+    height: 46px;
     border: 1px solid rgba(244, 129, 32, 0.28);
-    border-radius: 999px;
+    border-radius: 14px;
     background: rgba(244, 129, 32, 0.08);
     color: var(--accent);
-    font-size: 0.78rem;
-    font-weight: 700;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .product-icon {
+    width: 28px;
+    height: 28px;
+    fill: rgba(244, 129, 32, 0.16);
+    stroke: rgba(244, 129, 32, 0.38);
+    stroke-width: 1.4;
+  }
+
+  .product-icon text {
+    fill: var(--accent);
+    stroke: none;
+    font-size: 12px;
+    font-weight: 800;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  .product-fallback-text {
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
   }
 
   .markdown-preview,
@@ -178,6 +201,44 @@ const styles = `
     object-fit: cover;
     aspect-ratio: 16 / 9;
     background: var(--surface-strong);
+  }
+
+  .preview-media-fallback {
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(244,129,32,0.06));
+  }
+
+  .preview-fallback-art {
+    display: grid;
+    gap: 6px;
+    place-items: center;
+    padding: 24px 18px;
+    min-height: 176px;
+    aspect-ratio: 16 / 9;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .preview-fallback-art span {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .preview-fallback-art small {
+    font-size: 0.82rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .card-actions,

@@ -45,6 +45,7 @@ For each sync run:
 13. Refresh homepage and preview media metadata on later runs.
 14. Ignore later README changes.
 15. Continue processing other repos even if one repo or account fails.
+16. Return and log a sync summary with counts for accounts scanned and repos discovered, added, updated, removed, and skipped transiently.
 
 ## Fetch Strategy
 
@@ -129,7 +130,7 @@ This keeps the read side simple and makes icon rendering deterministic.
 - store a bounded Markdown preview for feed cards
 - render Markdown to sanitized HTML with React components for the public site
 - use the stored homepage URL as the main external project link
-- show preview media only when available
+- show preview media when available and a stable fallback panel when it is not
 
 ## UI Components
 
@@ -159,6 +160,7 @@ The feed page should stay card-oriented and scannable. The detail page should sh
 
 - `/feed.json` returns the feed payload
 - `/projects/:owner/:repo.json` returns one project payload
+- `/debug/sync` triggers a manual sync and returns the sync summary when debug routes are enabled or the app is running locally
 
 Both JSON routes should expose the full Markdown and the bounded preview needed by the React UI.
 
@@ -177,6 +179,7 @@ Both JSON routes should expose the full Markdown and the bounded preview needed 
 - optional subtle dot-grid texture
 - card-oriented feed layout with strong visual hierarchy
 - product icon strip should be immediately legible before the Markdown preview
+- cards and detail sidebars should preserve layout with a preview fallback state when media is missing
 
 ## Operational Rules
 

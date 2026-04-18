@@ -38,18 +38,20 @@ Sync:
 - fetch and store the repo homepage and lightweight preview media when available
 - ignore later README changes
 - transient upstream failures must not remove existing projects or abort the full sync
+- each sync produces summary counts for accounts scanned and repos discovered, added, updated, removed, and skipped transiently
 - if a repo cannot be found, remove it from the site
 
 Output:
 
 - a public card-oriented web feed
 - each feed card represents one repo
-- each feed card shows icons that clearly signal which Cloudflare primitives and products are used
+- each feed card shows recognizable icons that clearly signal which Cloudflare primitives and products are used
 - each feed card renders a bounded preview of the stored README as Markdown
 - each project detail page renders the full stored README as Markdown
 - each card and detail page links to the repo homepage
-- each card and detail page can also show lightweight preview media when available
+- each card and detail page can also show lightweight preview media when available, with a stable fallback state when no preview image exists
 - provide `/` for the feed and `/projects/:owner/:repo` for a persistent project detail page
+- provide `/debug/sync` for local or explicitly enabled manual sync verification
 
 Visual cues:
 

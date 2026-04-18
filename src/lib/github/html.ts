@@ -18,27 +18,72 @@ function decodeHtmlEntities(value: string): string {
   );
 }
 
-function extractAttribute(tag: string, attribute: string): string | null {
-  const match = tag.match(new RegExp(`${attribute}=["']([^"']+)["']`, "i"));
-  return match?.[1] ? decodeHtmlEntities(match[1]) : null;
+function extractTags(html: string, tagName: string): string[] {
+  return html.match(new RegExp(`<${tagName}\\b[\\s\\S]*?>`, "gi")) ?? [];
+}
+
+function parseAttributes(tag: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+
+  for (const match of tag.matchAll(/([\w:-]+)\s*=\s*(["'])([\s\S]*?)\2/g)) {
+    const name = match[1]?.toLowerCase();
+    const value = match[3];
+
+    if (!name || value === undefined) {
+      continue;
+    }
+
+    attributes[name] = decodeHtmlEntities(value);
+  }
+
+  return attributes;
+}
+
+function extractOgImageUrl(html: string): string | null {
+  for (const tag of extractTags(html, "meta")) {
+    const attributes = parseAttributes(tag);
+
+    if (
+      attributes.property?.toLowerCase() === "og:image" &&
+      attributes.content
+    ) {
+      return attributes.content;
+    }
+  }
+
+  return null;
+}
+
+function isExternalHomepageLink(attributes: Record<string, string>): boolean {
+  const href = attributes.href;
+  const rel = attributes.rel?.toLowerCase() ?? "";
+  const target = attributes.target?.toLowerCase() ?? "";
+
+  return (
+    Boolean(href?.startsWith("https://")) &&
+    (attributes["data-testid"] === "repository-homepage-url" ||
+      rel.includes("nofollow") ||
+      target === "_blank")
+  );
+}
+
+function extractHomepageUrl(html: string): string | null {
+  for (const tag of extractTags(html, "a")) {
+    const attributes = parseAttributes(tag);
+
+    if (isExternalHomepageLink(attributes)) {
+      return attributes.href ?? null;
+    }
+  }
+
+  return null;
 }
 
 export function extractRepositoryPageMetadata(
   html: string,
 ): RepositoryPageMetadata {
-  const homepageTagMatch = html.match(
-    /<a[^>]*data-testid=["']repository-homepage-url["'][^>]*>/i,
-  );
-  const ogImageTagMatch = html.match(
-    /<meta[^>]*property=["']og:image["'][^>]*>/i,
-  );
-
   return {
-    homepageUrl: homepageTagMatch
-      ? extractAttribute(homepageTagMatch[0], "href")
-      : null,
-    previewImageUrl: ogImageTagMatch
-      ? extractAttribute(ogImageTagMatch[0], "content")
-      : null,
+    homepageUrl: extractHomepageUrl(html),
+    previewImageUrl: extractOgImageUrl(html),
   };
 }
