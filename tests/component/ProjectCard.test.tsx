@@ -1,6 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { AppShell } from "../../src/components/AppShell";
 import type { ProjectWithProducts } from "../../src/domain";
 import { ProjectCard } from "../../src/components/ProjectCard";
 
@@ -27,6 +29,17 @@ const project: ProjectWithProducts = {
 };
 
 describe("ProjectCard", () => {
+  it("uses sharper card corners and visible overflow for attached tooltips", () => {
+    const markup = renderToStaticMarkup(
+      <AppShell title="demoscene">
+        <ProjectCard project={project} />
+      </AppShell>,
+    );
+
+    expect(markup).toContain("overflow: visible;");
+    expect(markup).toContain("border-radius: 12px;");
+  });
+
   it("renders a scannable project card with links and product pills", () => {
     render(<ProjectCard project={project} />);
 
@@ -44,6 +57,10 @@ describe("ProjectCard", () => {
       "href",
       "https://developers.cloudflare.com/workers/",
     );
+    expect(screen.getByRole("link", { name: "Workers" })).not.toHaveAttribute(
+      "title",
+    );
+    expect(screen.getAllByRole("tooltip")).toHaveLength(2);
     expect(
       screen.getByRole("img", { name: "demo-scene preview" }),
     ).toBeInTheDocument();

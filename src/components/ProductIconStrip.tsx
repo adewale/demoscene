@@ -96,7 +96,6 @@ export function ProductIconStrip({ products }: ProductIconStripProps) {
             }
             rel="noreferrer"
             target="_blank"
-            title={`${product.label}: ${PRODUCT_INFO[product.key]?.description ?? product.label}`}
           >
             <ProductGlyph product={product} />
             <span className="sr-only">{product.label}</span>
