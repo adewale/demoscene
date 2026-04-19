@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { renderToString } from "react-dom/server";
 
 import type { AppEnv } from "./domain";
+import { TEAM_MEMBERS } from "./config/repositories";
 import { createDb } from "./db/client";
 import { getProjectByOwnerRepo, listProjects } from "./db/queries";
 import { projectPath } from "./lib/paths";
@@ -100,7 +101,22 @@ export function createApp() {
       return c.notFound();
     }
 
-    return c.json(await syncRepositories(c.env));
+    const searchParams = new URL(c.req.url).searchParams;
+    const requestedRepos = searchParams.getAll("repo");
+    const requestedMembers = searchParams.getAll("member");
+    const teamMembers =
+      requestedMembers.length > 0
+        ? TEAM_MEMBERS.filter((member) =>
+            requestedMembers.includes(member.login),
+          )
+        : undefined;
+
+    return c.json(
+      await syncRepositories(c.env, {
+        repositories: requestedRepos.length > 0 ? requestedRepos : undefined,
+        teamMembers,
+      }),
+    );
   });
 
   app.get("/projects/*", async (c) => {

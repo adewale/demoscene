@@ -398,4 +398,79 @@ binding = "DB"
 
     vi.unstubAllGlobals();
   });
+
+  it("allows debug sync to be limited to specific team members", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch({
+        "https://github.com/adewale?page=1&tab=repositories": {
+          body: `<a itemprop="name codeRepository" href="/adewale/demo">demo</a>`,
+        },
+        "https://github.com/adewale/demo": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/adewale/demo/main/wrangler.toml": {
+          body: `name = "demo"`,
+        },
+        "https://raw.githubusercontent.com/adewale/demo/main/README.md": {
+          body: "# Demo",
+        },
+      }) as typeof fetch,
+    );
+
+    const response = await app.fetch(
+      new Request("https://example.com/debug/sync?member=adewale"),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        accountsScanned: 1,
+        reposAdded: 1,
+      }),
+    );
+
+    vi.unstubAllGlobals();
+  });
+
+  it("allows debug sync to be limited to explicit repo URLs", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch({
+        "https://github.com/yusukebe/demo": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/yusukebe/demo/main/wrangler.toml": {
+          body: `name = "demo"`,
+        },
+        "https://raw.githubusercontent.com/yusukebe/demo/main/README.md": {
+          body: "# Demo",
+        },
+      }) as typeof fetch,
+    );
+
+    const response = await app.fetch(
+      new Request(
+        "https://example.com/debug/sync?repo=https%3A%2F%2Fgithub.com%2Fyusukebe%2Fdemo",
+      ),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        accountsScanned: 0,
+        reposAdded: 1,
+      }),
+    );
+
+    vi.unstubAllGlobals();
+  });
 });

@@ -9,6 +9,31 @@ import {
 import { projectProducts, projects } from "./schema";
 
 type Database = ReturnType<typeof import("./client").createDb>;
+const PRODUCT_LOOKUP_BATCH_SIZE = 90;
+
+async function listProjectProductsForSlugs(
+  db: Database,
+  slugs: string[],
+): Promise<(typeof projectProducts.$inferSelect)[]> {
+  const productRows: (typeof projectProducts.$inferSelect)[] = [];
+
+  for (
+    let index = 0;
+    index < slugs.length;
+    index += PRODUCT_LOOKUP_BATCH_SIZE
+  ) {
+    const batch = slugs.slice(index, index + PRODUCT_LOOKUP_BATCH_SIZE);
+
+    productRows.push(
+      ...(await db
+        .select()
+        .from(projectProducts)
+        .where(inArray(projectProducts.projectSlug, batch))),
+    );
+  }
+
+  return productRows;
+}
 
 function attachProducts(
   projectRows: (typeof projects.$inferSelect)[],
@@ -128,10 +153,23 @@ export async function listProjects(
   }
 
   const slugs = projectRows.map((project) => project.slug);
-  const productRows = await db
-    .select()
-    .from(projectProducts)
-    .where(inArray(projectProducts.projectSlug, slugs));
+  const productRows = await listProjectProductsForSlugs(db, slugs);
 
   return attachProducts(projectRows, productRows);
+}
+
+export async function listProjectRepoUrlsByOwners(
+  db: Database,
+  owners: string[],
+): Promise<string[]> {
+  if (owners.length === 0) {
+    return [];
+  }
+
+  const rows = await db
+    .select({ repoUrl: projects.repoUrl })
+    .from(projects)
+    .where(inArray(projects.owner, owners));
+
+  return rows.map((row) => row.repoUrl);
 }

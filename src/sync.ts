@@ -4,7 +4,7 @@ import { createDb } from "./db/client";
 import {
   deleteProjectBySlug,
   getProjectByOwnerRepo,
-  listProjects,
+  listProjectRepoUrlsByOwners,
   replaceProjectProducts,
   upsertProject,
 } from "./db/queries";
@@ -169,12 +169,12 @@ async function resolveTrackedRepositories(
     }
   }
 
-  const existingProjects = await listProjects(db);
+  const existingRepoUrls = await listProjectRepoUrlsByOwners(db, [
+    ...teamLogins,
+  ]);
 
-  for (const project of existingProjects) {
-    if (teamLogins.has(project.owner)) {
-      repositoriesToProcess.add(project.repoUrl);
-    }
+  for (const repoUrl of existingRepoUrls) {
+    repositoriesToProcess.add(repoUrl);
   }
 
   return {

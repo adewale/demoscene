@@ -9,9 +9,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "demoscene-local",
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "preview_database_id": "00000000-0000-0000-0000-000000000000",
+      "database_name": "demoscene",
+      "database_id": "7a740366-a401-4147-a401-8661d6a16c32",
+      "preview_database_id": "7a740366-a401-4147-a401-8661d6a16c32",
       "migrations_dir": "migrations",
     },
   ],
