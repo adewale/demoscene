@@ -2,9 +2,10 @@ import type { AppEnv, ProjectRecord, SyncSummary } from "./domain";
 import { TEAM_MEMBERS, type TeamMember } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
+  deleteProjectsByOwnersNotIn,
   deleteProjectBySlug,
   getProjectByOwnerRepo,
-  listProjectRepoUrlsByOwners,
+  listProjectSyncStateByOwners,
   replaceProjectProducts,
   upsertProject,
 } from "./db/queries";
@@ -29,6 +30,7 @@ import { parseRepositoryUrl } from "./lib/github/repositories";
 type SyncOptions = {
   fetch?: FetchLike;
   now?: Date;
+  pruneUntrackedOwners?: boolean;
   repositories?: string[];
   teamMembers?: TeamMember[];
 };
@@ -45,6 +47,8 @@ type DiscoveryResult = {
   repositories: string[];
   reposDiscovered: number;
 };
+
+const STALE_REVISIT_AFTER_DAYS = 14;
 
 function getWranglerFormat(fileName: string): string {
   if (fileName.endsWith(".toml")) {
@@ -112,14 +116,19 @@ export async function syncRepositories(
   options: SyncOptions = {},
 ): Promise<SyncSummary> {
   const fetchImpl = options.fetch ?? fetch;
-  const now = (options.now ?? new Date()).toISOString();
+  const currentTime = options.now ?? new Date();
+  const now = currentTime.toISOString();
   const db = createDb(env.DB);
+  const shouldPruneUntrackedOwners =
+    options.pruneUntrackedOwners ??
+    (options.repositories === undefined && options.teamMembers === undefined);
   const discovery = normalizeDiscoveryResult(
     options.repositories
       ? [...new Set(options.repositories)]
       : await resolveTrackedRepositories(
           db,
           fetchImpl,
+          currentTime,
           options.teamMembers ?? TEAM_MEMBERS,
         ),
   );
@@ -127,6 +136,13 @@ export async function syncRepositories(
     discovery.accountsScanned,
     discovery.reposDiscovered,
   );
+
+  if (shouldPruneUntrackedOwners) {
+    summary.reposRemoved += await deleteProjectsByOwnersNotIn(
+      db,
+      TEAM_MEMBERS.map((member) => member.login),
+    );
+  }
 
   for (const repositoryUrl of discovery.repositories) {
     try {
@@ -145,21 +161,27 @@ export async function syncRepositories(
 async function resolveTrackedRepositories(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
+  currentTime: Date,
   teamMembers: TeamMember[],
 ): Promise<DiscoveryResult> {
   const discoveredRepositories = new Set<string>();
   const repositoriesToProcess = new Set<string>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
   const existingRepoUrlsByOwner = new Map<string, Set<string>>();
+  const staleCutoff = new Date(currentTime);
 
-  for (const repoUrl of await listProjectRepoUrlsByOwners(db, [
-    ...teamLogins,
-  ])) {
-    const parsed = parseRepositoryUrl(repoUrl);
+  staleCutoff.setUTCDate(staleCutoff.getUTCDate() - STALE_REVISIT_AFTER_DAYS);
+
+  for (const row of await listProjectSyncStateByOwners(db, [...teamLogins])) {
+    const parsed = parseRepositoryUrl(row.repoUrl);
     const knownRepoUrls =
       existingRepoUrlsByOwner.get(parsed.owner) ?? new Set<string>();
-    knownRepoUrls.add(repoUrl);
+    knownRepoUrls.add(row.repoUrl);
     existingRepoUrlsByOwner.set(parsed.owner, knownRepoUrls);
+
+    if (new Date(row.lastSeenAt) <= staleCutoff) {
+      repositoriesToProcess.add(row.repoUrl);
+    }
   }
 
   for (const teamMember of teamMembers) {

@@ -27,15 +27,15 @@ Public Cloudflare app that turns a source-controlled list of team GitHub account
 - treat a repo as a Cloudflare project if it has a top-level `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc`
 - infer Cloudflare products from that Wrangler config and show them as icons on feed cards
 - fetch and store the repo README once
-- render a bounded Markdown preview on feed cards and the full Markdown on project pages
-- link each project to the repo homepage
+- render the first 2 README paragraphs on feed cards
+- make the main card link go to the GitHub repo
 - remove a repo from the site if it can no longer be found
 
 ## Routes
 
 - `/`
-- `/projects/:owner/:repo`
 - `/feed.json`
+- `/rss.xml`
 - `/projects/:owner/:repo.json`
 - `/debug/sync` for local/manual verification
 - `/robots.txt`
@@ -68,6 +68,13 @@ For each discovered repo URL `https://github.com/:owner/:repo`:
 - scheduled runs emit a sync summary to logs
 - the summary includes accounts scanned and repos discovered, added, updated, removed, and skipped transiently
 - `GET /debug/sync` runs a manual sync and returns the same summary JSON when debug routes are enabled or the app is running on `localhost` / `127.0.0.1`
+
+## Feed Model
+
+- the homepage is the product; it is not a replacement for GitHub
+- the main card link goes to the GitHub repository
+- cards show the first 2 README paragraphs, not the full README
+- `/projects/:owner/:repo.json` exists for machine consumers only
 
 ## Docs
 

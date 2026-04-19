@@ -15,7 +15,7 @@ Smallest concrete architecture:
 The Worker does two jobs:
 
 - scheduled sync of GitHub repos into D1
-- public read routes for the feed and project pages
+- public read routes for the feed and feed APIs
 
 ## Components
 
@@ -32,20 +32,21 @@ For each sync run:
 
 1. Fetch each configured team account's public repositories pages.
 2. Discover repo URLs from those HTML pages.
-3. Union those repo URLs with already-known projects for the tracked team, so removals and refreshes are still checked.
-4. Parse `owner` and `repo` from each repo URL.
-5. Fetch the public repo page HTML.
-6. If the repo page is missing, remove the repo from D1 and from the public site.
-7. Extract the repo homepage from the repo page HTML.
-8. Try the top-level Wrangler config URLs in a fixed order.
-9. If no top-level Wrangler config exists, the repo is not shown in the site.
-10. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
-11. Infer Cloudflare products from the Wrangler config.
-12. Create or update the project record.
-13. Refresh homepage and preview media metadata on later runs.
-14. Ignore later README changes.
-15. Continue processing other repos even if one repo or account fails.
-16. Return and log a sync summary with counts for accounts scanned and repos discovered, added, updated, removed, and skipped transiently.
+3. Add periodic stale-revisit candidates for tracked owners so older repos are eventually rechecked for removals and metadata drift.
+4. Optionally prune projects whose owners are no longer in the tracked team list during full team syncs.
+5. Parse `owner` and `repo` from each repo URL.
+6. Fetch the public repo page HTML.
+7. If the repo page is missing, remove the repo from D1 and from the public site.
+8. Extract the repo homepage from the repo page HTML.
+9. Try the top-level Wrangler config URLs in a fixed order.
+10. If no top-level Wrangler config exists, the repo is not shown in the site.
+11. If a Wrangler config exists and the repo is new, fetch the README and derive the first 2 README paragraphs for feed cards.
+12. Infer Cloudflare products from the Wrangler config.
+13. Create or update the project record.
+14. Refresh homepage and preview media metadata on later runs.
+15. Ignore later README changes.
+16. Continue processing other repos even if one repo or account fails.
+17. Return and log a sync summary with counts for accounts scanned and repos discovered, added, updated, removed, and skipped transiently.
 
 ## Fetch Strategy
 
@@ -154,15 +155,16 @@ The feed page should stay card-oriented and scannable. The detail page should sh
 ### Public HTML
 
 - `/` renders the feed
-- `/projects/:owner/:repo` renders a persistent project page
+- there are no first-party HTML project pages; project titles link directly to GitHub
 
 ### Public JSON
 
 - `/feed.json` returns the feed payload
+- `/rss.xml` returns a rich RSS feed for external aggregators and readers
 - `/projects/:owner/:repo.json` returns one project payload
 - `/debug/sync` triggers a manual sync and returns the sync summary when debug routes are enabled or the app is running locally
 
-Both JSON routes should expose the full Markdown and the bounded preview needed by the React UI.
+Feed APIs should expose enough structured data for richer external consumers and debugging.
 
 ### Support
 
@@ -179,7 +181,7 @@ Both JSON routes should expose the full Markdown and the bounded preview needed 
 - optional subtle dot-grid texture
 - card-oriented feed layout with strong visual hierarchy
 - product icon strip should be immediately legible before the Markdown preview
-- cards and detail sidebars should preserve layout with a preview fallback state when media is missing
+- cards should preserve layout with a preview fallback state when media is missing
 
 ## Operational Rules
 
@@ -187,4 +189,5 @@ Both JSON routes should expose the full Markdown and the bounded preview needed 
 - README is fetched once on first discovery
 - later README changes are ignored
 - transient upstream failures do not remove existing projects or abort the full sync
+- older tracked repos are periodically revisited so stale entries can be cleaned up
 - if a repo cannot be found, remove it from D1 and from the site

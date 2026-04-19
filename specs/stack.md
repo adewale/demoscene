@@ -11,7 +11,7 @@ Use a server-first React stack on Cloudflare:
 - D1
 - Drizzle ORM
 
-This keeps the app simple at runtime while giving the feed and project pages a strong card-oriented component model.
+This keeps the app simple at runtime while giving the feed a strong card-oriented component model.
 
 ## Packages
 
@@ -49,7 +49,7 @@ Testing:
 ## Rendering Model
 
 - use Hono for request handling
-- server-render React for `/` and `/projects/:owner/:repo`
+- server-render React for `/`
 - keep data loading on the server
 - avoid SPA-style client-side routing
 - hydrate only small UI affordances if they prove necessary later
@@ -60,7 +60,6 @@ Core page components:
 
 - `AppShell`
 - `FeedPage`
-- `ProjectDetailPage`
 
 Feed components:
 
@@ -71,13 +70,7 @@ Feed components:
 - `MarkdownPreview`
 - `PreviewMedia`
 
-Detail components:
-
-- `ProjectHeader`
-- `MarkdownDocument`
-- `ProjectSidebar`
-
-The feed should optimize for scanning. The detail page should optimize for reading.
+The feed should optimize for scanning and outbound click-through to GitHub.
 
 ## Data Shape Expectations
 
@@ -88,14 +81,6 @@ Feed card data should include:
 - preview media URL when available
 - inferred Cloudflare product list
 - bounded README preview Markdown
-
-Project detail data should include:
-
-- repo identity
-- homepage URL
-- preview media URL when available
-- inferred Cloudflare product list
-- full stored README Markdown
 
 ## Testing Strategy
 
@@ -127,7 +112,6 @@ Integration tests:
 E2E tests:
 
 - `/` renders feed cards correctly
-- `/projects/:owner/:repo` renders the full page correctly
 - mobile layout remains usable
 - homepage links and icon strips are visible and correct
 

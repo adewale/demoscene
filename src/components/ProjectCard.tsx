@@ -1,5 +1,4 @@
 import type { ProjectWithProducts } from "../domain";
-import { projectPath } from "../lib/paths";
 import { extractProjectPresence } from "../lib/project-presence";
 
 import { MarkdownPreview } from "./MarkdownContent";
@@ -45,15 +44,27 @@ function stripPreviewNoise(markdown: string): string {
     .trim();
 }
 
+function takeFirstParagraphs(markdown: string, count: number): string {
+  return markdown
+    .split(/\n\s*\n/g)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .slice(0, count)
+    .join("\n\n");
+}
+
 export function ProjectCard({ project }: ProjectCardProps) {
-  const previewMarkdown = stripPreviewNoise(
-    stripLeadingHeading(project.readmePreviewMarkdown, project.repo),
+  const previewMarkdown = takeFirstParagraphs(
+    stripPreviewNoise(
+      stripLeadingHeading(project.readmePreviewMarkdown, project.repo),
+    ),
+    2,
   );
   const presenceItems = extractProjectPresence({
     homepageUrl: project.homepageUrl,
     readmeMarkdown: project.readmeMarkdown,
     repoUrl: project.repoUrl,
-  });
+  }).filter((item) => item.kind !== "github");
 
   return (
     <article className="card feed-card">
@@ -96,7 +107,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <h2 className="project-title feed-card-title">
               <a
                 className="feed-title-link"
-                href={projectPath(project.owner, project.repo)}
+                href={project.repoUrl}
+                rel="noreferrer"
+                target="_blank"
               >
                 {project.repo}
               </a>

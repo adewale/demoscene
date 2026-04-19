@@ -30,8 +30,7 @@ No feature is `done` until all apply:
 | F3  | Persistence and sync pipeline            | F1, F2     | planned |
 | F4  | Read APIs                                | F3         | planned |
 | F5  | Public feed page                         | F4         | planned |
-| F6  | Project detail page                      | F4         | planned |
-| F7  | Support routes and indexing              | F4, F6     | planned |
+| F6  | Support routes and indexing              | F4         | planned |
 
 ## Features
 
@@ -132,6 +131,7 @@ Scope:
 - initial README fetch and storage
 - bounded README preview derivation and storage
 - homepage and preview media storage
+- periodic stale-entry cleanup for older tracked repos
 - repo removal when it can no longer be found
 - ignore later README changes
 
@@ -142,6 +142,7 @@ Done when:
 - one bad repo or account does not abort the rest of the sync
 - missing repos are removed from the site data
 - transient upstream failures do not remove existing projects
+- older repos are periodically revisited so stale entries do not persist forever
 - later README changes do not overwrite stored README content
 - feed preview Markdown is derived once and stays stable with the stored README
 - homepage and preview media can refresh independently of README
@@ -187,14 +188,14 @@ Scope:
 - React SSR card list for all discovered projects
 - product icons derived from Wrangler inference
 - Markdown preview rendering for stored README previews
-- homepage links and preview media
+- GitHub-first card links, live/video presence links, and preview media
 - visual cues from the spec
 
 Done when:
 
 - feed cards clearly show Cloudflare product icons
 - bounded Markdown previews render safely and legibly
-- homepage links are visible and usable
+- GitHub-first card links are visible and usable
 - layout works on desktop and mobile
 
 Quality gates:
@@ -205,36 +206,11 @@ Quality gates:
 - E2E coverage for loading the public feed and following a project link
 - screenshot or visual regression coverage for the feed
 
-### F6. Project detail page
+### F6. Support routes and indexing
 
 Status: `planned`
 
 Depends on: `F4`
-
-Scope:
-
-- `/projects/:owner/:repo`
-- React SSR persistent detail page per project
-
-Done when:
-
-- page shows the stored README markdown, homepage link, preview media, and product icons
-- route is stable and directly shareable
-- missing projects render the intended not-found state
-
-Quality gates:
-
-- React Testing Library coverage for full Markdown document rendering states
-- integration test for the detail route
-- accessibility checks for the rendered Markdown content
-- E2E coverage for direct navigation to a project page
-- screenshot or visual regression coverage for the detail page
-
-### F7. Support routes and indexing
-
-Status: `planned`
-
-Depends on: `F4`, `F6`
 
 Scope:
 
@@ -243,7 +219,7 @@ Scope:
 
 Done when:
 
-- sitemap includes the feed and all project detail pages
+- sitemap includes the feed and RSS surface
 - robots output is valid for a public site
 
 Quality gates:

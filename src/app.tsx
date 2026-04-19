@@ -11,11 +11,10 @@ import {
   listProjects,
   listProjectsPage,
 } from "./db/queries";
-import { projectPath } from "./lib/paths";
+import { renderRssFeed } from "./lib/rss";
 
 import { AppShell } from "./components/AppShell";
 import { FeedPage } from "./components/FeedPage";
-import { ProjectDetailPage } from "./components/ProjectDetailPage";
 import { syncRepositories } from "./sync";
 
 type ProjectPathParts = {
@@ -29,10 +28,6 @@ function renderHtml(markup: ReactNode): string {
   return `<!DOCTYPE html>${renderToString(markup)}`;
 }
 
-function decodeProjectSegment(segment: string | undefined): string | null {
-  return segment ? decodeURIComponent(segment) : null;
-}
-
 function areDebugRoutesEnabled(url: string, env: AppEnv): boolean {
   const hostname = new URL(url).hostname;
   return (
@@ -42,24 +37,18 @@ function areDebugRoutesEnabled(url: string, env: AppEnv): boolean {
   );
 }
 
-function extractProjectPathParts(url: string): ProjectPathParts | null {
-  const segments = new URL(url).pathname.split("/").filter(Boolean);
-  const owner = decodeProjectSegment(segments[1]);
-  const repo = decodeProjectSegment(segments[2]);
-
-  return owner && repo ? { owner, repo } : null;
-}
-
 function extractProjectJsonPathParts(url: string): ProjectPathParts | null {
-  const parts = extractProjectPathParts(url);
+  const segments = new URL(url).pathname.split("/").filter(Boolean);
+  const owner = segments[1] ? decodeURIComponent(segments[1]) : null;
+  const repoWithSuffix = segments[2] ? decodeURIComponent(segments[2]) : null;
 
-  if (!parts || !parts.repo.endsWith(".json")) {
+  if (!owner || !repoWithSuffix || !repoWithSuffix.endsWith(".json")) {
     return null;
   }
 
   return {
-    owner: parts.owner,
-    repo: parts.repo.slice(0, -".json".length),
+    owner,
+    repo: repoWithSuffix.slice(0, -".json".length),
   };
 }
 
@@ -116,6 +105,18 @@ export function createApp() {
     return c.json({ items });
   });
 
+  app.get("/rss.xml", async (c) => {
+    const db = createDb(c.env.DB);
+    const items = await listProjects(db);
+    const origin = new URL(c.req.url).origin;
+
+    return c.body(renderRssFeed({ items, origin }), {
+      headers: {
+        "content-type": "application/rss+xml; charset=utf-8",
+      },
+    });
+  });
+
   app.get("/debug/sync", async (c) => {
     if (!areDebugRoutesEnabled(c.req.url, c.env)) {
       return c.notFound();
@@ -140,49 +141,19 @@ export function createApp() {
   });
 
   app.get("/projects/*", async (c) => {
-    const isJsonRequest = new URL(c.req.url).pathname.endsWith(".json");
-    const project = await loadProjectFromRequest(
-      c,
-      isJsonRequest
-        ? extractProjectJsonPathParts(c.req.url)
-        : extractProjectPathParts(c.req.url),
-    );
+    const pathParts = extractProjectJsonPathParts(c.req.url);
+
+    if (!pathParts) {
+      return c.notFound();
+    }
+
+    const project = await loadProjectFromRequest(c, pathParts);
 
     if (!project) {
-      if (isJsonRequest) {
-        return c.json({ error: "Not found" }, 404);
-      }
-
-      return c.html(
-        renderHtml(
-          <AppShell
-            subtitle="The requested project is not in the current feed."
-            title="Project not found"
-          >
-            <section className="empty-state">
-              <h2>Project not found</h2>
-              <p>That repo is not currently available in the demoscene feed.</p>
-            </section>
-          </AppShell>,
-        ),
-        404,
-      );
+      return c.json({ error: "Not found" }, 404);
     }
 
-    if (isJsonRequest) {
-      return c.json(project);
-    }
-
-    return c.html(
-      renderHtml(
-        <AppShell
-          subtitle="Full project README and Cloudflare product metadata."
-          title={`${project.owner}/${project.repo}`}
-        >
-          <ProjectDetailPage project={project} />
-        </AppShell>,
-      ),
-    );
+    return c.json(project);
   });
 
   app.get("/robots.txt", (c) => {
@@ -191,13 +162,8 @@ export function createApp() {
     );
   });
 
-  app.get("/sitemap.xml", async (c) => {
-    const db = createDb(c.env.DB);
-    const projects = await listProjects(db);
-    const urls = [
-      "/",
-      ...projects.map((project) => projectPath(project.owner, project.repo)),
-    ];
+  app.get("/sitemap.xml", (c) => {
+    const urls = ["/", "/rss.xml"];
     const origin = new URL(c.req.url).origin;
     const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls
       .map((path) => `<url><loc>${origin}${path}</loc></url>`)

@@ -175,7 +175,7 @@ export function extractProjectPresence({
   const items: ProjectPresenceItem[] = [];
   const seenUrls = new Set<string>();
   const liveUrl = pickLiveUrl(homepageUrl, markdownLinks, inlineLinks);
-  const videoUrl = pickVideoUrl(markdownLinks);
+  const videoUrl = pickVideoUrl([...markdownLinks, ...inlineLinks]);
 
   if (liveUrl && !seenUrls.has(liveUrl)) {
     items.push({ href: liveUrl, kind: "live", label: "Live" });

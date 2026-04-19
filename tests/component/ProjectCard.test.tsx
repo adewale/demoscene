@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 
 import type { ProjectWithProducts } from "../../src/domain";
 import { ProjectCard } from "../../src/components/ProjectCard";
-import { ProjectDetailPage } from "../../src/components/ProjectDetailPage";
 
 const project: ProjectWithProducts = {
   slug: "acme/demo-scene",
@@ -56,13 +55,9 @@ describe("ProjectCard", () => {
       "href",
       "https://www.loom.com/share/demo-scene",
     );
-    expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute(
-      "href",
-      "https://github.com/acme/demo-scene",
-    );
     expect(screen.getByRole("link", { name: "demo-scene" })).toHaveAttribute(
       "href",
-      "/projects/acme/demo-scene",
+      "https://github.com/acme/demo-scene",
     );
     expect(screen.queryByText("14 Apr 2026")).not.toBeInTheDocument();
   });
@@ -87,44 +82,5 @@ describe("ProjectCard", () => {
     expect(
       within(container).getByRole("link", { name: "Video" }),
     ).toBeInTheDocument();
-  });
-});
-
-describe("ProjectDetailPage", () => {
-  it("renders sanitized full README markdown", () => {
-    const { container } = render(<ProjectDetailPage project={project} />);
-
-    expect(
-      screen.getByRole("heading", { name: "acme/demo-scene" }),
-    ).toBeInTheDocument();
-    expect(container.querySelector(".markdown-document")).toHaveTextContent(
-      "Welcome to the demo project.",
-    );
-    expect(container.querySelector("script")).toBeNull();
-    expect(
-      within(container).getByRole("link", { name: "Visit homepage" }),
-    ).toHaveAttribute("href", "https://demo.example.com");
-  });
-
-  it("keeps the GitHub repo action when no homepage exists", () => {
-    const { container } = render(
-      <ProjectDetailPage
-        project={{
-          ...project,
-          homepageUrl: null,
-          previewImageUrl: null,
-        }}
-      />,
-    );
-
-    expect(
-      within(container).queryByRole("link", { name: "Visit homepage" }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(container).getByText("Preview unavailable"),
-    ).toBeInTheDocument();
-    expect(
-      within(container).getByRole("link", { name: "Open GitHub repo" }),
-    ).toHaveAttribute("href", "https://github.com/acme/demo-scene");
   });
 });

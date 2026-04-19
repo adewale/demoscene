@@ -32,4 +32,21 @@ describe("extractProjectPresence", () => {
       { href: "https://github.com/acme/demo", kind: "github", label: "GitHub" },
     ]);
   });
+
+  it("detects video links from bare inline URLs", () => {
+    expect(
+      extractProjectPresence({
+        homepageUrl: null,
+        readmeMarkdown: "Demo clip: https://www.loom.com/share/inline-video",
+        repoUrl: "https://github.com/acme/demo",
+      }),
+    ).toEqual([
+      {
+        href: "https://www.loom.com/share/inline-video",
+        kind: "video",
+        label: "Video",
+      },
+      { href: "https://github.com/acme/demo", kind: "github", label: "GitHub" },
+    ]);
+  });
 });

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
 
 import type { ProjectRecord, ProjectWithProducts } from "../domain";
 import {
@@ -209,4 +209,40 @@ export async function listProjectRepoUrlsByOwners(
     .where(inArray(projects.owner, owners));
 
   return rows.map((row) => row.repoUrl);
+}
+
+export async function listProjectSyncStateByOwners(
+  db: Database,
+  owners: string[],
+): Promise<Array<{ lastSeenAt: string; owner: string; repoUrl: string }>> {
+  if (owners.length === 0) {
+    return [];
+  }
+
+  return db
+    .select({
+      lastSeenAt: projects.lastSeenAt,
+      owner: projects.owner,
+      repoUrl: projects.repoUrl,
+    })
+    .from(projects)
+    .where(inArray(projects.owner, owners));
+}
+
+export async function deleteProjectsByOwnersNotIn(
+  db: Database,
+  owners: string[],
+): Promise<number> {
+  const staleRows = owners.length
+    ? await db
+        .select({ slug: projects.slug })
+        .from(projects)
+        .where(notInArray(projects.owner, owners))
+    : await db.select({ slug: projects.slug }).from(projects);
+
+  for (const row of staleRows) {
+    await deleteProjectBySlug(db, row.slug);
+  }
+
+  return staleRows.length;
 }

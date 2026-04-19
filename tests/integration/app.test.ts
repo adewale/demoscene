@@ -355,6 +355,90 @@ binding = "DB"
     );
   });
 
+  it("keeps paging until it reaches the first known repo, so later-page new repos are still discovered", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      "https://github.com/adewale?page=1&tab=repositories&sort=created": {
+        body: `
+          <a itemprop="name codeRepository" href="/adewale/new-repo-a">new-repo-a</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories&sort=created">Next</a>
+        `,
+      },
+      "https://github.com/adewale?page=2&tab=repositories&sort=created": {
+        body: `
+          <a itemprop="name codeRepository" href="/adewale/new-repo-b">new-repo-b</a>
+          <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
+          <a rel="next" href="/adewale?page=3&tab=repositories&sort=created">Next</a>
+        `,
+      },
+      "https://github.com/adewale/new-repo-a": {
+        body: buildRepositoryHomepageHtml("https://a.example.com"),
+      },
+      "https://github.com/adewale/new-repo-b": {
+        body: buildRepositoryHomepageHtml("https://b.example.com"),
+      },
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://raw.githubusercontent.com/adewale/new-repo-a/main/wrangler.toml":
+        {
+          body: `name = "new-repo-a"`,
+        },
+      "https://raw.githubusercontent.com/adewale/new-repo-a/main/README.md": {
+        body: "# Repo A",
+      },
+      "https://raw.githubusercontent.com/adewale/new-repo-b/main/wrangler.toml":
+        {
+          body: `name = "new-repo-b"`,
+        },
+      "https://raw.githubusercontent.com/adewale/new-repo-b/main/README.md": {
+        body: "# Repo B",
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: `name = "known-repo"`,
+        },
+      "https://github.com/adewale?page=3&tab=repositories&sort=created": {
+        body: "this page should not be fetched",
+      },
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+    const payload = (await (
+      await SELF.fetch("https://example.com/feed.json")
+    ).json()) as {
+      items: Array<Record<string, unknown>>;
+    };
+
+    expect(summary).toEqual(
+      expect.objectContaining({
+        reposAdded: 2,
+        reposUpdated: 1,
+      }),
+    );
+    expect(payload.items.some((item) => item.repo === "new-repo-a")).toBe(true);
+    expect(payload.items.some((item) => item.repo === "new-repo-b")).toBe(true);
+    expect(
+      mockFetch.mock.calls.map(([input]) =>
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url,
+      ),
+    ).not.toContain(
+      "https://github.com/adewale?page=3&tab=repositories&sort=created",
+    );
+  });
+
   it("stops discovery once it reaches an all-known page instead of crawling the full corpus", async () => {
     await seedProjectRecord({
       owner: "adewale",
@@ -448,6 +532,85 @@ binding = "DB"
     expect(await fetchFeedItems()).toHaveLength(0);
   });
 
+  it("revisits stale known repos beyond the discovery frontier and removes them when gone", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+      firstSeenAt: "2026-04-14T12:00:00.000Z",
+    });
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "stale-repo",
+      repoUrl: "https://github.com/adewale/stale-repo",
+      firstSeenAt: "2026-03-01T12:00:00.000Z",
+    });
+    await testEnv.DB.prepare(
+      "UPDATE projects SET last_seen_at = ? WHERE slug = ?",
+    )
+      .bind("2026-03-01T12:00:00.000Z", "adewale/stale-repo")
+      .run();
+
+    const mockFetch = createMockFetch({
+      "https://github.com/adewale?page=1&tab=repositories&sort=created": {
+        body: `
+          <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
+        `,
+      },
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://github.com/adewale/stale-repo": {
+        body: "missing",
+        status: 404,
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: `name = "known-repo"`,
+        },
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      now: new Date("2026-04-20T12:00:00.000Z"),
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    const payload = (await (
+      await SELF.fetch("https://example.com/feed.json")
+    ).json()) as {
+      items: Array<Record<string, unknown>>;
+    };
+
+    expect(summary.reposRemoved).toBe(1);
+    expect(payload.items.some((item) => item.repo === "stale-repo")).toBe(
+      false,
+    );
+  });
+
+  it("can prune repos for owners removed from the tracked team list", async () => {
+    await seedProjectRecord({
+      owner: "someoneelse",
+      repo: "old-repo",
+      repoUrl: "https://github.com/someoneelse/old-repo",
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        "https://github.com/adewale?page=1&tab=repositories&sort=created": {
+          body: "",
+          status: 404,
+        },
+      }) as typeof fetch,
+      now: new Date("2026-04-20T12:00:00.000Z"),
+      pruneUntrackedOwners: true,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    expect(summary.reposRemoved).toBe(1);
+    expect(await fetchFeedItems()).toHaveLength(0);
+  });
+
   it("keeps existing projects when Wrangler fetches fail transiently", async () => {
     await syncDemoRepository(
       buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
@@ -463,21 +626,43 @@ binding = "DB"
   it("renders HTML routes and support routes", async () => {
     await syncDemoRepository(
       buildDemoRepositoryResponses({
-        readme: "# Demo\n\nWelcome to **demo**.",
+        readme:
+          "# Demo\n\nWelcome to **demo**.\n\n[Live site](https://demo.example.com/live)\n\n[Watch demo](https://www.loom.com/share/demo)",
         wrangler: `pages_build_output_dir = "dist"`,
       }),
+      new Date("2026-04-20T12:00:00.000Z"),
     );
 
     const page = await SELF.fetch("https://example.com/projects/acme/demo");
-    const html = await page.text();
     const robots = await SELF.fetch("https://example.com/robots.txt");
     const sitemap = await SELF.fetch("https://example.com/sitemap.xml");
+    const sitemapText = await sitemap.text();
+    const rss = await SELF.fetch("https://example.com/rss.xml");
+    const rssText = await rss.text();
 
-    expect(page.status).toBe(200);
-    expect(html).toContain("acme/demo");
-    expect(html).toContain("Visit homepage");
+    expect(page.status).toBe(404);
     expect(await robots.text()).toContain("Sitemap: /sitemap.xml");
-    expect(await sitemap.text()).toContain("/projects/acme/demo");
+    expect(sitemapText).toContain("/rss.xml");
+    expect(sitemapText).not.toContain("/projects/acme/demo");
+    expect(rss.status).toBe(200);
+    expect(rss.headers.get("content-type")).toContain("application/rss+xml");
+    expect(rssText).toContain('<rss version="2.0"');
+    expect(rssText).toContain(
+      `<lastBuildDate>${new Date("2026-04-20T12:00:00.000Z").toUTCString()}</lastBuildDate>`,
+    );
+    expect(rssText).toContain("<title>acme/demo</title>");
+    expect(rssText).toContain("<link>https://github.com/acme/demo</link>");
+    expect(rssText).toContain("<dc:creator>acme</dc:creator>");
+    expect(rssText).toContain("<category>Workers</category>");
+    expect(rssText).toContain("<category>Pages</category>");
+    expect(rssText).toContain("GitHub");
+    expect(rssText).toContain("https://demo.example.com");
+    expect(rssText).toContain("https://www.loom.com/share/demo");
+    expect(rssText).toContain("Welcome to demo.");
+    expect(rssText).not.toContain("deploy.workers.cloudflare.com/button");
+    expect(rssText).not.toContain("&lt;div");
+    expect(rssText).not.toContain("[](");
+    expect(rssText).toContain("<content:encoded><![CDATA[");
   });
 
   it("supports repos whose names end in .json", async () => {
@@ -495,7 +680,7 @@ binding = "DB"
     );
     const jsonPayload = (await jsonResponse.json()) as Record<string, unknown>;
 
-    expect(htmlResponse.status).toBe(200);
+    expect(htmlResponse.status).toBe(404);
     expect(jsonResponse.status).toBe(200);
     expect(jsonPayload.repo).toBe("demo.json");
   });
@@ -511,10 +696,10 @@ binding = "DB"
     expect(firstPage.status).toBe(200);
     expect(firstPageHtml).toContain("Page 1 of 2");
     expect(firstPageHtml).toContain("/?page=2");
-    expect(firstPageHtml).toContain("/projects/acme/demo-26");
-    expect(firstPageHtml).not.toContain('/projects/acme/demo-1"');
+    expect(firstPageHtml).toContain("https://github.com/acme/demo-26");
+    expect(firstPageHtml).not.toContain('https://github.com/acme/demo-1"');
     expect(secondPageHtml).toContain("Page 2 of 2");
-    expect(secondPageHtml).toContain("/projects/acme/demo-1");
+    expect(secondPageHtml).toContain("https://github.com/acme/demo-1");
   });
 
   it("orders the homepage by repo creation order rather than ingestion time", async () => {
@@ -537,8 +722,10 @@ binding = "DB"
       await (await SELF.fetch("https://example.com/")).text()
     ).replaceAll("<!-- -->", "");
 
-    expect(html.indexOf("/projects/acme/older-ingest-newer-repo")).toBeLessThan(
-      html.indexOf("/projects/acme/newer-ingest-older-repo"),
+    expect(
+      html.indexOf("https://github.com/acme/older-ingest-newer-repo"),
+    ).toBeLessThan(
+      html.indexOf("https://github.com/acme/newer-ingest-older-repo"),
     );
   });
 
