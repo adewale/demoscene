@@ -132,7 +132,7 @@ const styles = `
     position: relative;
     overflow: visible;
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 0;
     background: var(--surface-strong);
     box-shadow: 0 1px 3px rgba(82, 16, 0, 0.04), 0 4px 12px rgba(82, 16, 0, 0.02);
   }
@@ -365,7 +365,7 @@ const styles = `
   }
 
   .feed-card {
-    border-radius: 12px;
+    border-radius: 0;
   }
 
   .feed-card::before {

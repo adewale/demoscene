@@ -29,7 +29,7 @@ const project: ProjectWithProducts = {
 };
 
 describe("ProjectCard", () => {
-  it("uses sharper card corners and visible overflow for attached tooltips", () => {
+  it("uses square card corners and visible overflow for attached tooltips", () => {
     const markup = renderToStaticMarkup(
       <AppShell title="demoscene">
         <ProjectCard project={project} />
@@ -37,7 +37,7 @@ describe("ProjectCard", () => {
     );
 
     expect(markup).toContain("overflow: visible;");
-    expect(markup).toContain("border-radius: 12px;");
+    expect(markup).toContain("border-radius: 0;");
   });
 
   it("renders a scannable project card with links and product pills", () => {
