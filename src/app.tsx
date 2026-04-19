@@ -5,7 +5,12 @@ import { renderToString } from "react-dom/server";
 import type { AppEnv } from "./domain";
 import { TEAM_MEMBERS } from "./config/repositories";
 import { createDb } from "./db/client";
-import { getProjectByOwnerRepo, listProjects } from "./db/queries";
+import {
+  countProjects,
+  getProjectByOwnerRepo,
+  listProjects,
+  listProjectsPage,
+} from "./db/queries";
 import { projectPath } from "./lib/paths";
 
 import { AppShell } from "./components/AppShell";
@@ -17,6 +22,8 @@ type ProjectPathParts = {
   owner: string;
   repo: string;
 };
+
+const HOME_PAGE_SIZE = 24;
 
 function renderHtml(markup: ReactNode): string {
   return `<!DOCTYPE html>${renderToString(markup)}`;
@@ -56,6 +63,11 @@ function extractProjectJsonPathParts(url: string): ProjectPathParts | null {
   };
 }
 
+function parsePositivePage(value: string | null): number {
+  const page = Number.parseInt(value ?? "1", 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
 async function loadProjectFromRequest(
   c: Context<{ Bindings: AppEnv }>,
   pathParts: ProjectPathParts | null,
@@ -76,15 +88,32 @@ export function createApp() {
 
   app.get("/", async (c) => {
     const db = createDb(c.env.DB);
-    const projects = await listProjects(db);
+    const url = new URL(c.req.url);
+    const totalProjects = await countProjects(db);
+    const totalPages = Math.max(1, Math.ceil(totalProjects / HOME_PAGE_SIZE));
+    const page = Math.min(
+      parsePositivePage(url.searchParams.get("page")),
+      totalPages,
+    );
+    const projects = await listProjectsPage(
+      db,
+      HOME_PAGE_SIZE,
+      (page - 1) * HOME_PAGE_SIZE,
+    );
 
     return c.html(
       renderHtml(
         <AppShell
-          subtitle="Daily snapshots of public team repos using Cloudflare, rendered as a scannable card feed."
+          subtitle="Newest Cloudflare project starts and updates from across the team, in reverse chronological order."
           title="demoscene"
         >
-          <FeedPage projects={projects} />
+          <FeedPage
+            page={page}
+            pageSize={HOME_PAGE_SIZE}
+            projects={projects}
+            totalPages={totalPages}
+            totalProjects={totalProjects}
+          />
         </AppShell>,
       ),
     );

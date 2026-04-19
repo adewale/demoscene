@@ -38,6 +38,18 @@ type RepositoryPageResult =
       kind: "transient_error";
     };
 
+type PreviewImageResult =
+  | {
+      kind: "valid";
+      url: string;
+    }
+  | {
+      kind: "missing";
+    }
+  | {
+      kind: "transient_error";
+    };
+
 export const README_FILE_NAMES = ["README.md"];
 export const WRANGLER_FILE_NAMES = [
   "wrangler.toml",
@@ -58,6 +70,40 @@ function isTransientStatus(status: number): boolean {
     status === 429 ||
     status >= 500
   );
+}
+
+function isImageLikeContentType(contentType: string | null): boolean {
+  if (!contentType) {
+    return true;
+  }
+
+  return contentType.toLowerCase().startsWith("image/");
+}
+
+async function validatePreviewImageRequest(
+  fetchImpl: FetchLike,
+  url: string,
+  method: "HEAD" | "GET",
+): Promise<PreviewImageResult> {
+  try {
+    const response = await fetchImpl(new Request(url, { method }));
+
+    if (!response.ok) {
+      if (isNotFoundStatus(response.status)) {
+        return { kind: "missing" };
+      }
+
+      return isTransientStatus(response.status)
+        ? { kind: "transient_error" }
+        : { kind: "missing" };
+    }
+
+    return isImageLikeContentType(response.headers.get("content-type"))
+      ? { kind: "valid", url }
+      : { kind: "missing" };
+  } catch {
+    return { kind: "transient_error" };
+  }
 }
 
 export async function fetchRepositoryPage(
@@ -84,9 +130,27 @@ export async function fetchRepositoryPage(
   }
 }
 
+export async function validatePreviewImageUrl(
+  fetchImpl: FetchLike,
+  url: string | null,
+): Promise<PreviewImageResult> {
+  if (!url) {
+    return { kind: "missing" };
+  }
+
+  const headResult = await validatePreviewImageRequest(fetchImpl, url, "HEAD");
+
+  if (headResult.kind === "valid" || headResult.kind === "missing") {
+    return headResult;
+  }
+
+  return validatePreviewImageRequest(fetchImpl, url, "GET");
+}
+
 export async function discoverRepositoriesForTeamMember(
   fetchImpl: FetchLike,
   teamMember: TeamMember,
+  knownRepositoryUrls: Set<string> = new Set(),
   maxPages = 10,
 ): Promise<string[]> {
   const repositoryUrls = new Set<string>();
@@ -111,12 +175,17 @@ export async function discoverRepositoriesForTeamMember(
       html,
       teamMember.login,
     );
+    let sawKnownRepository = false;
 
     for (const repositoryUrl of discovery.repositoryUrls) {
       repositoryUrls.add(repositoryUrl);
+
+      if (knownRepositoryUrls.has(repositoryUrl)) {
+        sawKnownRepository = true;
+      }
     }
 
-    if (!discovery.hasNextPage) {
+    if (!discovery.hasNextPage || sawKnownRepository) {
       break;
     }
   }

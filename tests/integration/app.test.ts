@@ -8,6 +8,7 @@ import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
 
 type MockResponse = {
   body: string;
+  headers?: Record<string, string>;
   status?: number;
 };
 
@@ -62,6 +63,7 @@ async function seedProjectRecord(values: {
   owner: string;
   repo: string;
   repoUrl: string;
+  firstSeenAt?: string;
 }) {
   await testEnv.DB.prepare(
     `INSERT INTO projects (
@@ -81,10 +83,22 @@ async function seedProjectRecord(values: {
       "# Demo Json",
       "# Demo Json",
       null,
-      "2026-04-14T12:00:00.000Z",
-      "2026-04-14T12:00:00.000Z",
+      values.firstSeenAt ?? "2026-04-14T12:00:00.000Z",
+      values.firstSeenAt ?? "2026-04-14T12:00:00.000Z",
     )
     .run();
+}
+
+async function seedProjectRange(count: number) {
+  for (let index = 0; index < count; index += 1) {
+    const day = String((index % 28) + 1).padStart(2, "0");
+    await seedProjectRecord({
+      owner: "acme",
+      repo: `demo-${index + 1}`,
+      repoUrl: `https://github.com/acme/demo-${index + 1}`,
+      firstSeenAt: `2026-04-${day}T12:00:00.000Z`,
+    });
+  }
 }
 
 async function syncDemoRepository(
@@ -118,7 +132,10 @@ function createMockFetch(responses: Record<string, MockResponse>) {
       return new Response("Not found", { status: 404 });
     }
 
-    return new Response(response.body, { status: response.status ?? 200 });
+    return new Response(response.body, {
+      headers: response.headers,
+      status: response.status ?? 200,
+    });
   });
 }
 
@@ -188,6 +205,44 @@ binding = "DB"
     ]);
   });
 
+  it("drops extracted preview image URLs that would render as broken images", async () => {
+    await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [DEMO_REPOSITORY_URL]: {
+          body: `
+            <html>
+              <head>
+                <meta property="og:image" content="https://images.example.com/broken.png" />
+              </head>
+              <body>
+                <a data-testid="repository-homepage-url" href="https://demo.example.com">demo</a>
+              </body>
+            </html>
+          `,
+        },
+        "https://images.example.com/broken.png": {
+          body: "not-an-image",
+          headers: { "content-type": "text/html" },
+          status: 200,
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/wrangler.toml": {
+          body: `name = "demo"`,
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/README.md": {
+          body: "# Demo",
+        },
+      }) as typeof fetch,
+      repositories: [DEMO_REPOSITORY_URL],
+    });
+
+    const response = await SELF.fetch("https://example.com/feed.json");
+    const payload = (await response.json()) as {
+      items: Array<Record<string, unknown>>;
+    };
+
+    expect(payload.items[0]?.previewImageUrl).toBeNull();
+  });
+
   it("discovers public repos from the configured team accounts", async () => {
     const summary = await syncRepositories(testEnv, {
       fetch: createMockFetch({
@@ -223,6 +278,113 @@ binding = "DB"
         reposDiscovered: 1,
       }),
     );
+  });
+
+  it("automatically picks up a newly listed repo without re-crawling older account pages", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      "https://github.com/adewale?page=1&tab=repositories": {
+        body: `
+          <a itemprop="name codeRepository" href="/adewale/new-repo">new-repo</a>
+          <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories">Next</a>
+        `,
+      },
+      "https://github.com/adewale/new-repo": {
+        body: buildRepositoryHomepageHtml("https://new.example.com"),
+      },
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://raw.githubusercontent.com/adewale/new-repo/main/wrangler.toml": {
+        body: `name = "new-repo"`,
+      },
+      "https://raw.githubusercontent.com/adewale/new-repo/main/README.md": {
+        body: "# New Repo",
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: `name = "known-repo"`,
+        },
+      "https://github.com/adewale?page=2&tab=repositories": {
+        body: "this page should not be fetched",
+      },
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    const payload = (await (
+      await SELF.fetch("https://example.com/feed.json")
+    ).json()) as {
+      items: Array<Record<string, unknown>>;
+    };
+
+    expect(summary).toEqual(
+      expect.objectContaining({
+        reposAdded: 1,
+        reposUpdated: 1,
+      }),
+    );
+    expect(payload.items.some((item) => item.repo === "new-repo")).toBe(true);
+    expect(
+      mockFetch.mock.calls.map(([input]) =>
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url,
+      ),
+    ).not.toContain("https://github.com/adewale?page=2&tab=repositories");
+  });
+
+  it("stops discovery once it reaches an all-known page instead of crawling the full corpus", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      "https://github.com/adewale?page=1&tab=repositories": {
+        body: `
+          <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories">Next</a>
+        `,
+      },
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: `name = "known-repo"`,
+        },
+      "https://github.com/adewale?page=2&tab=repositories": {
+        body: "this page should not be fetched",
+      },
+    });
+
+    await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    expect(
+      mockFetch.mock.calls.map(([input]) =>
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url,
+      ),
+    ).not.toContain("https://github.com/adewale?page=2&tab=repositories");
   });
 
   it("continues syncing later repos when one configured repo is invalid", async () => {
@@ -324,6 +486,23 @@ binding = "DB"
     expect(htmlResponse.status).toBe(200);
     expect(jsonResponse.status).toBe(200);
     expect(jsonPayload.repo).toBe("demo.json");
+  });
+
+  it("paginates the homepage in reverse chronological order", async () => {
+    await seedProjectRange(26);
+
+    const firstPage = await SELF.fetch("https://example.com/");
+    const firstPageHtml = (await firstPage.text()).replaceAll("<!-- -->", "");
+    const secondPage = await SELF.fetch("https://example.com/?page=2");
+    const secondPageHtml = (await secondPage.text()).replaceAll("<!-- -->", "");
+
+    expect(firstPage.status).toBe(200);
+    expect(firstPageHtml).toContain("Page 1 of 2");
+    expect(firstPageHtml).toContain("/?page=2");
+    expect(firstPageHtml).toContain("/projects/acme/demo-26");
+    expect(firstPageHtml).not.toContain('/projects/acme/demo-1"');
+    expect(secondPageHtml).toContain("Page 2 of 2");
+    expect(secondPageHtml).toContain("/projects/acme/demo-1");
   });
 
   it("wires the scheduled handler through waitUntil", async () => {

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray } from "drizzle-orm";
 
 import type { ProjectRecord, ProjectWithProducts } from "../domain";
 import {
@@ -154,6 +154,35 @@ export async function listProjects(
 
   const slugs = projectRows.map((project) => project.slug);
   const productRows = await listProjectProductsForSlugs(db, slugs);
+
+  return attachProducts(projectRows, productRows);
+}
+
+export async function countProjects(db: Database): Promise<number> {
+  const [row] = await db.select({ value: count() }).from(projects);
+  return row?.value ?? 0;
+}
+
+export async function listProjectsPage(
+  db: Database,
+  limit: number,
+  offset: number,
+): Promise<ProjectWithProducts[]> {
+  const projectRows = await db
+    .select()
+    .from(projects)
+    .orderBy(desc(projects.firstSeenAt))
+    .limit(limit)
+    .offset(offset);
+
+  if (projectRows.length === 0) {
+    return [];
+  }
+
+  const productRows = await listProjectProductsForSlugs(
+    db,
+    projectRows.map((project) => project.slug),
+  );
 
   return attachProducts(projectRows, productRows);
 }

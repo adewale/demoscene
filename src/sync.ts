@@ -14,6 +14,7 @@ import {
   fetchRepositoryPage,
   README_FILE_NAMES,
   type FetchLike,
+  validatePreviewImageUrl,
   WRANGLER_FILE_NAMES,
 } from "./lib/github/fetch";
 import { extractRepositoryPageMetadata } from "./lib/github/html";
@@ -149,12 +150,24 @@ async function resolveTrackedRepositories(
   const discoveredRepositories = new Set<string>();
   const repositoriesToProcess = new Set<string>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
+  const existingRepoUrlsByOwner = new Map<string, Set<string>>();
+
+  for (const repoUrl of await listProjectRepoUrlsByOwners(db, [
+    ...teamLogins,
+  ])) {
+    const parsed = parseRepositoryUrl(repoUrl);
+    const knownRepoUrls =
+      existingRepoUrlsByOwner.get(parsed.owner) ?? new Set<string>();
+    knownRepoUrls.add(repoUrl);
+    existingRepoUrlsByOwner.set(parsed.owner, knownRepoUrls);
+  }
 
   for (const teamMember of teamMembers) {
     try {
       const accountRepositories = await discoverRepositoriesForTeamMember(
         fetchImpl,
         teamMember,
+        existingRepoUrlsByOwner.get(teamMember.login) ?? new Set<string>(),
       );
 
       for (const repositoryUrl of accountRepositories) {
@@ -167,14 +180,6 @@ async function resolveTrackedRepositories(
         error,
       );
     }
-  }
-
-  const existingRepoUrls = await listProjectRepoUrlsByOwners(db, [
-    ...teamLogins,
-  ]);
-
-  for (const repoUrl of existingRepoUrls) {
-    repositoriesToProcess.add(repoUrl);
   }
 
   return {
@@ -212,6 +217,10 @@ async function syncRepository(
   }
 
   const repoMetadata = extractRepositoryPageMetadata(repoPage.html);
+  const previewImageResult = await validatePreviewImageUrl(
+    fetchImpl,
+    repoMetadata.previewImageUrl,
+  );
   const wranglerFile = await fetchFirstAvailableRawFile(
     fetchImpl,
     repository,
@@ -236,6 +245,10 @@ async function syncRepository(
     wranglerFile.file.fileName,
   );
   const products = inferCloudflareProducts(wranglerConfig);
+
+  if (previewImageResult.kind === "transient_error") {
+    return "skipped_transiently";
+  }
 
   let readmeMarkdown = existing?.readmeMarkdown ?? "";
   let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
@@ -268,7 +281,8 @@ async function syncRepository(
     wranglerFormat: getWranglerFormat(wranglerFile.file.fileName),
     readmeMarkdown,
     readmePreviewMarkdown,
-    previewImageUrl: repoMetadata.previewImageUrl,
+    previewImageUrl:
+      previewImageResult.kind === "valid" ? previewImageResult.url : null,
     firstSeenAt: existing?.firstSeenAt ?? now,
     lastSeenAt: now,
   };

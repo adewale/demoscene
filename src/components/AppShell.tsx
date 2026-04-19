@@ -39,21 +39,8 @@ const styles = `
     border-bottom: 1px dashed var(--border);
   }
 
-  .eyebrow {
-    display: inline-flex;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(244, 129, 32, 0.28);
-    background: rgba(244, 129, 32, 0.08);
-    color: var(--accent);
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
   .site-header h1 {
-    margin: 14px 0 8px;
+    margin: 0 0 8px;
     font-size: clamp(2rem, 5vw, 3.5rem);
     line-height: 1;
   }
@@ -65,10 +52,58 @@ const styles = `
     font-size: 1rem;
   }
 
-  .feed-grid {
+  .feed-shell {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
+  }
+
+  .feed-toolbar {
+    display: grid;
+    gap: 16px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .feed-toolbar h2 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .feed-toolbar p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .feed-list {
+    display: grid;
+    gap: 18px;
+  }
+
+  .feed-pager {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .feed-pager .link-button:last-child {
+    justify-self: end;
+  }
+
+  .pager-label {
+    color: var(--muted);
+    font-size: 0.92rem;
+    text-align: center;
+  }
+
+  .pager-spacer {
+    display: block;
+    min-height: 1px;
   }
 
   .card,
@@ -316,7 +351,6 @@ export function AppShell({ children, subtitle, title }: AppShellProps) {
       <body>
         <div className="shell">
           <header className="site-header">
-            <span className="eyebrow">Cloudflare projects</span>
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </header>
