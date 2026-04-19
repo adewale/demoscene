@@ -24,15 +24,7 @@ const project: ProjectWithProducts = {
 
 describe("FeedPage", () => {
   it("renders an empty state when no projects exist", () => {
-    render(
-      <FeedPage
-        page={1}
-        pageSize={24}
-        projects={[]}
-        totalPages={1}
-        totalProjects={0}
-      />,
-    );
+    render(<FeedPage page={1} projects={[]} totalPages={1} />);
 
     expect(
       screen.getByRole("heading", { name: "No Cloudflare repos yet" }),
@@ -40,46 +32,52 @@ describe("FeedPage", () => {
   });
 
   it("renders cards when projects exist", () => {
-    render(
-      <FeedPage
-        page={1}
-        pageSize={24}
-        projects={[project]}
-        totalPages={1}
-        totalProjects={1}
-      />,
-    );
+    render(<FeedPage page={1} projects={[project]} totalPages={1} />);
 
     expect(
       screen.getByRole("heading", { name: "demo-feed" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: "Visit homepage" }),
+      screen.queryByRole("link", { name: "Live" }),
     ).not.toBeInTheDocument();
   });
 
   it("renders pagination controls for multiple pages", () => {
-    render(
-      <FeedPage
-        page={2}
-        pageSize={24}
-        projects={[project]}
-        totalPages={4}
-        totalProjects={73}
-      />,
-    );
+    render(<FeedPage page={2} projects={[project]} totalPages={4} />);
 
     expect(
-      screen.getAllByRole("navigation", { name: "Pagination" }),
-    ).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: "Newer" })[0]).toHaveAttribute(
+      screen.getByRole("navigation", { name: "Pagination" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Newer" })).toHaveAttribute(
       "href",
       "/",
     );
-    expect(screen.getAllByRole("link", { name: "Older" })[0]).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Older" })).toHaveAttribute(
       "href",
       "/?page=3",
     );
-    expect(screen.getAllByText("Page 2 of 4")).toHaveLength(2);
+    expect(screen.getByText("Page 2 of 4")).toBeInTheDocument();
+  });
+
+  it("inserts a day marker when a new day starts in the feed", () => {
+    render(
+      <FeedPage
+        page={1}
+        projects={[
+          project,
+          {
+            ...project,
+            slug: "acme/demo-feed-next-day",
+            repo: "demo-feed-next-day",
+            repoUrl: "https://github.com/acme/demo-feed-next-day",
+            firstSeenAt: "2026-04-15T12:00:00.000Z",
+          },
+        ]}
+        totalPages={1}
+      />,
+    );
+
+    expect(screen.getAllByText(/15 Apr/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/14 Apr/).length).toBeGreaterThan(0);
   });
 });

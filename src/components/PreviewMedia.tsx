@@ -21,7 +21,7 @@ export function PreviewMedia({ alt, previewImageUrl }: PreviewMediaProps) {
 
   return (
     <div className="preview-media">
-      <img alt={alt} loading="lazy" src={previewImageUrl} />
+      <img alt={alt} decoding="async" loading="lazy" src={previewImageUrl} />
     </div>
   );
 }

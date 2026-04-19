@@ -4,14 +4,24 @@ import { ProjectCard } from "./ProjectCard";
 
 type FeedPageProps = {
   page: number;
-  pageSize: number;
   projects: ProjectWithProducts[];
   totalPages: number;
-  totalProjects: number;
 };
 
 function buildPageHref(page: number): string {
   return page <= 1 ? "/" : `/?page=${page}`;
+}
+
+function feedDayKey(isoString: string): string {
+  return isoString.slice(0, 10);
+}
+
+function formatFeedDay(isoString: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    weekday: "short",
+  }).format(new Date(isoString));
 }
 
 function Pagination({
@@ -48,13 +58,7 @@ function Pagination({
   );
 }
 
-export function FeedPage({
-  page,
-  pageSize,
-  projects,
-  totalPages,
-  totalProjects,
-}: FeedPageProps) {
+export function FeedPage({ page, projects, totalPages }: FeedPageProps) {
   if (projects.length === 0) {
     return (
       <section className="empty-state">
@@ -67,22 +71,27 @@ export function FeedPage({
     );
   }
 
+  let previousDayKey: string | null = null;
+
   return (
     <div className="feed-shell">
-      <section className="feed-toolbar" aria-label="Feed summary">
-        <div>
-          <h2>Latest project feed</h2>
-          <p>
-            Newest first. Showing {projects.length} of {totalProjects} items,{" "}
-            {pageSize} per page.
-          </p>
-        </div>
-        <Pagination page={page} totalPages={totalPages} />
-      </section>
       <section aria-label="Project feed" className="feed-list">
-        {projects.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
-        ))}
+        {projects.map((project) => {
+          const currentDayKey = feedDayKey(project.firstSeenAt);
+          const showDayMarker = currentDayKey !== previousDayKey;
+          previousDayKey = currentDayKey;
+
+          return (
+            <div key={project.slug} className="feed-entry">
+              {showDayMarker ? (
+                <div className="feed-day-marker" role="separator">
+                  <span>{formatFeedDay(project.firstSeenAt)}</span>
+                </div>
+              ) : null}
+              <ProjectCard project={project} />
+            </div>
+          );
+        })}
       </section>
       <Pagination page={page} totalPages={totalPages} />
     </div>

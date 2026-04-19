@@ -6,9 +6,10 @@ test("renders the feed as a card-oriented newsfeed", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "demoscene" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "demo-scene" })).toBeVisible();
   await expect(page.locator('[aria-label="Workers"] svg')).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Visit homepage" }),
-  ).toHaveAttribute("href", "https://demo.example.com");
+  await expect(page.getByRole("link", { name: "Live" })).toHaveAttribute(
+    "href",
+    "https://demo.example.com",
+  );
   await expect(page.locator("main")).toHaveScreenshot("feed-page.png");
 });
 

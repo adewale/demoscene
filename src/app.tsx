@@ -103,17 +103,8 @@ export function createApp() {
 
     return c.html(
       renderHtml(
-        <AppShell
-          subtitle="Newest Cloudflare project starts and updates from across the team, in reverse chronological order."
-          title="demoscene"
-        >
-          <FeedPage
-            page={page}
-            pageSize={HOME_PAGE_SIZE}
-            projects={projects}
-            totalPages={totalPages}
-            totalProjects={totalProjects}
-          />
+        <AppShell title="demoscene">
+          <FeedPage page={page} projects={projects} totalPages={totalPages} />
         </AppShell>,
       ),
     );

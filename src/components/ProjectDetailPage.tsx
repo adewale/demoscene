@@ -14,11 +14,7 @@ export function ProjectDetailPage({ project }: ProjectDetailPageProps) {
     <article className="detail">
       <div className="detail-body detail-layout">
         <div>
-          <ProjectMetaRow
-            firstSeenAt={project.firstSeenAt}
-            owner={project.owner}
-            repo={project.repo}
-          />
+          <ProjectMetaRow owner={project.owner} repo={project.repo} />
           <h2 className="project-title">
             {project.owner + "/" + project.repo}
           </h2>

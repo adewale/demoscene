@@ -45,11 +45,17 @@ Output:
 
 - a public card-oriented web feed
 - each feed card represents one repo
+- the feed is reverse-chronological by repo creation-order proxy, not by ingestion time
+- the feed should insert a clear day marker whenever a new day starts in the stream, instead of showing a date on every card
 - each feed card shows recognizable icons that clearly signal which Cloudflare primitives and products are used
+- those product indicators should link to the relevant Cloudflare product landing pages and explain the feature with hover/focus tooltips
 - each feed card renders a bounded preview of the stored README as Markdown
+- each feed card should prioritize compact, scan-first information: owner identity, project name, Cloudflare product signals, a useful README excerpt, and a GitHub link
+- each feed card may show a `Live` link only when there is a strong explicit signal that the target is a real live site for the project; weak or generic reference links should not be shown as `Live`
 - each project detail page renders the full stored README as Markdown
-- each card and detail page links to the repo homepage
+- each card and detail page link to GitHub, and the detail page may also link to the repo homepage
 - each card and detail page can also show lightweight preview media when available, with a stable fallback state when no preview image exists
+- the homepage should not include an extra summary panel above the feed cards
 - provide `/` for the feed and `/projects/:owner/:repo` for a persistent project detail page
 - provide `/debug/sync` for local or explicitly enabled manual sync verification
 
