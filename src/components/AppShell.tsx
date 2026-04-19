@@ -28,7 +28,7 @@ const styles = `
   }
 
   .shell {
-    max-width: 1200px;
+    max-width: 980px;
     margin: 0 auto;
     padding: 32px 20px 64px;
   }
@@ -41,15 +41,15 @@ const styles = `
 
   .site-header h1 {
     margin: 0 0 8px;
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
     line-height: 1;
   }
 
   .site-header p {
     margin: 0;
-    max-width: 60ch;
+    max-width: 64ch;
     color: var(--muted);
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   .feed-shell {
@@ -60,16 +60,16 @@ const styles = `
   .feed-toolbar {
     display: grid;
     gap: 16px;
-    padding: 20px 22px;
+    padding: 18px 20px;
     border: 1px solid var(--border);
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.78);
   }
 
   .feed-toolbar h2 {
     margin: 0 0 6px;
-    font-size: 1.05rem;
-    letter-spacing: 0.02em;
+    font-size: 0.98rem;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--accent);
   }
@@ -81,7 +81,7 @@ const styles = `
 
   .feed-list {
     display: grid;
-    gap: 18px;
+    gap: 14px;
   }
 
   .feed-pager {
@@ -111,10 +111,9 @@ const styles = `
     position: relative;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 22px;
-    background: var(--surface);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 20px 40px rgba(43, 31, 24, 0.08);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 10px 24px rgba(43, 31, 24, 0.06);
   }
 
   .card::before,
@@ -131,28 +130,28 @@ const styles = `
   .card-body,
   .detail-body {
     position: relative;
-    padding: 20px;
+    padding: 18px;
   }
 
   .project-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 0;
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: 0.8rem;
   }
 
   .project-title {
-    margin: 0 0 14px;
-    font-size: 1.45rem;
+    margin: 0;
+    font-size: 1.15rem;
   }
 
   .product-strip {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 0 0 16px;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -161,8 +160,8 @@ const styles = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
     border: 1px solid rgba(244, 129, 32, 0.28);
     border-radius: 14px;
     background: rgba(244, 129, 32, 0.08);
@@ -171,8 +170,8 @@ const styles = `
   }
 
   .product-icon {
-    width: 28px;
-    height: 28px;
+    width: 23px;
+    height: 23px;
     fill: rgba(244, 129, 32, 0.16);
     stroke: rgba(244, 129, 32, 0.38);
     stroke-width: 1.4;
@@ -181,7 +180,7 @@ const styles = `
   .product-icon text {
     fill: var(--accent);
     stroke: none;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 800;
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
     letter-spacing: 0.04em;
@@ -198,6 +197,12 @@ const styles = `
   .markdown-document {
     color: var(--text);
     line-height: 1.6;
+  }
+
+  .feed-card .markdown-preview {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
   }
 
   .markdown-preview > :first-child,
@@ -219,6 +224,11 @@ const styles = `
     margin: 0 0 0.9rem;
   }
 
+  .feed-card .markdown-preview p,
+  .feed-card .markdown-preview ul {
+    margin: 0 0 0.65rem;
+  }
+
   .markdown-preview img,
   .markdown-document img,
   .preview-media img {
@@ -227,7 +237,7 @@ const styles = `
   }
 
   .preview-media {
-    margin: 0 0 18px;
+    margin: 0;
   }
 
   .preview-media img {
@@ -249,7 +259,7 @@ const styles = `
     gap: 6px;
     place-items: center;
     padding: 24px 18px;
-    min-height: 176px;
+    min-height: 120px;
     aspect-ratio: 16 / 9;
     text-align: center;
     color: var(--muted);
@@ -282,6 +292,120 @@ const styles = `
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 18px;
+  }
+
+  .feed-card {
+    border-radius: 16px;
+  }
+
+  .feed-card::before {
+    opacity: 0.08;
+  }
+
+  .feed-card-body {
+    display: grid;
+    gap: 14px;
+  }
+
+  .feed-card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .feed-card-author {
+    display: flex;
+    gap: 12px;
+    align-items: start;
+    min-width: 0;
+  }
+
+  .feed-card-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(43, 31, 24, 0.12);
+    background: rgba(255, 255, 255, 0.9);
+    flex: 0 0 auto;
+  }
+
+  .feed-card-author-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .feed-card-kicker {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .feed-card-kicker strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .feed-card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: end;
+  }
+
+  .feed-inline-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(43, 31, 24, 0.12);
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .feed-card-main {
+    display: grid;
+    gap: 14px;
+  }
+
+  .feed-card-copy {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .feed-card-title {
+    font-size: 1.12rem;
+    line-height: 1.25;
+  }
+
+  .feed-title-link {
+    text-decoration: none;
+  }
+
+  .feed-title-link:hover,
+  .feed-title-link:focus-visible {
+    color: var(--accent);
+  }
+
+  .feed-card-media {
+    width: 100%;
+    max-width: 210px;
+  }
+
+  .feed-card-media .preview-media img,
+  .feed-card-media .preview-media-fallback {
+    border-radius: 14px;
+  }
+
+  .feed-card-actions {
+    margin-top: 0;
   }
 
   .link-button {
@@ -322,6 +446,16 @@ const styles = `
   }
 
   @media (min-width: 960px) {
+    .feed-card-main {
+      grid-template-columns: minmax(0, 1fr) 190px;
+      align-items: start;
+    }
+
+    .feed-card-media {
+      justify-self: end;
+      width: 190px;
+    }
+
     .detail-layout {
       grid-template-columns: minmax(0, 2fr) minmax(260px, 320px);
       align-items: start;

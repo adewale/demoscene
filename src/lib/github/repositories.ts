@@ -64,7 +64,7 @@ function isRepositoryAnchorTag(tag: string): boolean {
 }
 
 export function buildRepositoriesPageUrl(login: string, page: number): string {
-  return `https://${GITHUB_HOST}/${login}?page=${page}&tab=repositories`;
+  return `https://${GITHUB_HOST}/${login}?page=${page}&tab=repositories&sort=created`;
 }
 
 export function extractRepositoryUrlsFromAccountPage(

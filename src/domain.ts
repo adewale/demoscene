@@ -20,6 +20,7 @@ export type ProjectRecord = {
   owner: string;
   repo: string;
   repoUrl: string;
+  repoCreationOrder: number | null;
   homepageUrl: string | null;
   branch: string;
   wranglerPath: string;

@@ -10,6 +10,7 @@ const project: ProjectWithProducts = {
   owner: "acme",
   repo: "demo-scene",
   repoUrl: "https://github.com/acme/demo-scene",
+  repoCreationOrder: 42,
   homepageUrl: "https://demo.example.com",
   branch: "main",
   wranglerPath: "wrangler.toml",
@@ -34,19 +35,25 @@ describe("ProjectCard", () => {
       screen.getByRole("heading", { name: "demo-scene" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("img", { name: "acme avatar" }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByLabelText("Workers").querySelector("svg"),
     ).not.toBeNull();
     expect(screen.getByLabelText("D1").querySelector("svg")).not.toBeNull();
     expect(
       screen.getByRole("img", { name: "demo-scene preview" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open project" })).toHaveAttribute(
-      "href",
-      "/projects/acme/demo-scene",
-    );
+    expect(
+      screen.getByRole("link", { name: "Open feed item" }),
+    ).toHaveAttribute("href", "/projects/acme/demo-scene");
     expect(
       screen.getByRole("link", { name: "Visit homepage" }),
     ).toHaveAttribute("href", "https://demo.example.com");
+    expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute(
+      "href",
+      "https://github.com/acme/demo-scene",
+    );
   });
 
   it("omits optional media and homepage actions when unavailable", () => {

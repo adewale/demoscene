@@ -106,7 +106,7 @@ describe("buildRawFileCandidates", () => {
 describe("GitHub account discovery", () => {
   it("builds repository listing URLs", () => {
     expect(buildRepositoriesPageUrl("adewale", 2)).toBe(
-      "https://github.com/adewale?page=2&tab=repositories",
+      "https://github.com/adewale?page=2&tab=repositories&sort=created",
     );
   });
 

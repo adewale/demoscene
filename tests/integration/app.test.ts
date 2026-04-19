@@ -5,6 +5,7 @@ import type { AppEnv } from "../../src/domain";
 import { app } from "../../src/index";
 import worker, { syncRepositories } from "../../src/index";
 import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
+import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creation_order.sql?raw";
 
 type MockResponse = {
   body: string;
@@ -64,18 +65,20 @@ async function seedProjectRecord(values: {
   repo: string;
   repoUrl: string;
   firstSeenAt?: string;
+  repoCreationOrder?: number;
 }) {
   await testEnv.DB.prepare(
     `INSERT INTO projects (
-      slug, owner, repo, repo_url, homepage_url, branch, wrangler_path, wrangler_format,
+      slug, owner, repo, repo_url, repo_creation_order, homepage_url, branch, wrangler_path, wrangler_format,
       readme_markdown, readme_preview_markdown, preview_image_url, first_seen_at, last_seen_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       `${values.owner}/${values.repo}`,
       values.owner,
       values.repo,
       values.repoUrl,
+      values.repoCreationOrder ?? 0,
       "https://demo.example.com",
       "main",
       "wrangler.toml",
@@ -97,6 +100,7 @@ async function seedProjectRange(count: number) {
       repo: `demo-${index + 1}`,
       repoUrl: `https://github.com/acme/demo-${index + 1}`,
       firstSeenAt: `2026-04-${day}T12:00:00.000Z`,
+      repoCreationOrder: index + 1,
     });
   }
 }
@@ -140,13 +144,15 @@ function createMockFetch(responses: Record<string, MockResponse>) {
 }
 
 async function resetDatabase() {
-  for (const statement of MIGRATION_SQL.split(";")
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS project_products").run();
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS projects").run();
+
+  for (const statement of `${MIGRATION_SQL};${MIGRATION_REPO_CREATION_ORDER_SQL}`
+    .split(";")
     .map((value: string) => value.trim())
     .filter(Boolean)) {
     await testEnv.DB.prepare(statement).run();
   }
-  await testEnv.DB.prepare("DELETE FROM project_products").run();
-  await testEnv.DB.prepare("DELETE FROM projects").run();
 }
 
 describe("Worker app", () => {
@@ -161,6 +167,7 @@ describe("Worker app", () => {
           <html>
             <head>
               <meta property="og:image" content="https://images.example.com/demo.png" />
+              <meta name="octolytics-dimension-repository_id" content="12345" />
             </head>
             <body>
               <a data-testid="repository-homepage-url" href="https://demo.example.com">demo</a>
@@ -195,6 +202,7 @@ binding = "DB"
     expect(response.status).toBe(200);
     expect(payload.items).toHaveLength(1);
     expect(payload.items[0]?.homepageUrl).toBe("https://demo.example.com");
+    expect(payload.items[0]?.repoCreationOrder).toBe(12345);
     expect(payload.items[0]?.readmePreviewMarkdown).toBe(
       "# Demo\n\nThe first project in the feed.",
     );
@@ -246,7 +254,7 @@ binding = "DB"
   it("discovers public repos from the configured team accounts", async () => {
     const summary = await syncRepositories(testEnv, {
       fetch: createMockFetch({
-        "https://github.com/adewale?page=1&tab=repositories": {
+        "https://github.com/adewale?page=1&tab=repositories&sort=created": {
           body: `
             <a itemprop="name codeRepository" href="/adewale/demo">demo</a>
           `,
@@ -288,11 +296,11 @@ binding = "DB"
     });
 
     const mockFetch = createMockFetch({
-      "https://github.com/adewale?page=1&tab=repositories": {
+      "https://github.com/adewale?page=1&tab=repositories&sort=created": {
         body: `
           <a itemprop="name codeRepository" href="/adewale/new-repo">new-repo</a>
           <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
-          <a rel="next" href="/adewale?page=2&tab=repositories">Next</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories&sort=created">Next</a>
         `,
       },
       "https://github.com/adewale/new-repo": {
@@ -311,7 +319,7 @@ binding = "DB"
         {
           body: `name = "known-repo"`,
         },
-      "https://github.com/adewale?page=2&tab=repositories": {
+      "https://github.com/adewale?page=2&tab=repositories&sort=created": {
         body: "this page should not be fetched",
       },
     });
@@ -342,7 +350,9 @@ binding = "DB"
             ? input.toString()
             : input.url,
       ),
-    ).not.toContain("https://github.com/adewale?page=2&tab=repositories");
+    ).not.toContain(
+      "https://github.com/adewale?page=2&tab=repositories&sort=created",
+    );
   });
 
   it("stops discovery once it reaches an all-known page instead of crawling the full corpus", async () => {
@@ -353,10 +363,10 @@ binding = "DB"
     });
 
     const mockFetch = createMockFetch({
-      "https://github.com/adewale?page=1&tab=repositories": {
+      "https://github.com/adewale?page=1&tab=repositories&sort=created": {
         body: `
           <a itemprop="name codeRepository" href="/adewale/known-repo">known-repo</a>
-          <a rel="next" href="/adewale?page=2&tab=repositories">Next</a>
+          <a rel="next" href="/adewale?page=2&tab=repositories&sort=created">Next</a>
         `,
       },
       "https://github.com/adewale/known-repo": {
@@ -366,7 +376,7 @@ binding = "DB"
         {
           body: `name = "known-repo"`,
         },
-      "https://github.com/adewale?page=2&tab=repositories": {
+      "https://github.com/adewale?page=2&tab=repositories&sort=created": {
         body: "this page should not be fetched",
       },
     });
@@ -384,7 +394,9 @@ binding = "DB"
             ? input.toString()
             : input.url,
       ),
-    ).not.toContain("https://github.com/adewale?page=2&tab=repositories");
+    ).not.toContain(
+      "https://github.com/adewale?page=2&tab=repositories&sort=created",
+    );
   });
 
   it("continues syncing later repos when one configured repo is invalid", async () => {
@@ -505,6 +517,31 @@ binding = "DB"
     expect(secondPageHtml).toContain("/projects/acme/demo-1");
   });
 
+  it("orders the homepage by repo creation order rather than ingestion time", async () => {
+    await seedProjectRecord({
+      owner: "acme",
+      repo: "older-ingest-newer-repo",
+      repoUrl: "https://github.com/acme/older-ingest-newer-repo",
+      firstSeenAt: "2026-04-01T12:00:00.000Z",
+      repoCreationOrder: 900,
+    });
+    await seedProjectRecord({
+      owner: "acme",
+      repo: "newer-ingest-older-repo",
+      repoUrl: "https://github.com/acme/newer-ingest-older-repo",
+      firstSeenAt: "2026-04-20T12:00:00.000Z",
+      repoCreationOrder: 100,
+    });
+
+    const html = (
+      await (await SELF.fetch("https://example.com/")).text()
+    ).replaceAll("<!-- -->", "");
+
+    expect(html.indexOf("/projects/acme/older-ingest-newer-repo")).toBeLessThan(
+      html.indexOf("/projects/acme/newer-ingest-older-repo"),
+    );
+  });
+
   it("wires the scheduled handler through waitUntil", async () => {
     const mockFetch = createMockFetch(
       buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
@@ -582,7 +619,7 @@ binding = "DB"
     vi.stubGlobal(
       "fetch",
       createMockFetch({
-        "https://github.com/adewale?page=1&tab=repositories": {
+        "https://github.com/adewale?page=1&tab=repositories&sort=created": {
           body: `<a itemprop="name codeRepository" href="/adewale/demo">demo</a>`,
         },
         "https://github.com/adewale/demo": {

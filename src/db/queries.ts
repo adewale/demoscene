@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { ProjectRecord, ProjectWithProducts } from "../domain";
 import {
@@ -52,6 +52,7 @@ function attachProducts(
     owner: row.owner,
     repo: row.repo,
     repoUrl: row.repoUrl,
+    repoCreationOrder: row.repoCreationOrder,
     homepageUrl: row.homepageUrl,
     branch: row.branch,
     wranglerPath: row.wranglerPath,
@@ -76,6 +77,7 @@ export async function upsertProject(
       target: projects.slug,
       set: {
         repoUrl: project.repoUrl,
+        repoCreationOrder: project.repoCreationOrder,
         homepageUrl: project.homepageUrl,
         branch: project.branch,
         wranglerPath: project.wranglerPath,
@@ -146,7 +148,10 @@ export async function listProjects(
   const projectRows = await db
     .select()
     .from(projects)
-    .orderBy(desc(projects.firstSeenAt));
+    .orderBy(
+      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+      desc(projects.firstSeenAt),
+    );
 
   if (projectRows.length === 0) {
     return [];
@@ -171,7 +176,10 @@ export async function listProjectsPage(
   const projectRows = await db
     .select()
     .from(projects)
-    .orderBy(desc(projects.firstSeenAt))
+    .orderBy(
+      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+      desc(projects.firstSeenAt),
+    )
     .limit(limit)
     .offset(offset);
 

@@ -1,4 +1,5 @@
 import {
+  integer,
   primaryKey,
   sqliteTable,
   text,
@@ -12,6 +13,7 @@ export const projects = sqliteTable(
     owner: text("owner").notNull(),
     repo: text("repo").notNull(),
     repoUrl: text("repo_url").notNull(),
+    repoCreationOrder: integer("repo_creation_order"),
     homepageUrl: text("homepage_url"),
     branch: text("branch").notNull(),
     wranglerPath: text("wrangler_path").notNull(),

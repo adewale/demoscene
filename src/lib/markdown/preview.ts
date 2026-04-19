@@ -4,8 +4,8 @@ type PreviewOptions = {
 };
 
 const DEFAULT_OPTIONS: PreviewOptions = {
-  maxBlocks: 3,
-  maxChars: 420,
+  maxBlocks: 4,
+  maxChars: 620,
 };
 
 function isImageOnlyBlock(block: string): boolean {

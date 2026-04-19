@@ -9,6 +9,7 @@ const project: ProjectWithProducts = {
   owner: "acme",
   repo: "demo-feed",
   repoUrl: "https://github.com/acme/demo-feed",
+  repoCreationOrder: 10,
   homepageUrl: null,
   branch: "main",
   wranglerPath: "wrangler.toml",

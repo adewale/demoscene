@@ -275,6 +275,8 @@ async function syncRepository(
     owner: repository.owner,
     repo: repository.repo,
     repoUrl: repository.url,
+    repoCreationOrder:
+      repoMetadata.repoCreationOrder ?? existing?.repoCreationOrder ?? null,
     homepageUrl: repoMetadata.homepageUrl,
     branch: wranglerFile.file.branch,
     wranglerPath: wranglerFile.file.fileName,

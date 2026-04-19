@@ -1,6 +1,7 @@
 type RepositoryPageMetadata = {
   homepageUrl: string | null;
   previewImageUrl: string | null;
+  repoCreationOrder: number | null;
 };
 
 const ENTITY_MAP: Record<string, string> = {
@@ -54,6 +55,13 @@ function extractOgImageUrl(html: string): string | null {
   return null;
 }
 
+function extractRepositoryId(html: string): number | null {
+  const match = html.match(
+    /<meta name="octolytics-dimension-repository_id" content="(\d+)"/i,
+  );
+  return match?.[1] ? Number.parseInt(match[1], 10) : null;
+}
+
 function isExternalHomepageLink(attributes: Record<string, string>): boolean {
   const href = attributes.href;
   const rel = attributes.rel?.toLowerCase() ?? "";
@@ -85,5 +93,6 @@ export function extractRepositoryPageMetadata(
   return {
     homepageUrl: extractHomepageUrl(html),
     previewImageUrl: extractOgImageUrl(html),
+    repoCreationOrder: extractRepositoryId(html),
   };
 }
