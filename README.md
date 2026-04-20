@@ -181,6 +181,37 @@ README preview normalization removes decorative noise before cards are derived. 
 - `npm run corpus:refresh` refreshes the committed offline corpus cache in `corpus-cache/`
 - the cache stores each tracked project's current Wrangler config, `package.json`, and a small metadata manifest for future heuristic analysis
 
+## Product Detection
+
+| Product               | Detection heuristic                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workers               | Any supported top-level Wrangler config file exists                                                                                               |
+| Pages                 | `pages_build_output_dir` in Wrangler, `wrangler pages ...` scripts, or `@cloudflare/next-on-pages` / `@cloudflare/pages-plugin-cloudflare-access` |
+| D1                    | `d1_databases` in Wrangler                                                                                                                        |
+| KV                    | `kv_namespaces` in Wrangler                                                                                                                       |
+| R2                    | `r2_buckets` in Wrangler                                                                                                                          |
+| Durable Objects       | `durable_objects.bindings` in Wrangler                                                                                                            |
+| Queues                | `queues.producers` or `queues.consumers` in Wrangler                                                                                              |
+| Workflows             | `workflows` in Wrangler                                                                                                                           |
+| Vectorize             | `vectorize` in Wrangler                                                                                                                           |
+| AI                    | `ai` in Wrangler or packages such as `@cloudflare/ai`, `@cloudflare/ai-chat`, `@cloudflare/ai-utils`, or `workers-ai-provider`                    |
+| AI Gateway            | `@cloudflare/ai-gateway` in `package.json`                                                                                                        |
+| Browser Run           | `browser` in Wrangler or packages such as `@cloudflare/puppeteer`, `@cloudflare/playwright`, or `@cloudflare/playwright-mcp`                      |
+| Containers            | `containers` in Wrangler or `@cloudflare/containers` in `package.json`                                                                            |
+| Hyperdrive            | `hyperdrive` in Wrangler                                                                                                                          |
+| Images                | `images` in Wrangler                                                                                                                              |
+| Email                 | `send_email` in Wrangler                                                                                                                          |
+| Analytics Engine      | `analytics_engine_datasets` in Wrangler                                                                                                           |
+| Workers for Platforms | `dispatch_namespaces` in Wrangler                                                                                                                 |
+| Secret Store          | `secrets_store_secrets` in Wrangler                                                                                                               |
+| Realtime              | `@cloudflare/realtimekit*` packages in `package.json`                                                                                             |
+| Stream                | `@cloudflare/stream-react` in `package.json`                                                                                                      |
+| Voice                 | `@cloudflare/voice` in `package.json`                                                                                                             |
+| Sandboxes             | `@cloudflare/sandbox` or the `@cloudflare/shell` + `@cloudflare/think` package combination                                                        |
+| Agents                | `agents`, `hono-agents`, or `@cloudflare/agents` in `package.json`                                                                                |
+
+These heuristics are best-effort. They indicate what the repo configuration or dependency graph strongly suggests, not a guarantee of every product actively used at runtime.
+
 ## Notes
 
 - README previews are normalized during ingestion so heading-heavy, badge-heavy, and HTML-heavy READMEs read like feed copy instead of raw markup.

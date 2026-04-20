@@ -83,9 +83,9 @@ Only the top-level Wrangler config counts. Nested configs in monorepos are ignor
 
 ## Product Inference
 
-Cloudflare product metadata is inferred from the top-level Wrangler config only.
+Cloudflare product metadata is inferred from the top-level Wrangler config first, then augmented with exact `package.json` heuristics for products that do not always have explicit Wrangler keys.
 
-Initial mapping should cover clear bindings and features such as:
+Current mapping covers:
 
 - Workers
 - Pages
@@ -97,6 +97,24 @@ Initial mapping should cover clear bindings and features such as:
 - Workflows
 - Vectorize
 - AI
+- AI Gateway
+- Browser Run
+- Containers
+- Hyperdrive
+- Images
+- Email
+- Analytics Engine
+- Workers for Platforms
+- Secret Store
+- Realtime
+- Stream
+- Voice
+- Sandboxes
+- Agents
+
+Wrangler-first signals are preferred for infrastructure products such as D1, KV, R2, Queues, Workflows, Hyperdrive, Images, Email, Analytics Engine, Workers for Platforms, and Secret Store.
+
+Package-based heuristics are used for products where the repo often signals usage through dependencies instead of bindings, such as Agents, Sandboxes, Browser Run, Realtime, Stream, Voice, and AI Gateway.
 
 This metadata powers icons on feed cards, feed JSON, and RSS output.
 

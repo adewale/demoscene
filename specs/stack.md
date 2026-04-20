@@ -99,6 +99,7 @@ Unit tests:
 Property tests:
 
 - parser and preview-normalizer behavior using `fast-check`
+- product-detection heuristics using `fast-check`
 
 Component tests:
 
