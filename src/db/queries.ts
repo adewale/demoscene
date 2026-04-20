@@ -149,8 +149,8 @@ export async function listProjects(
     .select()
     .from(projects)
     .orderBy(
-      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
       desc(projects.firstSeenAt),
+      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
     );
 
   if (projectRows.length === 0) {
@@ -177,8 +177,8 @@ export async function listProjectsPage(
     .select()
     .from(projects)
     .orderBy(
-      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
       desc(projects.firstSeenAt),
+      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
     )
     .limit(limit)
     .offset(offset);

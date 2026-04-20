@@ -707,7 +707,7 @@ binding = "DB"
     expect(secondPageHtml).toContain("https://github.com/acme/demo-1");
   });
 
-  it("orders the homepage by repo creation order rather than ingestion time", async () => {
+  it("orders the homepage by first seen date before repo creation order", async () => {
     await seedProjectRecord({
       owner: "acme",
       repo: "older-ingest-newer-repo",
@@ -728,10 +728,35 @@ binding = "DB"
     ).replaceAll("<!-- -->", "");
 
     expect(
-      html.indexOf("https://github.com/acme/older-ingest-newer-repo"),
-    ).toBeLessThan(
       html.indexOf("https://github.com/acme/newer-ingest-older-repo"),
+    ).toBeLessThan(
+      html.indexOf("https://github.com/acme/older-ingest-newer-repo"),
     );
+  });
+
+  it("breaks first seen ties with repo creation order", async () => {
+    await seedProjectRecord({
+      owner: "acme",
+      repo: "same-day-newer-repo",
+      repoUrl: "https://github.com/acme/same-day-newer-repo",
+      firstSeenAt: "2026-04-20T12:00:00.000Z",
+      repoCreationOrder: 900,
+    });
+    await seedProjectRecord({
+      owner: "acme",
+      repo: "same-day-older-repo",
+      repoUrl: "https://github.com/acme/same-day-older-repo",
+      firstSeenAt: "2026-04-20T12:00:00.000Z",
+      repoCreationOrder: 100,
+    });
+
+    const html = (
+      await (await SELF.fetch("https://example.com/")).text()
+    ).replaceAll("<!-- -->", "");
+
+    expect(
+      html.indexOf("https://github.com/acme/same-day-newer-repo"),
+    ).toBeLessThan(html.indexOf("https://github.com/acme/same-day-older-repo"));
   });
 
   it("wires the scheduled handler through waitUntil", async () => {
