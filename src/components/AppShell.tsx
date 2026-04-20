@@ -535,6 +535,12 @@ export function AppShell({ children, subtitle, title }: AppShellProps) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="demoscene RSS"
+          href="/rss.xml"
+        />
         <title>{title}</title>
         <style>{styles}</style>
       </head>

@@ -1,6 +1,6 @@
 # demoscene
 
-`demoscene` is a Cloudflare Worker that scans a curated set of GitHub accounts and publishes a reverse-chronological feed of public Cloudflare projects.
+`demoscene` is a Cloudflare Worker that scans a curated set of GitHub accounts and publishes a reverse-chronological feed of public Cloudflare projects from the Cloudflare DevRel team.
 
 It discovers repositories with the GitHub API, detects top-level Wrangler configs, stores the first README it sees, derives a cleaned preview for cards, and renders the result as HTML, JSON, and RSS.
 

@@ -14,4 +14,5 @@ export const TEAM_MEMBERS: TeamMember[] = [
   { login: "yusukebe", name: "Yusuke" },
   { login: "adewale", name: "Ade" },
   { login: "jamesqquick", name: "James" },
+  { login: "zeke", name: "Zeke" },
 ];
