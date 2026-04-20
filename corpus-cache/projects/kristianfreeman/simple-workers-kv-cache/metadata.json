@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/simple-workers-kv-cache/main/package.json",
+  "repo": "simple-workers-kv-cache",
+  "repoUrl": "https://github.com/kristianfreeman/simple-workers-kv-cache",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/simple-workers-kv-cache/main/wrangler.toml"
+}

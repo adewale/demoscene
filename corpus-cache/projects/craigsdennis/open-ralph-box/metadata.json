@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/open-ralph-box/main/package.json",
+  "repo": "open-ralph-box",
+  "repoUrl": "https://github.com/craigsdennis/open-ralph-box",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/open-ralph-box/main/wrangler.jsonc"
+}

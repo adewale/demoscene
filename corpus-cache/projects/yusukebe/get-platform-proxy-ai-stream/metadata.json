@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/get-platform-proxy-ai-stream/main/package.json",
+  "repo": "get-platform-proxy-ai-stream",
+  "repoUrl": "https://github.com/yusukebe/get-platform-proxy-ai-stream",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/get-platform-proxy-ai-stream/main/wrangler.toml"
+}

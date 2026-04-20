@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/vg-admin-workers-queues/main/package.json",
+  "repo": "vg-admin-workers-queues",
+  "repoUrl": "https://github.com/craigsdennis/vg-admin-workers-queues",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/vg-admin-workers-queues/main/wrangler.toml"
+}

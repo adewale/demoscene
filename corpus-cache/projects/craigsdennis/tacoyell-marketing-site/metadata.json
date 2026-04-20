@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/tacoyell-marketing-site/main/package.json",
+  "repo": "tacoyell-marketing-site",
+  "repoUrl": "https://github.com/craigsdennis/tacoyell-marketing-site",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/tacoyell-marketing-site/main/wrangler.jsonc"
+}

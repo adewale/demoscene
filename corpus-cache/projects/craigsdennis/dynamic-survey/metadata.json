@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/dynamic-survey/main/package.json",
+  "repo": "dynamic-survey",
+  "repoUrl": "https://github.com/craigsdennis/dynamic-survey",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/dynamic-survey/main/wrangler.toml"
+}

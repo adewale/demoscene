@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/workers-openclaw-vpc/main/package.json",
+  "repo": "workers-openclaw-vpc",
+  "repoUrl": "https://github.com/harshil1712/workers-openclaw-vpc",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/workers-openclaw-vpc/main/wrangler.jsonc"
+}

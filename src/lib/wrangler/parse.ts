@@ -2,6 +2,23 @@ import { parse as parseJsonc } from "jsonc-parser";
 import { parse as parseToml } from "smol-toml";
 
 type WranglerConfig = Record<string, unknown>;
+type PackageManifest = Record<string, unknown>;
+
+const PACKAGE_DEPENDENCY_FIELDS = [
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "optionalDependencies",
+] as const;
+const AGENT_PACKAGE_NAMES = [
+  "agents",
+  "hono-agents",
+  "@cloudflare/agents",
+] as const;
+const SANDBOX_PACKAGE_NAMES = ["@cloudflare/sandbox"] as const;
+const SANDBOX_PACKAGE_COMBINATIONS = [
+  ["@cloudflare/shell", "@cloudflare/think"],
+] as const;
 
 export type CloudflareProduct = {
   key: string;
@@ -19,6 +36,8 @@ const PRODUCT_LABELS: Record<string, string> = {
   workflows: "Workflows",
   vectorize: "Vectorize",
   ai: "AI",
+  sandboxes: "Sandboxes",
+  agents: "Agents",
 };
 
 const PRODUCT_ORDER = Object.keys(PRODUCT_LABELS);
@@ -63,8 +82,57 @@ export function parseWranglerConfig(
   throw new Error(`Unsupported Wrangler config format: ${fileName}`);
 }
 
+export function parsePackageManifest(contents: string): PackageManifest {
+  const parsed = JSON.parse(contents) as unknown;
+
+  if (!isRecord(parsed)) {
+    throw new Error("Package manifest must be a JSON object");
+  }
+
+  return parsed;
+}
+
+function dependencyNames(manifest: PackageManifest | undefined): Set<string> {
+  const names = new Set<string>();
+
+  if (!manifest) {
+    return names;
+  }
+
+  for (const field of PACKAGE_DEPENDENCY_FIELDS) {
+    const section = manifest[field];
+
+    if (!isRecord(section)) {
+      continue;
+    }
+
+    for (const dependencyName of Object.keys(section)) {
+      names.add(dependencyName);
+    }
+  }
+
+  return names;
+}
+
+function hasAnyDependency(
+  manifest: PackageManifest | undefined,
+  packageNames: readonly string[],
+): boolean {
+  const names = dependencyNames(manifest);
+  return packageNames.some((packageName) => names.has(packageName));
+}
+
+function hasAllDependencies(
+  manifest: PackageManifest | undefined,
+  packageNames: readonly string[],
+): boolean {
+  const names = dependencyNames(manifest);
+  return packageNames.every((packageName) => names.has(packageName));
+}
+
 export function inferCloudflareProducts(
   config: WranglerConfig,
+  packageManifest?: PackageManifest,
 ): CloudflareProduct[] {
   const products: CloudflareProduct[] = [];
 
@@ -110,6 +178,19 @@ export function inferCloudflareProducts(
 
   if (hasEntries(config.ai)) {
     addProduct(products, "ai");
+  }
+
+  if (
+    hasAnyDependency(packageManifest, SANDBOX_PACKAGE_NAMES) ||
+    SANDBOX_PACKAGE_COMBINATIONS.some((packageNames) =>
+      hasAllDependencies(packageManifest, packageNames),
+    )
+  ) {
+    addProduct(products, "sandboxes");
+  }
+
+  if (hasAnyDependency(packageManifest, AGENT_PACKAGE_NAMES)) {
+    addProduct(products, "agents");
   }
 
   return products;

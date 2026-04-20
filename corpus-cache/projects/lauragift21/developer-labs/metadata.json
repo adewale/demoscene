@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/developer-labs/main/package.json",
+  "repo": "developer-labs",
+  "repoUrl": "https://github.com/lauragift21/developer-labs",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/developer-labs/main/wrangler.jsonc"
+}

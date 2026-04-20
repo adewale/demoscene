@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/openai-realtime-api-relay-workers/main/package.json",
+  "repo": "openai-realtime-api-relay-workers",
+  "repoUrl": "https://github.com/craigsdennis/openai-realtime-api-relay-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/openai-realtime-api-relay-workers/main/wrangler.toml"
+}

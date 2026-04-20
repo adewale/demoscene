@@ -1,0 +1,13 @@
+type = "webpack"
+
+# replace _ with your github username
+name = "_"
+vars = { "GITHUB_USERNAME" = "_" }
+
+# cloudflare account/domain-specific credentials:
+# see https://developers.cloudflare.com/workers/learning/getting-started
+# to learn how to fill these out
+account_id = ""
+zone_id = ""
+route = ""
+workers_dev = false

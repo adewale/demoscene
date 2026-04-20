@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "autotranscriber",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-23",
+	"compatibility_flags": ["nodejs_compat_v2"],
+	"observability": {
+    "enabled": true
+  },
+	"vars": {
+		"R2_URL": "https://pub-ba6c329d42154fabbdf05a5c5f062731.r2.dev"
+	},
+	"r2_buckets": [
+    {
+      "bucket_name": "uploads",
+      "binding": "UPLOADS"
+    }
+  ],
+	"kv_namespaces": [
+    {
+      "binding": "METADATA",
+      "id": "5925bf66d1aa4799b5455ca122606792"
+    }
+  ],
+	"queues": {
+    "consumers": [
+      {
+        "queue": "uploaded"
+      }
+    ]
+  },
+	"ai": {
+		"binding": "AI"
+	}
+}

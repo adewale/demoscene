@@ -1,0 +1,26 @@
+{
+  "name": "preact-ssr",
+  "version": "0.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "vite build --config vite.config.js",
+    "build:watch": "yarn build -w",
+    "dev": "concurrently \"yarn build:watch\" \"yarn wrangler\"",
+    "wrangler": "wrangler dev --local --live-reload ./src/server.ts",
+    "deploy": "wrangler publish src/server.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.1.0",
+    "preact-helmet": "^4.0.0-alpha-3",
+    "vite": "^4.3.9",
+    "wrangler": "^2.20.0"
+  },
+  "dependencies": {
+    "hono": "^3.2.3",
+    "preact": "^10.15.1",
+    "preact-render-to-string": "^6.0.3",
+    "preact-router": "^4.1.1"
+  }
+}

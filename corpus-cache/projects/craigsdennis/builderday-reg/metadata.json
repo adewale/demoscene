@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/builderday-reg/main/package.json",
+  "repo": "builderday-reg",
+  "repoUrl": "https://github.com/craigsdennis/builderday-reg",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/builderday-reg/main/wrangler.toml"
+}

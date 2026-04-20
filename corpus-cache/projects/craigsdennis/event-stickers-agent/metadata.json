@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/event-stickers-agent/main/package.json",
+  "repo": "event-stickers-agent",
+  "repoUrl": "https://github.com/craigsdennis/event-stickers-agent",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/event-stickers-agent/main/wrangler.jsonc"
+}

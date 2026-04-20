@@ -10,6 +10,7 @@ type ProductInfo = {
 };
 
 const ICONS: Record<string, string> = {
+  agents: "AG",
   ai: "AI",
   d1: "D1",
   "durable-objects": "DO",
@@ -17,12 +18,17 @@ const ICONS: Record<string, string> = {
   pages: "PG",
   queues: "Q",
   r2: "R2",
+  sandboxes: "SB",
   vectorize: "V",
   workers: "W",
   workflows: "WF",
 };
 
 const PRODUCT_INFO: Record<string, ProductInfo> = {
+  agents: {
+    description: "Build stateful AI agents on Cloudflare with the Agents SDK.",
+    href: "https://developers.cloudflare.com/agents/",
+  },
   ai: {
     description: "Run AI models close to users with Workers AI.",
     href: "https://developers.cloudflare.com/workers-ai/",
@@ -50,6 +56,11 @@ const PRODUCT_INFO: Record<string, ProductInfo> = {
   r2: {
     description: "Store and serve objects with zero egress fees.",
     href: "https://developers.cloudflare.com/r2/",
+  },
+  sandboxes: {
+    description:
+      "Run untrusted code in isolated environments with the Sandbox SDK.",
+    href: "https://developers.cloudflare.com/sandbox/",
   },
   vectorize: {
     description: "Search vector embeddings with Cloudflare Vectorize.",

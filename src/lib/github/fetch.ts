@@ -59,6 +59,7 @@ type PreviewImageResult =
     };
 
 export const README_FILE_NAMES = ["README.md"];
+export const PACKAGE_FILE_NAMES = ["package.json"];
 export const WRANGLER_FILE_NAMES = [
   "wrangler.toml",
   "wrangler.json",

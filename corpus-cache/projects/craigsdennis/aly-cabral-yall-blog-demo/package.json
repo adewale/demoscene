@@ -1,0 +1,26 @@
+{
+	"name": "aly-cabral-yall",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro build && wrangler dev",
+		"astro": "astro",
+		"deploy": "astro build && wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"blog-cleanup": "git branch -l 'blog/*' | xargs -r git branch -D && git fetch --prune origin && git branch -r -l 'origin/blog/*' | sed 's|origin/||' | xargs -I {} git push origin --delete {}"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "^12.6.12",
+		"@astrojs/mdx": "^4.3.13",
+		"@astrojs/rss": "^4.0.15",
+		"@astrojs/sitemap": "^3.7.0",
+		"astro": "^5.16.15",
+		"sharp": "^0.34.3"
+	},
+	"devDependencies": {
+		"@types/node": "^25.0.10",
+		"wrangler": "^4.60.0"
+	}
+}

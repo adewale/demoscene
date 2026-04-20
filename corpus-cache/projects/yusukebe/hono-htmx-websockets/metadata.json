@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-htmx-websockets/main/package.json",
+  "repo": "hono-htmx-websockets",
+  "repoUrl": "https://github.com/yusukebe/hono-htmx-websockets",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-htmx-websockets/main/wrangler.toml"
+}

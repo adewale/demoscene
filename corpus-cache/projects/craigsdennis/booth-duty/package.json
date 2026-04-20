@@ -1,0 +1,43 @@
+{
+  "name": "booth-duty",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:knowledge": "node scripts/build-knowledge-manifest.mjs",
+    "build": "npm run build:knowledge && vite build",
+    "dev": "npm run build:knowledge && concurrently -k -n CLIENT,WORKER -c auto \"vite build --watch\" \"wrangler dev\"",
+    "sync:products": "node scripts/sync-products.mjs",
+    "typecheck": "npm run build:knowledge && tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "cf-typegen": "wrangler types",
+    "db:migrate:local": "wrangler d1 migrations apply booth-duty --local",
+    "db:migrate:remote": "wrangler d1 migrations apply booth-duty --remote"
+  },
+  "dependencies": {
+    "@cloudflare/kumo": "^1.19.0",
+    "@cloudflare/voice": "^0.1.2",
+    "@phosphor-icons/react": "^2.1.10",
+    "agents": "^0.11.1",
+    "ai": "^6.0.165",
+    "cheerio": "^1.2.0",
+    "echarts": "^6.0.0",
+    "gray-matter": "^4.0.3",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "workers-ai-provider": "^3.1.11",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260416.2",
+    "@types/node": "^25.6.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8",
+    "wrangler": "^4.83.0"
+  }
+}

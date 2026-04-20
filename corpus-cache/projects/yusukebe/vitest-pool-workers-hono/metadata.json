@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/vitest-pool-workers-hono/main/package.json",
+  "repo": "vitest-pool-workers-hono",
+  "repoUrl": "https://github.com/yusukebe/vitest-pool-workers-hono",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/vitest-pool-workers-hono/main/wrangler.toml"
+}

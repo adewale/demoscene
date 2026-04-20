@@ -1,0 +1,17 @@
+{
+  "name": "d1-movie-example",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.2",
+    "wrangler": "^3.60.3"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "hono": "^4.6.6"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/my-workers-github-actions-app/main/package.json",
+  "repo": "my-workers-github-actions-app",
+  "repoUrl": "https://github.com/yusukebe/my-workers-github-actions-app",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/my-workers-github-actions-app/main/wrangler.jsonc"
+}

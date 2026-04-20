@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "$npm_execpath run build:css && vite build",
+    "build:css": "tailwindcss -i src/style.css -o public/static/style.css",
+    "preview": "$npm_execpath run build && wrangler pages dev dist",
+    "deploy": "$npm_execpath run build && wrangler pages deploy dist"
+  },
+  "dependencies": {
+    "eventsource-parser": "^1.1.2",
+    "hono": "^4.2.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240208.0",
+    "@hono/vite-cloudflare-pages": "^0.2.4",
+    "@hono/vite-dev-server": "^0.9.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "vite": "^5.0.12",
+    "wrangler": "^3.50.0"
+  }
+}

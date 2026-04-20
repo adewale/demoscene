@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/tanstack-db-d1-demo/main/package.json",
+  "repo": "tanstack-db-d1-demo",
+  "repoUrl": "https://github.com/harshil1712/tanstack-db-d1-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/tanstack-db-d1-demo/main/wrangler.jsonc"
+}

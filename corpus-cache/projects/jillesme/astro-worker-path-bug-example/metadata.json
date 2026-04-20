@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/astro-worker-path-bug-example/main/package.json",
+  "repo": "astro-worker-path-bug-example",
+  "repoUrl": "https://github.com/jillesme/astro-worker-path-bug-example",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/astro-worker-path-bug-example/main/wrangler.jsonc"
+}

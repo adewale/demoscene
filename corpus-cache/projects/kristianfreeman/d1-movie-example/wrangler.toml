@@ -1,0 +1,8 @@
+name = "d1-movie-example"
+main = "src/index.ts"
+compatibility_date = "2024-10-20"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "movies-example"
+database_id = "f596bcb4-8d92-4ab4-842d-eb24cb112b4f"

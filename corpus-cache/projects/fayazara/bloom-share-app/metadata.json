@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/bloom-share-app/main/package.json",
+  "repo": "bloom-share-app",
+  "repoUrl": "https://github.com/fayazara/bloom-share-app",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/bloom-share-app/main/wrangler.json"
+}

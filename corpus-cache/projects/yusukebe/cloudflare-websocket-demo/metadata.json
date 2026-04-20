@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/cloudflare-websocket-demo/main/package.json",
+  "repo": "cloudflare-websocket-demo",
+  "repoUrl": "https://github.com/yusukebe/cloudflare-websocket-demo",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/cloudflare-websocket-demo/main/wrangler.toml"
+}

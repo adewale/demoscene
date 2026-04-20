@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/large-marge-r2-actors/main/package.json",
+  "repo": "large-marge-r2-actors",
+  "repoUrl": "https://github.com/craigsdennis/large-marge-r2-actors",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/large-marge-r2-actors/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/react-go-cloudflare-sandbox/main/package.json",
+  "repo": "react-go-cloudflare-sandbox",
+  "repoUrl": "https://github.com/jillesme/react-go-cloudflare-sandbox",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/react-go-cloudflare-sandbox/main/wrangler.jsonc"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "image-resize-containers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.0.12",
+    "hono": "^4.8.2"
+  },
+  "devDependencies": {
+    "wrangler": "https://pkg.pr.new/wrangler@9689"
+  }
+}

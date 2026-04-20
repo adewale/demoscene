@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-yoricks-blog/main/package.json",
+  "repo": "aiave-yoricks-blog",
+  "repoUrl": "https://github.com/craigsdennis/aiave-yoricks-blog",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-yoricks-blog/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "zeke",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/zeke/fauxto-booth/main/package.json",
+  "repo": "fauxto-booth",
+  "repoUrl": "https://github.com/zeke/fauxto-booth",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/zeke/fauxto-booth/main/wrangler.jsonc"
+}

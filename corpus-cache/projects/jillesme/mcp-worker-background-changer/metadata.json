@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/mcp-worker-background-changer/main/package.json",
+  "repo": "mcp-worker-background-changer",
+  "repoUrl": "https://github.com/jillesme/mcp-worker-background-changer",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/mcp-worker-background-changer/main/wrangler.jsonc"
+}

@@ -1,0 +1,29 @@
+name = "image-distribution"
+main = "src/index.ts"
+compatibility_date = "2025-01-29"
+assets = { directory = "./public" }
+
+# compatibility_flags = [ "nodejs_compat" ]
+
+# [vars]
+# MY_VAR = "my-variable"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "XXXXXXXX"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "image-distribution"
+
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = ""
+
+# [ai]
+# binding = "AI"
+
+# [observability]
+# enabled = true
+# head_sampling_rate = 1

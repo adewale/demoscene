@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-jsx-spa/main/package.json",
+  "repo": "hono-jsx-spa",
+  "repoUrl": "https://github.com/yusukebe/hono-jsx-spa",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-jsx-spa/main/wrangler.jsonc"
+}

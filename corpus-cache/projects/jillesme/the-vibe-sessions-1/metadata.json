@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/the-vibe-sessions-1/main/package.json",
+  "repo": "the-vibe-sessions-1",
+  "repoUrl": "https://github.com/jillesme/the-vibe-sessions-1",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/the-vibe-sessions-1/main/wrangler.jsonc"
+}

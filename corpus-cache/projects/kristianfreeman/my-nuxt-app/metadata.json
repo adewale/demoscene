@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/my-nuxt-app/main/package.json",
+  "repo": "my-nuxt-app",
+  "repoUrl": "https://github.com/kristianfreeman/my-nuxt-app",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/my-nuxt-app/main/wrangler.toml"
+}

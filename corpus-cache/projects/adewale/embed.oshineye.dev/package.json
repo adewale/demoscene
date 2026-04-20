@@ -1,0 +1,30 @@
+{
+  "name": "embeds",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "build:github-timeline": "tsx scripts/build-github-timeline.ts",
+    "build:blogging-timeline": "tsx scripts/build-blogging-timeline.ts",
+    "build:timelines": "tsx scripts/build-github-timeline.ts && tsx scripts/build-blogging-timeline.ts",
+    "build:team-architectures": "python3 scripts/build_team_architectures.py && tsx scripts/build-team-svgs.ts",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "hono": "^4.12.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260303.0",
+    "@playwright/test": "^1.58.2",
+    "beautiful-mermaid": "^1.0.2",
+    "patch-package": "^8.0.1",
+    "typescript": "^5.7.0",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.68.0"
+  }
+}

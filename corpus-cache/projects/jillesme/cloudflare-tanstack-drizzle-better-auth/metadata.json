@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/cloudflare-tanstack-drizzle-better-auth/main/package.json",
+  "repo": "cloudflare-tanstack-drizzle-better-auth",
+  "repoUrl": "https://github.com/jillesme/cloudflare-tanstack-drizzle-better-auth",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/cloudflare-tanstack-drizzle-better-auth/main/wrangler.jsonc"
+}

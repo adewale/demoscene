@@ -1,0 +1,22 @@
+{
+  "name": "live-sandbox-sdk",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "A workshop repo for the Cloudflare Sandbox SDK",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/sandbox": "*",
+    "@types/node": "^24.10.9",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.59.2"
+  },
+  "author": "",
+  "license": "MIT"
+}

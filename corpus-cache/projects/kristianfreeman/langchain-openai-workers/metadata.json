@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/langchain-openai-workers/main/package.json",
+  "repo": "langchain-openai-workers",
+  "repoUrl": "https://github.com/kristianfreeman/langchain-openai-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/langchain-openai-workers/main/wrangler.toml"
+}

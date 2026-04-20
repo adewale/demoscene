@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/openai-wrapper-worker/main/package.json",
+  "repo": "openai-wrapper-worker",
+  "repoUrl": "https://github.com/craigsdennis/openai-wrapper-worker",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/openai-wrapper-worker/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/ghost-member-discord-notifications/main/package.json",
+  "repo": "ghost-member-discord-notifications",
+  "repoUrl": "https://github.com/kristianfreeman/ghost-member-discord-notifications",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/ghost-member-discord-notifications/main/wrangler.toml"
+}

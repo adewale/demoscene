@@ -1,0 +1,8 @@
+name = "htmx-hono-chat"
+compatibility_date = "2023-12-01"
+
+[site]
+bucket = "./assets"
+
+[ai]
+binding = "AI"

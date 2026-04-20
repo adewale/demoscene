@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/say-it-again-openai-workers/main/package.json",
+  "repo": "say-it-again-openai-workers",
+  "repoUrl": "https://github.com/craigsdennis/say-it-again-openai-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/say-it-again-openai-workers/main/wrangler.toml"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "my-app-001",
+  "version": "0.0.0",
+  "description": "A template for kick starting a Cloudflare Workers project",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "format": "prettier --write '**/*.{js,css,json,md}'"
+  },
+  "author": "Yusuke Wada <yusuke@kamawada.com>",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "jest": "^27.4.4",
+    "node-fetch": "^2.6.6"
+  }
+}

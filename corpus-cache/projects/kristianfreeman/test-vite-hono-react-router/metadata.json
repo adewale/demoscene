@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/test-vite-hono-react-router/main/package.json",
+  "repo": "test-vite-hono-react-router",
+  "repoUrl": "https://github.com/kristianfreeman/test-vite-hono-react-router",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/test-vite-hono-react-router/main/wrangler.jsonc"
+}

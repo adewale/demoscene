@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/my-vite-do-app/main/package.json",
+  "repo": "my-vite-do-app",
+  "repoUrl": "https://github.com/yusukebe/my-vite-do-app",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/my-vite-do-app/main/wrangler.jsonc"
+}

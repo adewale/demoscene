@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/do-name-demo/main/package.json",
+  "repo": "do-name-demo",
+  "repoUrl": "https://github.com/harshil1712/do-name-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/do-name-demo/main/wrangler.jsonc"
+}

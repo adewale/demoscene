@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/robot-hand-controller-workers/main/package.json",
+  "repo": "robot-hand-controller-workers",
+  "repoUrl": "https://github.com/craigsdennis/robot-hand-controller-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/robot-hand-controller-workers/main/wrangler.toml"
+}

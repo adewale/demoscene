@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/webhookflare/main/package.json",
+  "repo": "webhookflare",
+  "repoUrl": "https://github.com/fayazara/webhookflare",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/webhookflare/main/wrangler.jsonc"
+}

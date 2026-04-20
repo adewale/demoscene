@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/do-simple-store/main/package.json",
+  "repo": "do-simple-store",
+  "repoUrl": "https://github.com/kristianfreeman/do-simple-store",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/do-simple-store/main/wrangler.toml"
+}

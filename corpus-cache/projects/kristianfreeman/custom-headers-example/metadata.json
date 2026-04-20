@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/custom-headers-example/main/package.json",
+  "repo": "custom-headers-example",
+  "repoUrl": "https://github.com/kristianfreeman/custom-headers-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/custom-headers-example/main/wrangler.toml"
+}

@@ -17,9 +17,10 @@ It discovers repositories with the GitHub API, detects top-level Wrangler config
 - GitHub API discovery with stable pagination handling
 - GitHub-first feed cards ordered by real repository creation time
 - top-level Wrangler detection for `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
-- inferred Cloudflare product metadata on each card
+- inferred Cloudflare product metadata on each card, with Sandboxes and Agents detected from package heuristics
 - cleaned README preview generation for feed cards, including heading, badge, and icon-strip cleanup
 - machine-readable project JSON and RSS output
+- committed offline corpus cache for future analysis
 
 ## Requirements
 
@@ -153,7 +154,7 @@ Once your fork is public, add this to your fork README with your actual reposito
 1. The app reads a source-controlled list of GitHub accounts.
 2. It calls `GET /users/:login/repos?sort=created&direction=desc&per_page=100&page=:n` until GitHub stops returning `rel="next"`.
 3. For each repo, it fetches metadata from `GET /repos/:owner/:repo`.
-4. It fetches the top-level Wrangler config from the repo's default branch, then falls back to `main` and `master`.
+4. It fetches the top-level Wrangler config and `package.json` from the repo's default branch, then falls back to `main` and `master`.
 5. If the repo is a Cloudflare project, it stores the repo record, inferred Cloudflare products, and a normalized README preview in D1.
 6. The homepage, JSON feed, and RSS feed all render from the stored project data.
 
@@ -175,9 +176,15 @@ README preview normalization removes decorative noise before cards are derived. 
 - `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests
 - `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection, and secrets scanning
 
+## Corpus Cache
+
+- `npm run corpus:refresh` refreshes the committed offline corpus cache in `corpus-cache/`
+- the cache stores each tracked project's current Wrangler config, `package.json`, and a small metadata manifest for future heuristic analysis
+
 ## Notes
 
 - README previews are normalized during ingestion so heading-heavy, badge-heavy, and HTML-heavy READMEs read like feed copy instead of raw markup.
+- Sandboxes and Agents are inferred from committed heuristics over cached Wrangler configs and `package.json` files.
 - The homepage is the product. Project titles link directly to GitHub.
 - Cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain.
 

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/my-first-containers/main/package.json",
+  "repo": "my-first-containers",
+  "repoUrl": "https://github.com/yusukebe/my-first-containers",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/my-first-containers/main/wrangler.jsonc"
+}

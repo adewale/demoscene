@@ -1,0 +1,15 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "learnly",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-01-12",
+	"assets": {
+		"not_found_handling": "single-page-application"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"ACCOUNT_ID": "20d70bbc30c928fa3f30d3669ff13331" 
+	}
+}

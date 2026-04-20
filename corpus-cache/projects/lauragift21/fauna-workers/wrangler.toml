@@ -1,0 +1,7 @@
+name = "fauna-workers"
+compatibility_date = "2021-11-02"
+main = "index.js"
+node_compat = true
+
+[build]
+command = "npm run build"

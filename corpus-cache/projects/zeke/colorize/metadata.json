@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "zeke",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/zeke/colorize/main/package.json",
+  "repo": "colorize",
+  "repoUrl": "https://github.com/zeke/colorize",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/zeke/colorize/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/cf-madlibs-game/main/package.json",
+  "repo": "cf-madlibs-game",
+  "repoUrl": "https://github.com/lauragift21/cf-madlibs-game",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/cf-madlibs-game/main/wrangler.toml"
+}

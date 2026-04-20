@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/bookmark-manager/main/package.json",
+  "repo": "bookmark-manager",
+  "repoUrl": "https://github.com/lauragift21/bookmark-manager",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/bookmark-manager/main/wrangler.toml"
+}

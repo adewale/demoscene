@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/workers-serverless-api-jamstack-conf/main/package.json",
+  "repo": "workers-serverless-api-jamstack-conf",
+  "repoUrl": "https://github.com/kristianfreeman/workers-serverless-api-jamstack-conf",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/workers-serverless-api-jamstack-conf/main/wrangler.toml"
+}

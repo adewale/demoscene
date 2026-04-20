@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/pages-function-blank/main/package.json",
+  "repo": "pages-function-blank",
+  "repoUrl": "https://github.com/yusukebe/pages-function-blank",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/pages-function-blank/main/wrangler.toml"
+}

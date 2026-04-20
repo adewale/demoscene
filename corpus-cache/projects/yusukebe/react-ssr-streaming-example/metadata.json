@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/react-ssr-streaming-example/master/package.json",
+  "repo": "react-ssr-streaming-example",
+  "repoUrl": "https://github.com/yusukebe/react-ssr-streaming-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/react-ssr-streaming-example/master/wrangler.toml"
+}

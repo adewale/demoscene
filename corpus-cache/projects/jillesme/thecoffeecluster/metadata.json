@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/thecoffeecluster/main/package.json",
+  "repo": "thecoffeecluster",
+  "repoUrl": "https://github.com/jillesme/thecoffeecluster",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/thecoffeecluster/main/wrangler.jsonc"
+}

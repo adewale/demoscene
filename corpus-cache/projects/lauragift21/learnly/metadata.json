@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/learnly/main/package.json",
+  "repo": "learnly",
+  "repoUrl": "https://github.com/lauragift21/learnly",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/learnly/main/wrangler.jsonc"
+}

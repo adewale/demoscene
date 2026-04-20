@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/jingle-jaingle-music/main/package.json",
+  "repo": "jingle-jaingle-music",
+  "repoUrl": "https://github.com/craigsdennis/jingle-jaingle-music",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/jingle-jaingle-music/main/wrangler.jsonc"
+}

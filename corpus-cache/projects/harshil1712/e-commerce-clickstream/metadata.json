@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/e-commerce-clickstream/main/package.json",
+  "repo": "e-commerce-clickstream",
+  "repoUrl": "https://github.com/harshil1712/e-commerce-clickstream",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/e-commerce-clickstream/main/wrangler.toml"
+}

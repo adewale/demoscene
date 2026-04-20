@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "not_found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/static-test/master/package.json",
+  "repo": "static-test",
+  "repoUrl": "https://github.com/kristianfreeman/static-test",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/static-test/master/wrangler.toml"
+}

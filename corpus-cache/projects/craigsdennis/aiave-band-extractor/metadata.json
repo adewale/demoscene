@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-band-extractor/main/package.json",
+  "repo": "aiave-band-extractor",
+  "repoUrl": "https://github.com/craigsdennis/aiave-band-extractor",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-band-extractor/main/wrangler.jsonc"
+}

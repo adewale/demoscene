@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/dryrun-chat/main/package.json",
+  "repo": "dryrun-chat",
+  "repoUrl": "https://github.com/craigsdennis/dryrun-chat",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/dryrun-chat/main/wrangler.toml"
+}

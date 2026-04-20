@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/clicky-block-durable-objects/main/package.json",
+  "repo": "clicky-block-durable-objects",
+  "repoUrl": "https://github.com/craigsdennis/clicky-block-durable-objects",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/clicky-block-durable-objects/main/wrangler.toml"
+}

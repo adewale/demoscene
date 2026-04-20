@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/lightbulb-moment-tool-calling/main/package.json",
+  "repo": "lightbulb-moment-tool-calling",
+  "repoUrl": "https://github.com/craigsdennis/lightbulb-moment-tool-calling",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/lightbulb-moment-tool-calling/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/ollama-on-workers/main/package.json",
+  "repo": "ollama-on-workers",
+  "repoUrl": "https://github.com/kristianfreeman/ollama-on-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/ollama-on-workers/main/wrangler.toml"
+}

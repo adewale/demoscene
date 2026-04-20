@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/playwright-mcp-example/main/package.json",
+  "repo": "playwright-mcp-example",
+  "repoUrl": "https://github.com/craigsdennis/playwright-mcp-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/playwright-mcp-example/main/wrangler.toml"
+}

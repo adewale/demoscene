@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/slidev-realtime-feedback-do-video/main/package.json",
+  "repo": "slidev-realtime-feedback-do-video",
+  "repoUrl": "https://github.com/harshil1712/slidev-realtime-feedback-do-video",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/slidev-realtime-feedback-do-video/main/wrangler.toml"
+}

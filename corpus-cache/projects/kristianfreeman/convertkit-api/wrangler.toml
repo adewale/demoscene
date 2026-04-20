@@ -1,0 +1,6 @@
+name = "convertkit-api"
+type = "webpack"
+account_id = "dc56444c4c955a1653106ccf997c1067"
+workers_dev = true
+webpack_config = "webpack.config.js"
+vars = { BASE_URL = "https://api.convertkit.com/v3/", CACHE_TTL = 60 }

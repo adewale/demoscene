@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-workers-assets/main/package.json",
+  "repo": "hono-workers-assets",
+  "repoUrl": "https://github.com/yusukebe/hono-workers-assets",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-workers-assets/main/wrangler.toml"
+}

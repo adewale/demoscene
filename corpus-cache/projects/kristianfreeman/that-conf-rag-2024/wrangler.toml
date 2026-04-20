@@ -1,0 +1,10 @@
+name = "that-conf-2023-rag"
+main = "src/index.js"
+compatibility_date = "2024-01-28"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX"
+index_name = "that-vector-db2"

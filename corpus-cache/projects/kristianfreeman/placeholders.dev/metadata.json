@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/placeholders.dev/master/package.json",
+  "repo": "placeholders.dev",
+  "repoUrl": "https://github.com/kristianfreeman/placeholders.dev",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/placeholders.dev/master/wrangler.toml"
+}

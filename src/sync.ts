@@ -15,6 +15,7 @@ import {
   fetchFirstAvailableRawFile,
   fetchRepositoryPage,
   type GitHubRepositoryMetadata,
+  PACKAGE_FILE_NAMES,
   README_FILE_NAMES,
   type FetchLike,
   validatePreviewImageUrl,
@@ -23,8 +24,11 @@ import {
 import { extractRepositoryPageMetadata } from "./lib/github/html";
 import { deriveMarkdownPreview } from "./lib/markdown/preview";
 import {
+  type CloudflareProduct,
   inferCloudflareProducts,
+  parsePackageManifest,
   parseWranglerConfig,
+  sortCloudflareProducts,
 } from "./lib/wrangler/parse";
 
 import {
@@ -58,6 +62,7 @@ type DiscoveryResult = {
 type SyncTarget = ParsedRepositoryUrl | GitHubRepositoryMetadata;
 
 const STALE_REVISIT_AFTER_DAYS = 14;
+const PACKAGE_DERIVED_PRODUCT_KEYS = new Set(["agents", "sandboxes"]);
 
 function getWranglerFormat(fileName: string): string {
   if (fileName.endsWith(".toml")) {
@@ -129,6 +134,24 @@ function hasRepositoryMetadata(
   repository: SyncTarget,
 ): repository is GitHubRepositoryMetadata {
   return "defaultBranch" in repository;
+}
+
+function preservePackageDerivedProducts(
+  products: CloudflareProduct[],
+  existingProducts: CloudflareProduct[],
+): CloudflareProduct[] {
+  const merged = [...products];
+
+  for (const product of existingProducts) {
+    if (
+      PACKAGE_DERIVED_PRODUCT_KEYS.has(product.key) &&
+      !merged.some((candidate) => candidate.key === product.key)
+    ) {
+      merged.push(product);
+    }
+  }
+
+  return sortCloudflareProducts(merged);
 }
 
 export async function syncRepositories(
@@ -341,7 +364,29 @@ async function syncRepository(
     return "invalid_config";
   }
 
-  const products = inferCloudflareProducts(wranglerConfig);
+  const packageFile = await fetchFirstAvailableRawFile(
+    fetchImpl,
+    repository,
+    PACKAGE_FILE_NAMES,
+    repositoryMetadata.defaultBranch,
+  );
+  let packageManifest;
+
+  if (packageFile.kind === "found") {
+    try {
+      packageManifest = parsePackageManifest(packageFile.file.contents);
+    } catch {
+      packageManifest = undefined;
+    }
+  }
+
+  const products =
+    packageFile.kind === "transient_error" && existing
+      ? preservePackageDerivedProducts(
+          inferCloudflareProducts(wranglerConfig),
+          existing.products,
+        )
+      : inferCloudflareProducts(wranglerConfig, packageManifest);
 
   let readmeMarkdown = existing?.readmeMarkdown ?? "";
   let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";

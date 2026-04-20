@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "name": "mailinglisthackers",
+  "version": "1.0.0",
+  "description": "A template for kick starting a Cloudflare Workers project",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build",
+    "publish": "wrangler publish",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write '**/*.{js,css,json,md}'"
+  },
+  "author": "Kristian Freeman <kristian@kristianfreeman.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^1.18.2"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^2.0.0",
+    "@cloudflare/wrangler": "^1.11.0-rc.1",
+    "cookie": "^0.4.1",
+    "ggf": "^0.0.3",
+    "lilredirector": "^0.5.1"
+  }
+}

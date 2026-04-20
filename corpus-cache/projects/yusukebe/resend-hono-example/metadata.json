@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/resend-hono-example/main/package.json",
+  "repo": "resend-hono-example",
+  "repoUrl": "https://github.com/yusukebe/resend-hono-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/resend-hono-example/main/wrangler.toml"
+}

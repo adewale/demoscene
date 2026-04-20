@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/coloring-book-page-maker/main/package.json",
+  "repo": "coloring-book-page-maker",
+  "repoUrl": "https://github.com/yusukebe/coloring-book-page-maker",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/coloring-book-page-maker/main/wrangler.toml"
+}

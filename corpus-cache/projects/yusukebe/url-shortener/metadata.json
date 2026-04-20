@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/url-shortener/main/package.json",
+  "repo": "url-shortener",
+  "repoUrl": "https://github.com/yusukebe/url-shortener",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/url-shortener/main/wrangler.toml"
+}

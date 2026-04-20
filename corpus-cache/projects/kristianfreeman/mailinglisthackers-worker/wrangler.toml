@@ -1,0 +1,18 @@
+name = "mailinglisthackers"
+type = "webpack"
+account_id = "dc56444c4c955a1653106ccf997c1067"
+route = "https://www.mailinglisthackers.com/*"
+zone_id = "aad0262f3b8523142d942cb8285eca4d"
+kv_namespaces = [
+  { binding = "REDIRECTS", id = "3b225db7e6b04c0593bce2eed11ff1e2", preview_id = "3b225db7e6b04c0593bce2eed11ff1e2" },
+  { binding = "EDGE_CACHE", id = "8690b87ee72f484ab86b93577619331e", preview_id = "8690b87ee72f484ab86b93577619331e" }
+]
+vars = { ENVIRONMENT = "production", ORIGIN = "https://www.mailinglisthackers.com" }
+
+[env.development]
+workers_dev = true
+kv_namespaces = [
+  { binding = "REDIRECTS", id = "3b225db7e6b04c0593bce2eed11ff1e2", preview_id = "3b225db7e6b04c0593bce2eed11ff1e2" },
+  { binding = "EDGE_CACHE", id = "8690b87ee72f484ab86b93577619331e", preview_id = "8690b87ee72f484ab86b93577619331e" }
+]
+vars = { ENVIRONMENT = "development", ORIGIN = "https://www.mailinglisthackers.com" }

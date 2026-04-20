@@ -1,0 +1,35 @@
+{
+	"name": "yoricks-blog",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "run-p type-check \"build-only {@}\" --",
+		"preview": "npm run build && wrangler dev",
+		"build-only": "vite build",
+		"type-check": "vue-tsc --build",
+		"deploy": "npm run build && wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"new-entry": "wrangler workflows trigger BlogPostCreator"
+	},
+	"dependencies": {
+		"hono": "^4.8.4",
+		"marked": "^16.0.0",
+		"vue": "^3.5.17",
+		"vue-router": "^4.5.1"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "^1.9.0",
+		"@tsconfig/node22": "^22.0.2",
+		"@types/node": "^24.5.1",
+		"@vitejs/plugin-vue": "^6.0.0",
+		"@vue/tsconfig": "^0.8.1",
+		"npm-run-all2": "^8.0.4",
+		"typescript": "^5.9.2",
+		"vite": "^7.0.0",
+		"vite-plugin-vue-devtools": "^8.0.2",
+		"vue-tsc": "^3.0.7",
+		"wrangler": "^4.37.1"
+	}
+}

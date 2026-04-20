@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/vc2-test/main/package.json",
+  "repo": "vc2-test",
+  "repoUrl": "https://github.com/craigsdennis/vc2-test",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/vc2-test/main/wrangler.toml"
+}

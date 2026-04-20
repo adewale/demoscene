@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jamesqquick",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jamesqquick/jqq-agentic-inbox/main/package.json",
+  "repo": "jqq-agentic-inbox",
+  "repoUrl": "https://github.com/jamesqquick/jqq-agentic-inbox",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jamesqquick/jqq-agentic-inbox/main/wrangler.jsonc"
+}

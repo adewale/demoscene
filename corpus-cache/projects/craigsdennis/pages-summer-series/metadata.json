@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/pages-summer-series/main/package.json",
+  "repo": "pages-summer-series",
+  "repoUrl": "https://github.com/craigsdennis/pages-summer-series",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/pages-summer-series/main/wrangler.toml"
+}

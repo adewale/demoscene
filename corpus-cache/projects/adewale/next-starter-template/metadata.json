@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "adewale",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/adewale/next-starter-template/main/package.json",
+  "repo": "next-starter-template",
+  "repoUrl": "https://github.com/adewale/next-starter-template",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/adewale/next-starter-template/main/wrangler.jsonc"
+}

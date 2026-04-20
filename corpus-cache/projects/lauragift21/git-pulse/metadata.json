@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/git-pulse/main/package.json",
+  "repo": "git-pulse",
+  "repoUrl": "https://github.com/lauragift21/git-pulse",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/git-pulse/main/wrangler.jsonc"
+}

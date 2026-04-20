@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/cloudflare-ai-twilio-conversations/main/package.json",
+  "repo": "cloudflare-ai-twilio-conversations",
+  "repoUrl": "https://github.com/craigsdennis/cloudflare-ai-twilio-conversations",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/cloudflare-ai-twilio-conversations/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "not_found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/cf-takehome/master/package.json",
+  "repo": "cf-takehome",
+  "repoUrl": "https://github.com/kristianfreeman/cf-takehome",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/cf-takehome/master/wrangler.toml"
+}

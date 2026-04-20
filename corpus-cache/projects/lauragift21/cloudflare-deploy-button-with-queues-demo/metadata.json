@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/cloudflare-deploy-button-with-queues-demo/main/package.json",
+  "repo": "cloudflare-deploy-button-with-queues-demo",
+  "repoUrl": "https://github.com/lauragift21/cloudflare-deploy-button-with-queues-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/cloudflare-deploy-button-with-queues-demo/main/wrangler.jsonc"
+}

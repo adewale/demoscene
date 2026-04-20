@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/react-router-hono-vite-cf-example/main/package.json",
+  "repo": "react-router-hono-vite-cf-example",
+  "repoUrl": "https://github.com/kristianfreeman/react-router-hono-vite-cf-example",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/react-router-hono-vite-cf-example/main/wrangler.jsonc"
+}

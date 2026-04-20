@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/whip-it-good-stream/main/package.json",
+  "repo": "whip-it-good-stream",
+  "repoUrl": "https://github.com/craigsdennis/whip-it-good-stream",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/whip-it-good-stream/main/wrangler.json"
+}

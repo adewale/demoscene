@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "adewale",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/adewale/embed.oshineye.dev/main/package.json",
+  "repo": "embed.oshineye.dev",
+  "repoUrl": "https://github.com/adewale/embed.oshineye.dev",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/adewale/embed.oshineye.dev/main/wrangler.jsonc"
+}

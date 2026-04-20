@@ -1,0 +1,69 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "punderful"
+main = "src/index.tsx"
+compatibility_date = "2024-10-22"
+compatibility_flags = ["experimental"]
+
+
+# Workers Logs
+# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+# Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
+[observability]
+enabled = true
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "punderful"
+database_id = "6975d5b9-7eda-49ea-8513-b2d5eee5823c"
+
+[[workflows]]
+# name of your workflow
+name = "publish"
+# binding name env.MYWORKFLOW
+binding = "PUBLISH"
+# this is class that extends the Workflow class in src/index.ts
+class_name = "PublishWorkflow"
+
+[[workflows]]
+# name of your workflow
+name = "interaction"
+# binding name env.MYWORKFLOW
+binding = "INTERACTION"
+# this is class that extends the Workflow class in src/index.ts
+class_name = "InteractionWorkfow"
+
+[[workflows]]
+# name of your workflow
+name = "leaderboard"
+# binding name env.MYWORKFLOW
+binding = "LEADERBOARD_WORKFLOW"
+# this is class that extends the Workflow class in src/index.ts
+class_name = "LeaderboardWorkflow"
+
+[[workflows]]
+# name of your workflow
+name = "puntificator"
+# binding name env.MYWORKFLOW
+binding = "PUNTIFICATOR"
+# this is class that extends the Workflow class in src/index.ts
+class_name = "PuntificatorWorkflow"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE"
+# TODO: punderful
+index_name = "punderful"
+
+[[kv_namespaces]]
+binding = "LEADERBOARD"
+id = "d2d19cbf570442daa29fcc4e6aa4a266"
+
+# Every 30 minutes runs scheduled Leaderboard
+[triggers]
+crons = ["*/30 * * * *"]

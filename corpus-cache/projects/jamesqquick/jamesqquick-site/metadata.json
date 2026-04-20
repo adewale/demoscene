@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jamesqquick",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jamesqquick/jamesqquick-site/main/package.json",
+  "repo": "jamesqquick-site",
+  "repoUrl": "https://github.com/jamesqquick/jamesqquick-site",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jamesqquick/jamesqquick-site/main/wrangler.jsonc"
+}

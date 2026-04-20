@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/basic-chat-newb/main/package.json",
+  "repo": "basic-chat-newb",
+  "repoUrl": "https://github.com/craigsdennis/basic-chat-newb",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/basic-chat-newb/main/wrangler.jsonc"
+}

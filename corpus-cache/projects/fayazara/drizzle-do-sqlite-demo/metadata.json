@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/drizzle-do-sqlite-demo/main/package.json",
+  "repo": "drizzle-do-sqlite-demo",
+  "repoUrl": "https://github.com/fayazara/drizzle-do-sqlite-demo",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/drizzle-do-sqlite-demo/main/wrangler.toml"
+}

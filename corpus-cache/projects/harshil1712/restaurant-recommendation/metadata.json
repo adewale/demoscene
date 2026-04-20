@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/restaurant-recommendation/main/package.json",
+  "repo": "restaurant-recommendation",
+  "repoUrl": "https://github.com/harshil1712/restaurant-recommendation",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/restaurant-recommendation/main/wrangler.jsonc"
+}

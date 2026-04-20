@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/microsite/main/package.json",
+  "repo": "microsite",
+  "repoUrl": "https://github.com/kristianfreeman/microsite",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/microsite/main/wrangler.json"
+}

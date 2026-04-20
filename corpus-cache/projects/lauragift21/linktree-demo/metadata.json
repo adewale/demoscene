@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/linktree-demo/master/package.json",
+  "repo": "linktree-demo",
+  "repoUrl": "https://github.com/lauragift21/linktree-demo",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/linktree-demo/master/wrangler.toml"
+}

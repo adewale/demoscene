@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/punderful-workflows/main/package.json",
+  "repo": "punderful-workflows",
+  "repoUrl": "https://github.com/craigsdennis/punderful-workflows",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/punderful-workflows/main/wrangler.toml"
+}

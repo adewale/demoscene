@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/wildebeest/main/package.json",
+  "repo": "wildebeest",
+  "repoUrl": "https://github.com/yusukebe/wildebeest",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/wildebeest/main/wrangler.toml"
+}

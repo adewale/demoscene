@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/ramen-plugin/main/package.json",
+  "repo": "ramen-plugin",
+  "repoUrl": "https://github.com/yusukebe/ramen-plugin",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/ramen-plugin/main/wrangler.toml"
+}

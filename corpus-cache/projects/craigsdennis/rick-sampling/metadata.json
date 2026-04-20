@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/rick-sampling/main/package.json",
+  "repo": "rick-sampling",
+  "repoUrl": "https://github.com/craigsdennis/rick-sampling",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/rick-sampling/main/wrangler.jsonc"
+}

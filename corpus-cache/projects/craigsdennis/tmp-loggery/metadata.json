@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/tmp-loggery/main/package.json",
+  "repo": "tmp-loggery",
+  "repoUrl": "https://github.com/craigsdennis/tmp-loggery",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/tmp-loggery/main/wrangler.toml"
+}

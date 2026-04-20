@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/motherly-caring-props/main/package.json",
+  "repo": "motherly-caring-props",
+  "repoUrl": "https://github.com/craigsdennis/motherly-caring-props",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/motherly-caring-props/main/wrangler.jsonc"
+}

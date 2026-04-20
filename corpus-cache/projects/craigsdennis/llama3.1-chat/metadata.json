@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/llama3.1-chat/main/package.json",
+  "repo": "llama3.1-chat",
+  "repoUrl": "https://github.com/craigsdennis/llama3.1-chat",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/llama3.1-chat/main/wrangler.toml"
+}

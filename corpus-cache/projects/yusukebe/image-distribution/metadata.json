@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/image-distribution/main/package.json",
+  "repo": "image-distribution",
+  "repoUrl": "https://github.com/yusukebe/image-distribution",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/image-distribution/main/wrangler.toml"
+}

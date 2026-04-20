@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "zeke",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/zeke/gem.wtf/main/package.json",
+  "repo": "gem.wtf",
+  "repoUrl": "https://github.com/zeke/gem.wtf",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/zeke/gem.wtf/main/wrangler.jsonc"
+}

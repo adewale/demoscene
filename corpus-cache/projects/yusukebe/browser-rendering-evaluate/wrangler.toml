@@ -1,0 +1,8 @@
+name = "browser-rendering-evaluate"
+compatibility_date = "2023-03-14"
+node_compat = true
+
+browser = { binding = "MY_BROWSER", type = "browser" }
+
+[site]
+bucket = "./site"

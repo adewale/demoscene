@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/tool-calling-arcade-workers-ai/main/package.json",
+  "repo": "tool-calling-arcade-workers-ai",
+  "repoUrl": "https://github.com/craigsdennis/tool-calling-arcade-workers-ai",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/tool-calling-arcade-workers-ai/main/wrangler.jsonc"
+}

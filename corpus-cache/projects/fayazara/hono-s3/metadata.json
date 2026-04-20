@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/hono-s3/main/package.json",
+  "repo": "hono-s3",
+  "repoUrl": "https://github.com/fayazara/hono-s3",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/hono-s3/main/wrangler.toml"
+}

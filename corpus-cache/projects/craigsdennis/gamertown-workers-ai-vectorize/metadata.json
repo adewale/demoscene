@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/gamertown-workers-ai-vectorize/main/package.json",
+  "repo": "gamertown-workers-ai-vectorize",
+  "repoUrl": "https://github.com/craigsdennis/gamertown-workers-ai-vectorize",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/gamertown-workers-ai-vectorize/main/wrangler.toml"
+}

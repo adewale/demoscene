@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/test-template-vc-wai/main/package.json",
+  "repo": "test-template-vc-wai",
+  "repoUrl": "https://github.com/craigsdennis/test-template-vc-wai",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/test-template-vc-wai/main/wrangler.toml"
+}

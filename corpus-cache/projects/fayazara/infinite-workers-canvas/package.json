@@ -1,0 +1,33 @@
+{
+  "name": "workers-canvas",
+  "description": "Infinite canvas where every block is a live AI-generated Cloudflare Worker sandbox",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "deploy": "vite build && wrangler deploy",
+    "types": "wrangler types env.d.ts --include-runtime false"
+  },
+  "dependencies": {
+    "@cloudflare/worker-bundler": "*",
+    "@xyflow/react": "^12.6.4",
+    "lucide-react": "^1.6.0",
+    "openai": "^6.32.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.30.1",
+    "@cloudflare/workers-types": "^4.20250124.0",
+    "@tailwindcss/vite": "^4",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.4",
+    "wrangler": "^4.10.0"
+  }
+}

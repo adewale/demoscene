@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/llamaguard-rails-ai-gateway/main/package.json",
+  "repo": "llamaguard-rails-ai-gateway",
+  "repoUrl": "https://github.com/craigsdennis/llamaguard-rails-ai-gateway",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/llamaguard-rails-ai-gateway/main/wrangler.jsonc"
+}

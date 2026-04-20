@@ -1,0 +1,10 @@
+{
+  "name": "pages-r2",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.63.2"
+  }
+}

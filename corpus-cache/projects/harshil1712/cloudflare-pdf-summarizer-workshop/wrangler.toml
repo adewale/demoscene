@@ -1,0 +1,29 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "<FIRST_NAME+LAST_NAME>-cloudflare-pdf-summarizer-workshop"
+main = "src/index.ts"
+compatibility_date = "2024-10-22"
+
+# Static Assets
+# Docs: https://developers.cloudflare.com/workers/static-assets/
+# [assets]
+# directory = "public"
+
+# Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#r2-buckets
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "<firstname-lastname>-bucket"
+
+# Bind a Queue consumer. Queue Consumers can retrieve tasks scheduled by Producers to act on them.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#queues
+# [[queues.consumers]]
+# queue = "<firstname-lastname>-queue"
+
+# Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
+# [ai]
+# binding = "AI"
+
+# Workers Logs
+# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+# Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs

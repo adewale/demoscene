@@ -1,0 +1,22 @@
+{
+	"account_id": "e9bc21da719562a3e45d77de7dd042de",
+	"compatibility_date": "2026-04-15",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"name": "browser-run-tools",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"browser": {
+		"binding": "MYBROWSER"
+	},
+	"ai": {
+		"binding": "AI"
+	},
+	"observability": {
+		"enabled": true
+	}
+}

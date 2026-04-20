@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-dishaster/main/package.json",
+  "repo": "aiave-dishaster",
+  "repoUrl": "https://github.com/craigsdennis/aiave-dishaster",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-dishaster/main/wrangler.jsonc"
+}

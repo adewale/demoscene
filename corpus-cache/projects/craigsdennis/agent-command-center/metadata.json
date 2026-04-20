@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/agent-command-center/main/package.json",
+  "repo": "agent-command-center",
+  "repoUrl": "https://github.com/craigsdennis/agent-command-center",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/agent-command-center/main/wrangler.jsonc"
+}

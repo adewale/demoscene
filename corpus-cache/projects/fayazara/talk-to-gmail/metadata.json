@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/talk-to-gmail/main/package.json",
+  "repo": "talk-to-gmail",
+  "repoUrl": "https://github.com/fayazara/talk-to-gmail",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/talk-to-gmail/main/wrangler.jsonc"
+}

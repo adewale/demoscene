@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/careless-whisper-workers-ai/main/package.json",
+  "repo": "careless-whisper-workers-ai",
+  "repoUrl": "https://github.com/craigsdennis/careless-whisper-workers-ai",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/careless-whisper-workers-ai/main/wrangler.toml"
+}

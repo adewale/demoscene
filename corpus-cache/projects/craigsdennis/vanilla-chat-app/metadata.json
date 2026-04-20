@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/vanilla-chat-app/main/package.json",
+  "repo": "vanilla-chat-app",
+  "repoUrl": "https://github.com/craigsdennis/vanilla-chat-app",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/vanilla-chat-app/main/wrangler.toml"
+}

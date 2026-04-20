@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/openai-responses-mcp-client-enabled/main/package.json",
+  "repo": "openai-responses-mcp-client-enabled",
+  "repoUrl": "https://github.com/craigsdennis/openai-responses-mcp-client-enabled",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/openai-responses-mcp-client-enabled/main/wrangler.jsonc"
+}

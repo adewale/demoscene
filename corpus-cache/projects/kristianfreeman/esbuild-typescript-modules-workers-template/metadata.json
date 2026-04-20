@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/esbuild-typescript-modules-workers-template/main/package.json",
+  "repo": "esbuild-typescript-modules-workers-template",
+  "repoUrl": "https://github.com/kristianfreeman/esbuild-typescript-modules-workers-template",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/esbuild-typescript-modules-workers-template/main/wrangler.toml"
+}

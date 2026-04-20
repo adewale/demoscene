@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/domainmcp/main/package.json",
+  "repo": "domainmcp",
+  "repoUrl": "https://github.com/kristianfreeman/domainmcp",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/domainmcp/main/wrangler.jsonc"
+}

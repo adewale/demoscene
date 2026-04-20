@@ -1,0 +1,23 @@
+{
+	"name": "read-articles",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --remote",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"@cloudflare/workers-types": "^4.20250320.0",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.10.0"
+	},
+	"dependencies": {
+		"@cloudflare/puppeteer": "^0.0.14",
+		"hono": "^4.7.5"
+	}
+}

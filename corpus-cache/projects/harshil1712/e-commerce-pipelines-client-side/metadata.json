@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/e-commerce-pipelines-client-side/main/package.json",
+  "repo": "e-commerce-pipelines-client-side",
+  "repoUrl": "https://github.com/harshil1712/e-commerce-pipelines-client-side",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/e-commerce-pipelines-client-side/main/wrangler.jsonc"
+}

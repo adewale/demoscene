@@ -1,0 +1,70 @@
+{
+  "name": "myreads-deploy-test",
+  "description": "Build a full-stack web application with React Router 7.",
+  "cloudflare": {
+    "label": "React Router Framework Starter",
+    "products": [
+      "Workers"
+    ],
+    "categories": [
+      "storage"
+    ],
+    "icon_urls": [
+      "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/5ca0ca32-e897-4699-d4c1-6b680512f000/public"
+    ],
+    "preview_image_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/bfdc2f85-e5c9-4c92-128b-3a6711249800/public",
+    "publish": true
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20250607.0",
+    "bcryptjs": "^3.0.2",
+    "isbot": "5.1.26",
+    "jsonwebtoken": "^9.0.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router": "7.5.2",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-code": "^1.0.21",
+    "@cloudflare/vite-plugin": "1.2.4",
+    "@playwright/test": "^1.52.0",
+    "@react-router/dev": "7.5.2",
+    "@tailwindcss/vite": "4.1.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.19",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.1",
+    "@vitejs/plugin-react": "^4.5.1",
+    "@vitest/coverage-v8": "^3.2.2",
+    "@vitest/ui": "^3.2.2",
+    "happy-dom": "^17.6.3",
+    "tailwindcss": "4.1.1",
+    "typescript": "5.8.3",
+    "vite": "6.3.5",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "^3.2.2",
+    "wrangler": "^4.19.1"
+  },
+  "scripts": {
+    "build": "react-router build",
+    "cf-typegen": "wrangler types && react-router typegen",
+    "check": "tsc && react-router build && wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "dev": "react-router dev",
+    "preview": "npm run build && vite preview",
+    "typegen": "wrangler types && react-router typegen",
+    "typecheck": "npm run typegen && tsc -b",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "dev:local": "npm run build && wrangler dev --local"
+  },
+  "type": "module"
+}

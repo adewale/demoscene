@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/craigsdennis-blog/main/package.json",
+  "repo": "craigsdennis-blog",
+  "repoUrl": "https://github.com/craigsdennis/craigsdennis-blog",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/craigsdennis-blog/main/wrangler.jsonc"
+}

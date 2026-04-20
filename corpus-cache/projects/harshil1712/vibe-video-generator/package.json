@@ -1,0 +1,19 @@
+{
+  "name": "claude-opus-video-generation",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.9",
+    "@cloudflare/ai-gateway": "^0.0.6",
+    "@cloudflare/sandbox": "^0.7.0",
+    "ai": "^6.0.24",
+    "hono": "^4.10.6"
+  },
+  "devDependencies": {
+    "wrangler": "^4.59.3"
+  }
+}

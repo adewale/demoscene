@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/chatgpt-pinecone-workers-plugin/main/package.json",
+  "repo": "chatgpt-pinecone-workers-plugin",
+  "repoUrl": "https://github.com/kristianfreeman/chatgpt-pinecone-workers-plugin",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/chatgpt-pinecone-workers-plugin/main/wrangler.toml"
+}

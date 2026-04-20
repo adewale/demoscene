@@ -16,7 +16,7 @@ This keeps the app simple at runtime while giving the feed a strong card-oriente
 ## External Integrations
 
 - GitHub REST API for repository discovery and repository metadata
-- GitHub raw content endpoints for top-level `README.md` and Wrangler config fetches
+- GitHub raw content endpoints for top-level `README.md`, `package.json`, and Wrangler config fetches
 - GitHub repo HTML for homepage and preview-image hints
 
 ## Packages

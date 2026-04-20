@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/mixtral-cf-tunnel-ollama/main/package.json",
+  "repo": "mixtral-cf-tunnel-ollama",
+  "repoUrl": "https://github.com/kristianfreeman/mixtral-cf-tunnel-ollama",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/mixtral-cf-tunnel-ollama/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/do-sqlite-migration/main/package.json",
+  "repo": "do-sqlite-migration",
+  "repoUrl": "https://github.com/harshil1712/do-sqlite-migration",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/do-sqlite-migration/main/wrangler.jsonc"
+}

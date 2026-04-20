@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/pdf-summarizer-r2-event-notification/main/package.json",
+  "repo": "pdf-summarizer-r2-event-notification",
+  "repoUrl": "https://github.com/harshil1712/pdf-summarizer-r2-event-notification",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/pdf-summarizer-r2-event-notification/main/wrangler.toml"
+}

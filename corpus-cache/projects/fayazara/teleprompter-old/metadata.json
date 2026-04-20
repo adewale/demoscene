@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/teleprompter-old/main/package.json",
+  "repo": "teleprompter-old",
+  "repoUrl": "https://github.com/fayazara/teleprompter-old",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/teleprompter-old/main/wrangler.json"
+}

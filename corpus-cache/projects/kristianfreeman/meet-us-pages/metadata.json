@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/meet-us-pages/main/package.json",
+  "repo": "meet-us-pages",
+  "repoUrl": "https://github.com/kristianfreeman/meet-us-pages",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/meet-us-pages/main/wrangler.toml"
+}

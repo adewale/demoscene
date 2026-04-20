@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-with-preact/main/package.json",
+  "repo": "hono-with-preact",
+  "repoUrl": "https://github.com/yusukebe/hono-with-preact",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-with-preact/main/wrangler.toml"
+}

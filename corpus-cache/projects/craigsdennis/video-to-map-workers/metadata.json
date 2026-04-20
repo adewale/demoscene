@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/video-to-map-workers/main/package.json",
+  "repo": "video-to-map-workers",
+  "repoUrl": "https://github.com/craigsdennis/video-to-map-workers",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/video-to-map-workers/main/wrangler.jsonc"
+}

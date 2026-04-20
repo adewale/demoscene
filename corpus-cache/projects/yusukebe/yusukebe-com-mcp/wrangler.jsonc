@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yusukebe-com-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-24",
+  "routes": [
+    {
+      "pattern": "mcp.yusukebe.com",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "ramen-api",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "validate": "vitest run --config vitest.validation.config.ts",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "tail": "wrangler tail",
+    "cf-typegen": "wrangler types"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@hono/graphql-server": "^0.4.1",
+    "@hono/mcp": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "graphql": "^16.6.0",
+    "hono": "^4.7.11",
+    "zod": "^3.25.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.36",
+    "@hono/eslint-config": "^0.0.3",
+    "@types/node": "^22.15.30",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "vitest": "~3.1.0",
+    "wrangler": "^4.19.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "resolutions": {
+    "graphql": "^16.6.0"
+  }
+}

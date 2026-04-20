@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "dev": "concurrently \"npm:dev:*\"",
+    "dev:client": "esbuild --watch --outdir=./site/assets --bundle src/client.tsx",
+    "dev:server": "wrangler dev --local --live-reload src/server.tsx",
+    "build:client": "esbuild --minify --outdir=./site/assets --bundle src/client.tsx",
+    "deploy": "yarn build:client && wrangler publish --minify src/server.tsx"
+  },
+  "dependencies": {
+    "hono": "^3.1.6",
+    "preact": "^10.13.2",
+    "preact-render-to-string": "^6.0.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20221111.1",
+    "concurrently": "^8.0.1",
+    "wrangler": "^2.7.1"
+  }
+}

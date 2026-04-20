@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/python-repl-workers-containers/main/package.json",
+  "repo": "python-repl-workers-containers",
+  "repoUrl": "https://github.com/craigsdennis/python-repl-workers-containers",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/python-repl-workers-containers/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-vite-react-stack-example/main/package.json",
+  "repo": "hono-vite-react-stack-example",
+  "repoUrl": "https://github.com/yusukebe/hono-vite-react-stack-example",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-vite-react-stack-example/main/wrangler.jsonc"
+}

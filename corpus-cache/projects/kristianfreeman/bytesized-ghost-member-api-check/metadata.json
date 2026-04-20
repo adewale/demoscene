@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/bytesized-ghost-member-api-check/main/package.json",
+  "repo": "bytesized-ghost-member-api-check",
+  "repoUrl": "https://github.com/kristianfreeman/bytesized-ghost-member-api-check",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/bytesized-ghost-member-api-check/main/wrangler.toml"
+}

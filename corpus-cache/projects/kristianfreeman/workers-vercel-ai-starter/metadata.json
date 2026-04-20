@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/workers-vercel-ai-starter/main/package.json",
+  "repo": "workers-vercel-ai-starter",
+  "repoUrl": "https://github.com/kristianfreeman/workers-vercel-ai-starter",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/workers-vercel-ai-starter/main/wrangler.jsonc"
+}

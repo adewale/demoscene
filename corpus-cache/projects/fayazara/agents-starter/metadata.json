@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/agents-starter/main/package.json",
+  "repo": "agents-starter",
+  "repoUrl": "https://github.com/fayazara/agents-starter",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/agents-starter/main/wrangler.jsonc"
+}

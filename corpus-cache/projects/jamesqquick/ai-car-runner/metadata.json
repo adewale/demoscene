@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jamesqquick",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jamesqquick/ai-car-runner/main/package.json",
+  "repo": "ai-car-runner",
+  "repoUrl": "https://github.com/jamesqquick/ai-car-runner",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jamesqquick/ai-car-runner/main/wrangler.jsonc"
+}

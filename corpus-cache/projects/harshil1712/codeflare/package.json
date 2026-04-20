@@ -1,0 +1,49 @@
+{
+  "name": "codeflare",
+  "description": "Generate beautiful code screenshots powered by Cloudflare Workers",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "auth:generate": "npx auth generate --output ./src/db/auth-schema.ts --yes",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "npx wrangler d1 migrations apply DB --local"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.5.3",
+    "@cloudflare/kumo": "^1.1.0",
+    "@cloudflare/puppeteer": "^1.0.6",
+    "@phosphor-icons/react": "^2.1.10",
+    "@tanstack/react-router": "^1.163.3",
+    "better-auth": "^1.5.1",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.9",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-simple-code-editor": "^0.14.1",
+    "shiki": "^3.22.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.23.1",
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^25.2.2",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react-swc": "^4.0.0",
+    "drizzle-kit": "^0.31.9",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2",
+    "wrangler": "^4.63.0"
+  }
+}

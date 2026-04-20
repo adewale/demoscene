@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/slidearoke-agents/main/package.json",
+  "repo": "slidearoke-agents",
+  "repoUrl": "https://github.com/craigsdennis/slidearoke-agents",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/slidearoke-agents/main/wrangler.jsonc"
+}

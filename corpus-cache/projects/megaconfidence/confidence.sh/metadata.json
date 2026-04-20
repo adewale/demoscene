@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "megaconfidence",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/megaconfidence/confidence.sh/main/package.json",
+  "repo": "confidence.sh",
+  "repoUrl": "https://github.com/megaconfidence/confidence.sh",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/megaconfidence/confidence.sh/main/wrangler.jsonc"
+}

@@ -46,6 +46,10 @@ describe("TEAM_MEMBERS", () => {
           "login": "jamesqquick",
           "name": "James",
         },
+        {
+          "login": "zeke",
+          "name": "Zeke",
+        },
       ]
     `);
   });

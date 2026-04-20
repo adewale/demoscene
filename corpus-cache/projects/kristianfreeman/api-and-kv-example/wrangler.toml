@@ -1,0 +1,7 @@
+name = "api-and-kv-example"
+main = "src/index.ts"
+compatibility_date = "2024-03-20"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "45ce0cdcc47947eba9022157f60f6789"

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/hono-stripe-test/main/package.json",
+  "repo": "hono-stripe-test",
+  "repoUrl": "https://github.com/fayazara/hono-stripe-test",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/hono-stripe-test/main/wrangler.json"
+}

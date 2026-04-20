@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/ai-ave-speak-easier/main/package.json",
+  "repo": "ai-ave-speak-easier",
+  "repoUrl": "https://github.com/craigsdennis/ai-ave-speak-easier",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/ai-ave-speak-easier/main/wrangler.jsonc"
+}

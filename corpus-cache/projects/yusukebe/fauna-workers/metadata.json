@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/fauna-workers/main/package.json",
+  "repo": "fauna-workers",
+  "repoUrl": "https://github.com/yusukebe/fauna-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/fauna-workers/main/wrangler.toml"
+}

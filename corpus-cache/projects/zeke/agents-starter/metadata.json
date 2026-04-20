@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "zeke",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/zeke/agents-starter/main/package.json",
+  "repo": "agents-starter",
+  "repoUrl": "https://github.com/zeke/agents-starter",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/zeke/agents-starter/main/wrangler.jsonc"
+}

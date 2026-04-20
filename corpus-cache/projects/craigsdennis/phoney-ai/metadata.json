@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/phoney-ai/main/package.json",
+  "repo": "phoney-ai",
+  "repoUrl": "https://github.com/craigsdennis/phoney-ai",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/phoney-ai/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/live-demo-remote-mcp-server-authless/main/package.json",
+  "repo": "live-demo-remote-mcp-server-authless",
+  "repoUrl": "https://github.com/craigsdennis/live-demo-remote-mcp-server-authless",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/live-demo-remote-mcp-server-authless/main/wrangler.jsonc"
+}

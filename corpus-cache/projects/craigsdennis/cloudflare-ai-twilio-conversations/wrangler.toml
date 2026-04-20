@@ -1,0 +1,9 @@
+name = "cf-conv-ts-ai"
+main = "src/index.ts"
+compatibility_date = "2023-09-22"
+
+[vars]
+CONVERSATION_SERVICE_SID = "IS9dfac886f2f445798067f9c8cf8553b0"
+
+[ai]
+binding = "AI"

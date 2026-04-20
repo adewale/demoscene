@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "megaconfidence",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/megaconfidence/image-transformer/main/package.json",
+  "repo": "image-transformer",
+  "repoUrl": "https://github.com/megaconfidence/image-transformer",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/megaconfidence/image-transformer/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "megaconfidence",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/megaconfidence/chatwithdb/main/package.json",
+  "repo": "chatwithdb",
+  "repoUrl": "https://github.com/megaconfidence/chatwithdb",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/megaconfidence/chatwithdb/main/wrangler.jsonc"
+}

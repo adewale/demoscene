@@ -1,0 +1,8 @@
+name = "connect-nyc"
+type = "webpack"
+workers_dev = true
+account_id = "dc56444c4c955a1653106ccf997c1067"
+
+[site]
+bucket = "./build"
+entry-point = "workers-site"

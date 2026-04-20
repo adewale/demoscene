@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "zeke",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/zeke/dreamcatcher/main/package.json",
+  "repo": "dreamcatcher",
+  "repoUrl": "https://github.com/zeke/dreamcatcher",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/zeke/dreamcatcher/main/wrangler.toml"
+}

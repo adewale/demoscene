@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "megaconfidence",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/megaconfidence/chatcloudflare/main/package.json",
+  "repo": "chatcloudflare",
+  "repoUrl": "https://github.com/megaconfidence/chatcloudflare",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/megaconfidence/chatcloudflare/main/wrangler.toml"
+}

@@ -1,0 +1,18 @@
+{
+	"name": "unified-api-playground",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"dependencies": {
+		"@ai-sdk/anthropic": "^2.0.54",
+		"@cloudflare/ai-gateway": "^0.0.5",
+		"ai": "^5.0.108",
+		"hono": "^4.10.8"
+	},
+	"devDependencies": {
+		"wrangler": "^4.53.0"
+	}
+}

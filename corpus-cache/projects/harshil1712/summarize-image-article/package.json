@@ -1,0 +1,16 @@
+{
+	"name": "summarize-image-article",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"dependencies": {
+		"@cloudflare/puppeteer": "^1.0.4",
+		"hono": "^4.9.6"
+	},
+	"devDependencies": {
+		"wrangler": "^4.35.0"
+	}
+}

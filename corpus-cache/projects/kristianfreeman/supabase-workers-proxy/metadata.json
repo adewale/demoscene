@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/supabase-workers-proxy/main/package.json",
+  "repo": "supabase-workers-proxy",
+  "repoUrl": "https://github.com/kristianfreeman/supabase-workers-proxy",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/supabase-workers-proxy/main/wrangler.toml"
+}

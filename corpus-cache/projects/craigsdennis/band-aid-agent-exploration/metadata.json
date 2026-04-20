@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/band-aid-agent-exploration/main/package.json",
+  "repo": "band-aid-agent-exploration",
+  "repoUrl": "https://github.com/craigsdennis/band-aid-agent-exploration",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/band-aid-agent-exploration/main/wrangler.json"
+}

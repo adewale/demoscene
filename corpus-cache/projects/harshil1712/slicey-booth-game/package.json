@@ -1,0 +1,34 @@
+{
+  "name": "booth-game",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:touch": "wrangler d1 execute slicey-game-db --local --command='SELECT 1'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply slicey-game-db --local",
+    "db:migrate:prod": "ENVIROMENT=production drizzle-kit migrate",
+    "db:seed": "tsx seed.ts",
+    "db:setup": "npm run db:touch && npm run db:generate && npm run db:migrate",
+    "db:studio": "drizzle-kit studio",
+    "fiberplane": "npx @fiberplane/studio@latest",
+    "tunnel": "cloudflared tunnel --url http://localhost:8787"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.7",
+    "hono-party": "^0.0.4",
+    "nanoid": "^5.0.9",
+    "partyserver": "^0.0.63"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "@fiberplane/hono-otel": "^0.6.2",
+    "@libsql/client": "^0.14.0",
+    "drizzle-kit": "^0.28.1",
+    "drizzle-seed": "^0.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4",
+    "wrangler": "^3.95.0"
+  }
+}

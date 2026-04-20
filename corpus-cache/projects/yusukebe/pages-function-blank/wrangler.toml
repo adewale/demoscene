@@ -1,0 +1,7 @@
+name = "pages-r2"
+compatibility_date = "2024-07-09"
+pages_build_output_dir = "./app"
+
+r2_buckets  = [
+  { binding = "ASSETS", bucket_name ="static-assets"},
+]

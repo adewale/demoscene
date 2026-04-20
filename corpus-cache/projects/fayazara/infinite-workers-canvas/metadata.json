@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/infinite-workers-canvas/main/package.json",
+  "repo": "infinite-workers-canvas",
+  "repoUrl": "https://github.com/fayazara/infinite-workers-canvas",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/infinite-workers-canvas/main/wrangler.jsonc"
+}

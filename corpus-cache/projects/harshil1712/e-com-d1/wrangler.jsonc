@@ -1,0 +1,29 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "read-replication-website",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2025-02-14",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "enable_d1_with_sessions_api"
+  ],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "d1-lambros-test-v3-eagle-cdScIHWO",
+      "database_id": "dd4818c7-9be5-4230-8982-9d0fc57b1d2f",
+      "database_internal_env": "staging"
+    }
+  ]
+}

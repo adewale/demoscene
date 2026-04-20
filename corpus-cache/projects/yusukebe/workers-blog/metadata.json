@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/workers-blog/main/package.json",
+  "repo": "workers-blog",
+  "repoUrl": "https://github.com/yusukebe/workers-blog",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/workers-blog/main/wrangler.toml"
+}

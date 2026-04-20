@@ -1,0 +1,9 @@
+name = "todos"
+main = "src/index.js"
+compatibility_date = "2023-10-02"
+
+# Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
+# Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
+kv_namespaces = [
+  { binding = "TODOS", id="2be3dc4682554a429772048df90c0347", preview_id = "4fcda6b50698431ab426cd8d53465bc1" }
+]

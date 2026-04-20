@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/my-app-with-vite-plugin-cloudflare/main/package.json",
+  "repo": "my-app-with-vite-plugin-cloudflare",
+  "repoUrl": "https://github.com/yusukebe/my-app-with-vite-plugin-cloudflare",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/my-app-with-vite-plugin-cloudflare/main/wrangler.jsonc"
+}

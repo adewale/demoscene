@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/convertkit-graphql-api/master/package.json",
+  "repo": "convertkit-graphql-api",
+  "repoUrl": "https://github.com/kristianfreeman/convertkit-graphql-api",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/convertkit-graphql-api/master/wrangler.toml"
+}

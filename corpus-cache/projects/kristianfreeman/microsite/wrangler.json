@@ -1,0 +1,12 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kristian-lol",
+  "main": "src/index.js",
+  "compatibility_date": "2025-02-04",
+  "kv_namespaces": [{ "binding": "kv", "id": "dd05d2049afb47a3b0ca0363b516ae61" }],
+  "routes": [{ "pattern": "kristian.lol/*", "zone_id": "e8a54155b5557e96ceab704646f68f91" }]
+}

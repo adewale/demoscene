@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/workers-llamaguard-api-for-blog/main/package.json",
+  "repo": "workers-llamaguard-api-for-blog",
+  "repoUrl": "https://github.com/craigsdennis/workers-llamaguard-api-for-blog",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/workers-llamaguard-api-for-blog/main/wrangler.toml"
+}

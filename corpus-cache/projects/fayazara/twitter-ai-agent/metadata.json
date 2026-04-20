@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/twitter-ai-agent/main/package.json",
+  "repo": "twitter-ai-agent",
+  "repoUrl": "https://github.com/fayazara/twitter-ai-agent",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/twitter-ai-agent/main/wrangler.jsonc"
+}

@@ -41,14 +41,15 @@ For each sync run:
 9. Extract homepage and preview-image candidates from the repo page HTML.
 10. Try the top-level Wrangler config URLs in a fixed order, preferring the repo's actual default branch first.
 11. If no top-level Wrangler config exists, the repo is not shown in the site.
-12. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
-13. Normalize README preview content into readable body text during preview derivation, stripping headings, badge blocks, deploy buttons, and decorative image-link icon strips.
-14. Infer Cloudflare products from the Wrangler config.
-15. Create or update the project record, including `repoCreatedAt` and `repoCreationOrder`.
-16. Refresh homepage and preview media metadata on later runs.
-17. Ignore later README changes.
-18. Continue processing other repos even if one repo or account fails.
-19. Return and log a sync summary with counts for accounts scanned and repos discovered, added, updated, removed, invalid-config, and skipped-transiently.
+12. Fetch `package.json` best-effort for supplementary product heuristics such as Sandboxes and Agents.
+13. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
+14. Normalize README preview content into readable body text during preview derivation, stripping headings, badge blocks, deploy buttons, and decorative image-link icon strips.
+15. Infer Cloudflare products from the Wrangler config plus package heuristics.
+16. Create or update the project record, including `repoCreatedAt` and `repoCreationOrder`.
+17. Refresh homepage and preview media metadata on later runs.
+18. Ignore later README changes.
+19. Continue processing other repos even if one repo or account fails.
+20. Return and log a sync summary with counts for accounts scanned and repos discovered, added, updated, removed, invalid-config, and skipped-transiently.
 
 ## Fetch Strategy
 

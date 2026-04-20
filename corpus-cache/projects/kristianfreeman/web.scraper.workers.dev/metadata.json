@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/web.scraper.workers.dev/master/package.json",
+  "repo": "web.scraper.workers.dev",
+  "repoUrl": "https://github.com/kristianfreeman/web.scraper.workers.dev",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/web.scraper.workers.dev/master/wrangler.toml"
+}

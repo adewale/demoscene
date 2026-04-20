@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/cf-sealion-api-demo/main/package.json",
+  "repo": "cf-sealion-api-demo",
+  "repoUrl": "https://github.com/fayazara/cf-sealion-api-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/cf-sealion-api-demo/main/wrangler.jsonc"
+}

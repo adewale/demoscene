@@ -1,0 +1,26 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "cloudflare-deploy-button-with-queues-demo",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-08-26",
+	"observability": {
+		"enabled": true
+	},
+	"queues": {
+		"consumers": [
+	      {
+	        "queue": "queue-demo"
+	      }
+    	],
+		"producers": [
+			{
+				"binding": "MY_QUEUE",
+ 				"queue": "queue-demo"
+			}
+		]
+	}
+}

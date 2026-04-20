@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/saas-admin-template/main/package.json",
+  "repo": "saas-admin-template",
+  "repoUrl": "https://github.com/kristianfreeman/saas-admin-template",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/saas-admin-template/main/wrangler.json"
+}

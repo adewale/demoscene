@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/image-resize-containers/main/package.json",
+  "repo": "image-resize-containers",
+  "repoUrl": "https://github.com/yusukebe/image-resize-containers",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/image-resize-containers/main/wrangler.jsonc"
+}

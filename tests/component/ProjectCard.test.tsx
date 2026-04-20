@@ -81,6 +81,33 @@ describe("ProjectCard", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders icons and docs links for Sandboxes and Agents pills", () => {
+    render(
+      <ProjectCard
+        project={{
+          ...project,
+          products: [
+            { key: "sandboxes", label: "Sandboxes" },
+            { key: "agents", label: "Agents" },
+          ],
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByLabelText("Sandboxes").querySelector("svg"),
+    ).not.toBeNull();
+    expect(screen.getByLabelText("Agents").querySelector("svg")).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Sandboxes" })).toHaveAttribute(
+      "href",
+      "https://developers.cloudflare.com/sandbox/",
+    );
+    expect(screen.getByRole("link", { name: "Agents" })).toHaveAttribute(
+      "href",
+      "https://developers.cloudflare.com/agents/",
+    );
+  });
+
   it("omits optional media and homepage actions when unavailable", () => {
     const { container } = render(
       <ProjectCard

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "adewale",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/adewale/who-to-bother-at-on-x/main/package.json",
+  "repo": "who-to-bother-at-on-x",
+  "repoUrl": "https://github.com/adewale/who-to-bother-at-on-x",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/adewale/who-to-bother-at-on-x/main/wrangler.jsonc"
+}

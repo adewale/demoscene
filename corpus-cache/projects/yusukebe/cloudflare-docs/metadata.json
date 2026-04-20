@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/cloudflare-docs/master/package.json",
+  "repo": "cloudflare-docs",
+  "repoUrl": "https://github.com/yusukebe/cloudflare-docs",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/cloudflare-docs/master/wrangler.toml"
+}

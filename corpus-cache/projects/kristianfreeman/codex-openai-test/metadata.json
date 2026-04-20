@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/codex-openai-test/main/package.json",
+  "repo": "codex-openai-test",
+  "repoUrl": "https://github.com/kristianfreeman/codex-openai-test",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/codex-openai-test/main/wrangler.jsonc"
+}

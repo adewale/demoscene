@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-cinemarketer/main/package.json",
+  "repo": "aiave-cinemarketer",
+  "repoUrl": "https://github.com/craigsdennis/aiave-cinemarketer",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/aiave-cinemarketer/main/wrangler.jsonc"
+}

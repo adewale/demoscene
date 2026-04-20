@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/what-is-this-code/main/package.json",
+  "repo": "what-is-this-code",
+  "repoUrl": "https://github.com/kristianfreeman/what-is-this-code",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/what-is-this-code/main/wrangler.toml"
+}

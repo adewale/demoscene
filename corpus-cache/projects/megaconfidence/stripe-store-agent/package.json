@@ -1,0 +1,21 @@
+{
+	"name": "stripe-store-agent",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@types/ws": "^8.18.1",
+		"typescript": "^5.5.2",
+		"wrangler": "^4.24.3"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.15.1",
+		"agents": "^0.0.106",
+		"resend": "^4.6.0"
+	}
+}

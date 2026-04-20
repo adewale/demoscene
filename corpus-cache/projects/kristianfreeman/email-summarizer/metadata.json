@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/email-summarizer/main/package.json",
+  "repo": "email-summarizer",
+  "repoUrl": "https://github.com/kristianfreeman/email-summarizer",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/email-summarizer/main/wrangler.toml"
+}

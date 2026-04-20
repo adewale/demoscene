@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/hono-xsai-app-repro/main/package.json",
+  "repo": "hono-xsai-app-repro",
+  "repoUrl": "https://github.com/fayazara/hono-xsai-app-repro",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/hono-xsai-app-repro/main/wrangler.jsonc"
+}

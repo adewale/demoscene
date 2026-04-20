@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/remote-mcp-github-oauth-hono/main/package.json",
+  "repo": "remote-mcp-github-oauth-hono",
+  "repoUrl": "https://github.com/yusukebe/remote-mcp-github-oauth-hono",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/remote-mcp-github-oauth-hono/main/wrangler.jsonc"
+}

@@ -1,0 +1,120 @@
+// wrangler.jsonc - Default development configuration (SAFE)
+// Planet CF - Feed Aggregator for Cloudflare Python Workers
+//
+// This config targets test-planet so that `npx wrangler deploy` is always safe.
+// It will NOT touch production resources.
+//
+// To deploy PRODUCTION: npx wrangler deploy -c wrangler.production.jsonc
+//
+// For other instances, see the examples/ directory:
+//
+//   examples/default/            - Minimal lite-mode starting point
+//   examples/planet-cloudflare/  - Full-featured configuration
+//   examples/planet-python/      - Planet Python clone
+//   examples/planet-mozilla/     - Planet Mozilla clone
+//
+// To create a new instance:
+//   python scripts/create_instance.py --id my-planet --name "My Planet"
+//
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-planet",
+  "main": "src/main.py",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": ["python_workers", "python_dedicated_snapshot"],
+
+  // CPU time limit - increase from 30s default for feed parsing
+  "limits": {
+    "cpu_ms": 60000
+  },
+
+  // Environment variables
+  "vars": {
+    "PLANET_NAME": "Planet Cloudflare (dev)",
+    "PLANET_DESCRIPTION": "Aggregated posts from Cloudflare employees and community",
+    "PLANET_URL": "https://test-planet.adewale-883.workers.dev",
+    "PLANET_OWNER_NAME": "Cloudflare",
+    "RETENTION_DAYS": "90",
+    "RETENTION_MAX_ENTRIES_PER_FEED": "100",
+    "FEED_TIMEOUT_SECONDS": "60",
+    "HTTP_TIMEOUT_SECONDS": "30",
+    // Observability context
+    "THEME": "planet-cloudflare",
+    "DEPLOYMENT_ENVIRONMENT": "development"
+  },
+
+  // Secrets (set via wrangler secret put):
+  // - GITHUB_CLIENT_ID: OAuth client ID
+  // - GITHUB_CLIENT_SECRET: OAuth client secret
+  // - SESSION_SECRET: HMAC key for signed cookies (generate with: openssl rand -hex 32)
+  // - OAUTH_REDIRECT_URI: Full OAuth callback URL
+
+  // Workers Observability
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1.0,
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  },
+
+  // D1 Database (test instance)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "test-planet-db",
+      "database_id": "c0c494c0-6f97-4f55-8af3-9bc8f75cdff1",
+      "remote": true
+    }
+  ],
+
+  // Vectorize (for semantic search - test instance)
+  "vectorize": [
+    {
+      "binding": "SEARCH_INDEX",
+      "index_name": "test-planet-entries",
+      "remote": true
+    }
+  ],
+
+  // Workers AI (for generating embeddings)
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+
+  // Version metadata (for observability)
+  "version_metadata": {
+    "binding": "VERSION_METADATA"
+  },
+
+  // Queues: Scheduler -> Fetcher (test instance)
+  "queues": {
+    "producers": [
+      { "binding": "FEED_QUEUE", "queue": "test-planet-feed-queue" },
+      { "binding": "DEAD_LETTER_QUEUE", "queue": "test-planet-feed-dlq" }
+    ],
+    "consumers": [
+      {
+        "queue": "test-planet-feed-queue",
+        "max_batch_size": 5,
+        "max_batch_timeout": 30,
+        "max_retries": 3,
+        "dead_letter_queue": "test-planet-feed-dlq",
+        "retry_delay": 300
+      }
+    ]
+  },
+
+  // Static assets served via Cloudflare's ASSETS binding
+  "assets": {
+    "directory": "./assets/",
+    "binding": "ASSETS"
+  },
+
+  // No cron trigger in dev - trigger fetches manually
+  "triggers": {
+    "crons": []
+  }
+}

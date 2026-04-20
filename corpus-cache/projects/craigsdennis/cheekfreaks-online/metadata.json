@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/cheekfreaks-online/main/package.json",
+  "repo": "cheekfreaks-online",
+  "repoUrl": "https://github.com/craigsdennis/cheekfreaks-online",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/cheekfreaks-online/main/wrangler.toml"
+}

@@ -1,0 +1,42 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gemma-compliment",
+  "compatibility_date": "2026-04-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true,
+  },
+  "upload_source_maps": true,
+  "ai": {
+    "binding": "AI",
+  },
+  "routes": [
+    {
+      "pattern": "gemma-4-compliments.jilles.fyi",
+      "custom_domain": true,
+    },
+  ],
+  /**
+   * Rate Limiting binding — strict per-IP throttle on the compliment endpoint.
+   * https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+   *
+   * For edge-level protection (before the Worker runs), pair this with WAF
+   * Rate Limiting Rules on the zone:
+   * https://developers.cloudflare.com/waf/rate-limiting-rules/
+   */
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 2,
+        "period": 60,
+      },
+    },
+  ],
+}

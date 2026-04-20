@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bloom-share-personal",
+  "main": "./src/worker/index.ts",
+  "compatibility_date": "2025-10-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  },
+  "r2_buckets": [
+    {
+      "binding": "BLOOM_BUCKET","bucket_name": "bloom-share-videos","preview_bucket_name": "bloom-share-videos"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "BLOOM_DB","database_id": "4478acaf-f674-4c0c-b78d-297967b660f7","database_name": "bloom-share-db"
+    }
+  ]
+}

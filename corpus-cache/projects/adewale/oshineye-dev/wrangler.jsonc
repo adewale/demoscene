@@ -1,0 +1,17 @@
+// wrangler.jsonc
+{
+  "name": "oshineye-dev",
+  "compatibility_date": "2026-02-15",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [
+    { "pattern": "oshineye.dev", "custom_domain": true },
+    { "pattern": "www.oshineye.dev", "custom_domain": true }
+  ]
+}

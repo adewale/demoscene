@@ -350,6 +350,55 @@ binding = "DB"
     );
   });
 
+  it("infers Sandboxes and Agents from package.json heuristics during sync", async () => {
+    await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [buildRepositoryApiUrl("acme", "bookworm")]: buildRepositoryApiResponse(
+          {
+            owner: "acme",
+            repo: "bookworm",
+          },
+        ),
+        "https://github.com/acme/bookworm": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/acme/bookworm/main/wrangler.jsonc": {
+          body: `{
+            "ai": { "binding": "AI" },
+            "r2_buckets": [{ "binding": "WORKSPACE_R2" }],
+            "durable_objects": {
+              "bindings": [{ "name": "BookWormAgent", "class_name": "BookWormAgent" }]
+            }
+          }`,
+        },
+        "https://raw.githubusercontent.com/acme/bookworm/main/package.json": {
+          body: `{
+            "dependencies": {
+              "@cloudflare/shell": "^0.3.2",
+              "@cloudflare/think": "^0.2.1",
+              "agents": "^0.10.2"
+            }
+          }`,
+        },
+        "https://raw.githubusercontent.com/acme/bookworm/main/README.md": {
+          body: "# Bookworm\n\nA reading agent.",
+        },
+      }) as typeof fetch,
+      repositories: ["https://github.com/acme/bookworm"],
+    });
+
+    const payload = await fetchFeedPayload();
+
+    expect(payload.items[0]?.products).toEqual([
+      { key: "workers", label: "Workers" },
+      { key: "r2", label: "R2" },
+      { key: "durable-objects", label: "Durable Objects" },
+      { key: "ai", label: "AI" },
+      { key: "sandboxes", label: "Sandboxes" },
+      { key: "agents", label: "Agents" },
+    ]);
+  });
+
   it("keeps the meaningful web2kindle summary while dropping decorative badge and icon blocks", async () => {
     await syncRepositories(testEnv, {
       fetch: createMockFetch({

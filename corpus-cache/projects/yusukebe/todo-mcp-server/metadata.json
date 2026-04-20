@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/todo-mcp-server/main/package.json",
+  "repo": "todo-mcp-server",
+  "repoUrl": "https://github.com/yusukebe/todo-mcp-server",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/todo-mcp-server/main/wrangler.jsonc"
+}

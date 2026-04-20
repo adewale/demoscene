@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/bindings-worker-connect/main/package.json",
+  "repo": "bindings-worker-connect",
+  "repoUrl": "https://github.com/kristianfreeman/bindings-worker-connect",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/bindings-worker-connect/main/wrangler.jsonc"
+}

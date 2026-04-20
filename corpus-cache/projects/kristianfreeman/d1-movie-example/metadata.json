@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/d1-movie-example/main/package.json",
+  "repo": "d1-movie-example",
+  "repoUrl": "https://github.com/kristianfreeman/d1-movie-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/d1-movie-example/main/wrangler.toml"
+}

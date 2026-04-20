@@ -1,0 +1,28 @@
+{
+	"name": "linkedout-pipelines",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"seed-admin": "tsx scripts/seed-admin.ts"
+	},
+	"dependencies": {
+		"common-tags": "^1.8.2",
+		"hono": "^4.12.3",
+		"marked": "^17.0.3",
+		"qrcode": "^1.5.4",
+		"tsx": "^4.21.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@cloudflare/vitest-pool-workers": "^0.12.18",
+		"@types/common-tags": "^1.8.4",
+		"@types/qrcode": "^1.5.6",
+		"typescript": "^5.9.3",
+		"vitest": "~3.2.0",
+		"wrangler": "^4.69.0"
+	}
+}

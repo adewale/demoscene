@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/chat-workers-ai-base/main/package.json",
+  "repo": "chat-workers-ai-base",
+  "repoUrl": "https://github.com/craigsdennis/chat-workers-ai-base",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/chat-workers-ai-base/main/wrangler.toml"
+}

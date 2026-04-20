@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/api-and-kv-example/main/package.json",
+  "repo": "api-and-kv-example",
+  "repoUrl": "https://github.com/kristianfreeman/api-and-kv-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/api-and-kv-example/main/wrangler.toml"
+}

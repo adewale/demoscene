@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/cloudflare-primitive-picker/main/package.json",
+  "repo": "cloudflare-primitive-picker",
+  "repoUrl": "https://github.com/jillesme/cloudflare-primitive-picker",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/cloudflare-primitive-picker/main/wrangler.jsonc"
+}

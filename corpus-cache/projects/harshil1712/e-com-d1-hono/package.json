@@ -1,0 +1,16 @@
+{
+  "name": "d1-read-replica-hono",
+  "scripts": {
+    "dev": "wrangler dev --remote",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "postdeploy": "wrangler d1 execute DB --file=./db/seed.sql --remote"
+  },
+  "dependencies": {
+    "hono": "^4.7.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250317.0",
+    "wrangler": "^4.2.0"
+  }
+}

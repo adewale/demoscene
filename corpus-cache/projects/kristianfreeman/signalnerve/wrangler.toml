@@ -1,0 +1,7 @@
+name = "signalnerve"
+account_id = "dc56444c4c955a1653106ccf997c1067"
+zone_id = "b6e4c59655bb1e7d3d49419fa667ae53"
+route = "signalnerve.com/*"
+type = "webpack"
+workers_dev = false
+vars = { "GITHUB_USERNAME" = "signalnerve" }

@@ -1,0 +1,25 @@
+{
+	"name": "slidev-worker-assets",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"build": "slidev build && rm -rf dist/_redirects",
+		"dev": "slidev --open",
+		"export": "slidev export",
+		"preview": "npm run build && wrangler dev",
+		"deploy": "npm run build && wrangler deploy",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"typescript": "^5.8.3",
+		"vitest": "^3.2.4",
+		"wrangler": "^4.22.0"
+	},
+	"dependencies": {
+		"@harshil1712/slidev-addon-protected-presenter": "^0.0.2",
+		"@slidev/cli": "^52.0.0",
+		"@slidev/theme-default": "^0.25.0",
+		"@slidev/theme-seriph": "^0.25.0",
+		"hono": "^4.8.3"
+	}
+}

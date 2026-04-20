@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/sushi-ramen-to/main/package.json",
+  "repo": "sushi-ramen-to",
+  "repoUrl": "https://github.com/yusukebe/sushi-ramen-to",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/sushi-ramen-to/main/wrangler.toml"
+}

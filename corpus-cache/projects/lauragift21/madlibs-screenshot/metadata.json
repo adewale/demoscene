@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/madlibs-screenshot/main/package.json",
+  "repo": "madlibs-screenshot",
+  "repoUrl": "https://github.com/lauragift21/madlibs-screenshot",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/madlibs-screenshot/main/wrangler.toml"
+}

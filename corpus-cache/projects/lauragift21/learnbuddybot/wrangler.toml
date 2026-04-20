@@ -1,0 +1,10 @@
+name = "learnbuddybot"
+main = "src/index.ts"
+compatibility_date = "2024-01-29"
+
+[ai]
+binding = "AI"
+
+[vars]
+appID = "1204754274698002482"
+publicKey = "df7bd158c6da43435a38ab6217a7ea92819ec29cc5a932c099643975ddf214cb"

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/speak-to-image-replicate-agents/main/package.json",
+  "repo": "speak-to-image-replicate-agents",
+  "repoUrl": "https://github.com/kristianfreeman/speak-to-image-replicate-agents",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/speak-to-image-replicate-agents/main/wrangler.jsonc"
+}

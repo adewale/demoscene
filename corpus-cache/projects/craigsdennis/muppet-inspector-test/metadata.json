@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/muppet-inspector-test/main/package.json",
+  "repo": "muppet-inspector-test",
+  "repoUrl": "https://github.com/craigsdennis/muppet-inspector-test",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/muppet-inspector-test/main/wrangler.json"
+}

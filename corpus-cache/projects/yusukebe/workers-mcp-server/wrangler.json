@@ -1,0 +1,26 @@
+{
+  "compatibility_date": "2024-11-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.ts",
+  "name": "workers-mcp-server",
+  "observability": {
+    "enabled": true
+  },
+
+  "vars": {
+    /* Note: Configure this to be an email from a domain where you have Email Routing enabled */
+    "EMAIL_FROM": "PLEASE CONFIGURE ME"
+  },
+
+  /* Note: comment this out if you haven't set up Email Routing */
+  "send_email": [
+    {
+      "name": "EMAIL"
+    }
+  ],
+
+  /* Note: comment this out if you don't have access to Browser Rendering */
+  "browser": {
+    "binding": "MYBROWSER"
+  }
+}

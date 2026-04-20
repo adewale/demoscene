@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/workers-relay/main/package.json",
+  "repo": "workers-relay",
+  "repoUrl": "https://github.com/craigsdennis/workers-relay",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/workers-relay/main/wrangler.toml"
+}

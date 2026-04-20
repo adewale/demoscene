@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/llama-api-exploring/main/package.json",
+  "repo": "llama-api-exploring",
+  "repoUrl": "https://github.com/craigsdennis/llama-api-exploring",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/llama-api-exploring/main/wrangler.jsonc"
+}

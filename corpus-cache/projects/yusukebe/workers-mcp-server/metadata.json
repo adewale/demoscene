@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/workers-mcp-server/main/package.json",
+  "repo": "workers-mcp-server",
+  "repoUrl": "https://github.com/yusukebe/workers-mcp-server",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/workers-mcp-server/main/wrangler.json"
+}

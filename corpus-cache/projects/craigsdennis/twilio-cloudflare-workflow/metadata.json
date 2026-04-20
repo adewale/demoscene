@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/twilio-cloudflare-workflow/main/package.json",
+  "repo": "twilio-cloudflare-workflow",
+  "repoUrl": "https://github.com/craigsdennis/twilio-cloudflare-workflow",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/twilio-cloudflare-workflow/main/wrangler.toml"
+}

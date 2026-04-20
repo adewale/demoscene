@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/twitch-stream-automation/main/package.json",
+  "repo": "twitch-stream-automation",
+  "repoUrl": "https://github.com/harshil1712/twitch-stream-automation",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/twitch-stream-automation/main/wrangler.toml"
+}

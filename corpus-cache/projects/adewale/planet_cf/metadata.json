@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "adewale",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/adewale/planet_cf/main/package.json",
+  "repo": "planet_cf",
+  "repoUrl": "https://github.com/adewale/planet_cf",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/adewale/planet_cf/main/wrangler.jsonc"
+}

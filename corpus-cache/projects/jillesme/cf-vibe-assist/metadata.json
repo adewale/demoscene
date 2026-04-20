@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/cf-vibe-assist/main/package.json",
+  "repo": "cf-vibe-assist",
+  "repoUrl": "https://github.com/jillesme/cf-vibe-assist",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/cf-vibe-assist/main/wrangler.jsonc"
+}

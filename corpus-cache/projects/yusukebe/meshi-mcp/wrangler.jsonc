@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "meshi-mcp",
+  "main": "src/index.tsx",
+  "compatibility_date": "2026-03-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "meshi-db",
+      "database_id": "7969fc06-8d28-4e5f-ba5c-50997e98690c"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "meshi-images"
+    }
+  ],
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

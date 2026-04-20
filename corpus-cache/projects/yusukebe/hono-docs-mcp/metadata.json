@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-docs-mcp/main/package.json",
+  "repo": "hono-docs-mcp",
+  "repoUrl": "https://github.com/yusukebe/hono-docs-mcp",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-docs-mcp/main/wrangler.jsonc"
+}

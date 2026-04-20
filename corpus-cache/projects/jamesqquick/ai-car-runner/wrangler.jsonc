@@ -1,0 +1,44 @@
+{
+	"name": "ai-car-runner",
+	"main": "./src/worker.ts",
+	"account_id": "e9bc21da719562a3e45d77de7dd042de",
+	"compatibility_date": "2025-04-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./dist",
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "car-runner-db",
+			"database_id": "7618e1d8-b8e6-444b-a3ab-27321c8b3bb7"
+		},
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "SPECTATOR_HUB",
+				"class_name": "SpectatorHub",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_classes": [
+				"SpectatorHub"
+			],
+		},
+	],
+	"ai": {
+		"binding": "AI",
+	},
+	"worker_loaders": [
+		{
+			"binding": "LOADER",
+		},
+	],
+}

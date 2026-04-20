@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/i18n-example-workers/main/package.json",
+  "repo": "i18n-example-workers",
+  "repoUrl": "https://github.com/lauragift21/i18n-example-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/i18n-example-workers/main/wrangler.toml"
+}

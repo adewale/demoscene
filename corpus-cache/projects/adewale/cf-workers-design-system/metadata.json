@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "adewale",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/adewale/cf-workers-design-system/main/package.json",
+  "repo": "cf-workers-design-system",
+  "repoUrl": "https://github.com/adewale/cf-workers-design-system",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/adewale/cf-workers-design-system/main/wrangler.json"
+}

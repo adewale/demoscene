@@ -1,0 +1,17 @@
+{
+  "name": "learnbuddybot",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --remote",
+    "start": "wrangler dev --remote"
+  },
+  "devDependencies": {
+    "@cloudflare/ai": "^1.0.50",
+    "@cloudflare/workers-types": "^4.20240129.0",
+    "discord-api-types": "^0.37.68",
+    "typescript": "^5.0.4",
+    "wrangler": "^3.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/claude-in-the-box/main/package.json",
+  "repo": "claude-in-the-box",
+  "repoUrl": "https://github.com/craigsdennis/claude-in-the-box",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/claude-in-the-box/main/wrangler.jsonc"
+}

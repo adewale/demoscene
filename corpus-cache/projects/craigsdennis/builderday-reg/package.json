@@ -1,0 +1,16 @@
+{
+  "name": "builderday",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@cfworker/csv": "^2.1.0",
+    "hono": "^4.5.11"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240903.0",
+    "wrangler": "^3.78.1"
+  }
+}

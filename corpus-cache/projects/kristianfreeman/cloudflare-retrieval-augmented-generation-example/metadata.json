@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/cloudflare-retrieval-augmented-generation-example/main/package.json",
+  "repo": "cloudflare-retrieval-augmented-generation-example",
+  "repoUrl": "https://github.com/kristianfreeman/cloudflare-retrieval-augmented-generation-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/cloudflare-retrieval-augmented-generation-example/main/wrangler.toml"
+}

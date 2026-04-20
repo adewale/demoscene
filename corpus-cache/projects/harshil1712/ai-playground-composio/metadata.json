@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/ai-playground-composio/main/package.json",
+  "repo": "ai-playground-composio",
+  "repoUrl": "https://github.com/harshil1712/ai-playground-composio",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/ai-playground-composio/main/wrangler.toml"
+}

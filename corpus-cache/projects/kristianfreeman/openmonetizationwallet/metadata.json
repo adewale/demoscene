@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/openmonetizationwallet/master/package.json",
+  "repo": "openmonetizationwallet",
+  "repoUrl": "https://github.com/kristianfreeman/openmonetizationwallet",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/openmonetizationwallet/master/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/image-understanding/main/package.json",
+  "repo": "image-understanding",
+  "repoUrl": "https://github.com/craigsdennis/image-understanding",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/image-understanding/main/wrangler.toml"
+}

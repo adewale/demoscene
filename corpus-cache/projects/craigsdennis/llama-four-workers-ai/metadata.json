@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/llama-four-workers-ai/main/package.json",
+  "repo": "llama-four-workers-ai",
+  "repoUrl": "https://github.com/craigsdennis/llama-four-workers-ai",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/llama-four-workers-ai/main/wrangler.jsonc"
+}

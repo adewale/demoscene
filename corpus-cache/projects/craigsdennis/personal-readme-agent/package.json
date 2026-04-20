@@ -1,0 +1,26 @@
+{
+	"name": "personal-readme-agent",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro build && wrangler dev",
+		"astro": "astro",
+		"deploy": "astro build && wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"dev:setup": "node scripts/setup-dev-vars.mjs"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "^12.6.12",
+		"@astrojs/react": "^4.4.1",
+		"agents": "^0.7.2",
+		"astro": "^5.18.0",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0"
+	},
+	"devDependencies": {
+		"@types/node": "^25.3.3",
+		"wrangler": "^4.69.0"
+	}
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/worker-email-demo/main/package.json",
+  "repo": "worker-email-demo",
+  "repoUrl": "https://github.com/jillesme/worker-email-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/worker-email-demo/main/wrangler.jsonc"
+}

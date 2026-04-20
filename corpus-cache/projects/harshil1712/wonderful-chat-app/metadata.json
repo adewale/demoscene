@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/wonderful-chat-app/main/package.json",
+  "repo": "wonderful-chat-app",
+  "repoUrl": "https://github.com/harshil1712/wonderful-chat-app",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/wonderful-chat-app/main/wrangler.jsonc"
+}

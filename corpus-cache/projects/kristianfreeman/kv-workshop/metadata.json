@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/kv-workshop/main/package.json",
+  "repo": "kv-workshop",
+  "repoUrl": "https://github.com/kristianfreeman/kv-workshop",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/kv-workshop/main/wrangler.toml"
+}

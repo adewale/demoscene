@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "workers-canvas",
+  "account_id": "e9bc21da719562a3e45d77de7dd042de",
+  "main": "src/server.ts",
+  "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "LogSession", "class_name": "LogSession" }]
+  },
+  "migrations": [{ "tag": "v1", "new_classes": ["LogSession"] }],
+  "observability": {
+    "enabled": true
+  }
+}

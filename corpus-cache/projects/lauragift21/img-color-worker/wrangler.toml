@@ -1,0 +1,5 @@
+name = "img-color"
+main = "index.js"
+compatibility_date = "2022-09-09"
+
+node_compat = true

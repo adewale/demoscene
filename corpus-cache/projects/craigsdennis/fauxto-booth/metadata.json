@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/fauxto-booth/main/package.json",
+  "repo": "fauxto-booth",
+  "repoUrl": "https://github.com/craigsdennis/fauxto-booth",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/fauxto-booth/main/wrangler.jsonc"
+}

@@ -1,0 +1,38 @@
+{
+	"name": "kudos-agent",
+	"version": "0.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"deploy": "vite build && wrangler deploy",
+		"dev": "vite dev",
+		"start": "vite dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"@cloudflare/workers-types": "^4.20250403.0",
+		"@types/react": "^19.0.12",
+		"@types/react-dom": "^19.0.4",
+		"typescript": "^5.5.2",
+		"vite": "^6.2.3",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.13.2"
+	},
+	"dependencies": {
+		"@cloudflare/vite-plugin": "^0.1.21",
+		"@googleapis/youtube": "^24.0.0",
+		"@tailwindcss/postcss": "^4.0.17",
+		"@tailwindcss/vite": "^4.0.17",
+		"@vitejs/plugin-react": "^4.4.1",
+		"agents": "^0.0.46",
+		"autoprefixer": "^10.4.21",
+		"hono": "^4.7.5",
+		"hono-agents": "^0.0.36",
+		"postcss": "^8.5.3",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"tailwindcss": "^4.0.17"
+	}
+}

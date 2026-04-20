@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/cobol-worker-template/master/package.json",
+  "repo": "cobol-worker-template",
+  "repoUrl": "https://github.com/lauragift21/cobol-worker-template",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/cobol-worker-template/master/wrangler.toml"
+}

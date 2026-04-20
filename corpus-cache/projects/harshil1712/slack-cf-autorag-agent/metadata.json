@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/slack-cf-autorag-agent/main/package.json",
+  "repo": "slack-cf-autorag-agent",
+  "repoUrl": "https://github.com/harshil1712/slack-cf-autorag-agent",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/slack-cf-autorag-agent/main/wrangler.jsonc"
+}

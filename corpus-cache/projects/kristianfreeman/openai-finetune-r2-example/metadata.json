@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/openai-finetune-r2-example/main/package.json",
+  "repo": "openai-finetune-r2-example",
+  "repoUrl": "https://github.com/kristianfreeman/openai-finetune-r2-example",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/openai-finetune-r2-example/main/wrangler.toml"
+}

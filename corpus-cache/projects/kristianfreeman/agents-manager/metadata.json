@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/agents-manager/main/package.json",
+  "repo": "agents-manager",
+  "repoUrl": "https://github.com/kristianfreeman/agents-manager",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/agents-manager/main/wrangler.jsonc"
+}

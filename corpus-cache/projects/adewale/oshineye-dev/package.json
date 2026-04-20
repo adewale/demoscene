@@ -1,0 +1,19 @@
+{
+  "name": "oshineye-dev",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "bun build src/oshineye-config.ts --outdir site --format iife --sourcemap=external && cp node_modules/garten/dist/index.global.js site/garten.js",
+    "dev": "bun build src/oshineye-config.ts --outdir site --format iife --sourcemap=external --watch",
+    "preview": "bun run build && wrangler dev",
+    "typecheck": "bunx tsc --noEmit",
+    "deploy": "bun run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "wrangler": "^4.65.0"
+  },
+  "dependencies": {
+    "garten": "^1.0.0"
+  }
+}

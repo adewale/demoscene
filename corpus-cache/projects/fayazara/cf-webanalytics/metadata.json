@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/cf-webanalytics/main/package.json",
+  "repo": "cf-webanalytics",
+  "repoUrl": "https://github.com/fayazara/cf-webanalytics",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/cf-webanalytics/main/wrangler.jsonc"
+}

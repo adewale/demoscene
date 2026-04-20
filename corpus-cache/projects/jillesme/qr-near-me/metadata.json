@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/qr-near-me/main/package.json",
+  "repo": "qr-near-me",
+  "repoUrl": "https://github.com/jillesme/qr-near-me",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/qr-near-me/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/that-conf-rag-2024/main/package.json",
+  "repo": "that-conf-rag-2024",
+  "repoUrl": "https://github.com/kristianfreeman/that-conf-rag-2024",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/that-conf-rag-2024/main/wrangler.toml"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/codemode-demo/main/package.json",
+  "repo": "codemode-demo",
+  "repoUrl": "https://github.com/craigsdennis/codemode-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/codemode-demo/main/wrangler.jsonc"
+}

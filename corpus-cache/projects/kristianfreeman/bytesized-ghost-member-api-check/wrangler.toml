@@ -1,0 +1,6 @@
+name = "bytesized-member-check"
+type = "javascript"
+account_id = "dc56444c4c955a1653106ccf997c1067"
+# workers_dev = true
+route = "https://www.bytesized.xyz/_member*"
+zone_id = "8277f61d090cd9092908ea8e81f30ffd"

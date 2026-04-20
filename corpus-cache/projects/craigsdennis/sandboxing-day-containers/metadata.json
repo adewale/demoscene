@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/sandboxing-day-containers/main/package.json",
+  "repo": "sandboxing-day-containers",
+  "repoUrl": "https://github.com/craigsdennis/sandboxing-day-containers",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/sandboxing-day-containers/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/react-workers-jamstack-conf-demo/main/package.json",
+  "repo": "react-workers-jamstack-conf-demo",
+  "repoUrl": "https://github.com/kristianfreeman/react-workers-jamstack-conf-demo",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/react-workers-jamstack-conf-demo/main/wrangler.toml"
+}

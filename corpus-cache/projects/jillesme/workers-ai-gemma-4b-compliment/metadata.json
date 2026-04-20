@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "jillesme",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/jillesme/workers-ai-gemma-4b-compliment/main/package.json",
+  "repo": "workers-ai-gemma-4b-compliment",
+  "repoUrl": "https://github.com/jillesme/workers-ai-gemma-4b-compliment",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/jillesme/workers-ai-gemma-4b-compliment/main/wrangler.jsonc"
+}

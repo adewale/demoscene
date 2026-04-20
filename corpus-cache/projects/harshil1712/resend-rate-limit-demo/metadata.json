@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/resend-rate-limit-demo/main/package.json",
+  "repo": "resend-rate-limit-demo",
+  "repoUrl": "https://github.com/harshil1712/resend-rate-limit-demo",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/resend-rate-limit-demo/main/wrangler.toml"
+}

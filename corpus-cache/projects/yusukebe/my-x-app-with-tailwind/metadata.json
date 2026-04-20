@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/my-x-app-with-tailwind/main/package.json",
+  "repo": "my-x-app-with-tailwind",
+  "repoUrl": "https://github.com/yusukebe/my-x-app-with-tailwind",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/my-x-app-with-tailwind/main/wrangler.json"
+}

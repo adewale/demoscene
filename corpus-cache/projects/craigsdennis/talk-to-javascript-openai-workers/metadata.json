@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/talk-to-javascript-openai-workers/main/package.json",
+  "repo": "talk-to-javascript-openai-workers",
+  "repoUrl": "https://github.com/craigsdennis/talk-to-javascript-openai-workers",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/talk-to-javascript-openai-workers/main/wrangler.toml"
+}

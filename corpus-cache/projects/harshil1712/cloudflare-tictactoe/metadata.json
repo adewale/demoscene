@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/cloudflare-tictactoe/main/package.json",
+  "repo": "cloudflare-tictactoe",
+  "repoUrl": "https://github.com/harshil1712/cloudflare-tictactoe",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/cloudflare-tictactoe/main/wrangler.toml"
+}

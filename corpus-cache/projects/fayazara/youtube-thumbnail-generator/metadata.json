@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "fayazara",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/fayazara/youtube-thumbnail-generator/main/package.json",
+  "repo": "youtube-thumbnail-generator",
+  "repoUrl": "https://github.com/fayazara/youtube-thumbnail-generator",
+  "wranglerPath": "wrangler.json",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/fayazara/youtube-thumbnail-generator/main/wrangler.json"
+}

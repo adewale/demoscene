@@ -4,6 +4,8 @@
 .git/
 .wrangler/
 coverage/
+corpus-cache/manifest.json
+corpus-cache/projects/
 dist/
 node_modules/
 playwright-report/

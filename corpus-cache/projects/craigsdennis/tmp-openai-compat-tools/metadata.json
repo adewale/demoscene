@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/tmp-openai-compat-tools/main/package.json",
+  "repo": "tmp-openai-compat-tools",
+  "repoUrl": "https://github.com/craigsdennis/tmp-openai-compat-tools",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/tmp-openai-compat-tools/main/wrangler.toml"
+}

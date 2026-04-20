@@ -1,0 +1,16 @@
+{
+	"name": "blog-audio-generator",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"dependencies": {
+		"@fiberplane/hono": "^0.5.2",
+		"hono": "^4.7.4"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250317.0",
+		"wrangler": "^4.2.0"
+	}
+}

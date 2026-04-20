@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/virtual-try-on-demo/main/package.json",
+  "repo": "virtual-try-on-demo",
+  "repoUrl": "https://github.com/harshil1712/virtual-try-on-demo",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/virtual-try-on-demo/main/wrangler.jsonc"
+}

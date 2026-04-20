@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/band-poster-extractor-tutorial/main/package.json",
+  "repo": "band-poster-extractor-tutorial",
+  "repoUrl": "https://github.com/craigsdennis/band-poster-extractor-tutorial",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/band-poster-extractor-tutorial/main/wrangler.jsonc"
+}

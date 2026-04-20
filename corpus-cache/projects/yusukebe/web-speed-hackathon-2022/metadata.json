@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/web-speed-hackathon-2022/main/package.json",
+  "repo": "web-speed-hackathon-2022",
+  "repoUrl": "https://github.com/yusukebe/web-speed-hackathon-2022",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/web-speed-hackathon-2022/main/wrangler.toml"
+}

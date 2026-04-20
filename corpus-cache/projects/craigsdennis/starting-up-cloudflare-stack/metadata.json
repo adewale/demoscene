@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/starting-up-cloudflare-stack/main/package.json",
+  "repo": "starting-up-cloudflare-stack",
+  "repoUrl": "https://github.com/craigsdennis/starting-up-cloudflare-stack",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/starting-up-cloudflare-stack/main/wrangler.toml"
+}

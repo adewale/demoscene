@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/agents-react-vite-tailwindcss-template/main/package.json",
+  "repo": "agents-react-vite-tailwindcss-template",
+  "repoUrl": "https://github.com/craigsdennis/agents-react-vite-tailwindcss-template",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/agents-react-vite-tailwindcss-template/main/wrangler.jsonc"
+}

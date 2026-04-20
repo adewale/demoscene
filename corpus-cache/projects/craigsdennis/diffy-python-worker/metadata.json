@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "craigsdennis",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/craigsdennis/diffy-python-worker/main/package.json",
+  "repo": "diffy-python-worker",
+  "repoUrl": "https://github.com/craigsdennis/diffy-python-worker",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/craigsdennis/diffy-python-worker/main/wrangler.jsonc"
+}

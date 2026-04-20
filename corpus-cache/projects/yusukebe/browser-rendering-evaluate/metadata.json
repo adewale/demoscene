@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/browser-rendering-evaluate/main/package.json",
+  "repo": "browser-rendering-evaluate",
+  "repoUrl": "https://github.com/yusukebe/browser-rendering-evaluate",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/browser-rendering-evaluate/main/wrangler.toml"
+}

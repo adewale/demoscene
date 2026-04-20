@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "lauragift21",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/lauragift21/playwright-mcp/main/package.json",
+  "repo": "playwright-mcp",
+  "repoUrl": "https://github.com/lauragift21/playwright-mcp",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/lauragift21/playwright-mcp/main/wrangler.toml"
+}

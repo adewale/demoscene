@@ -1,0 +1,12 @@
+{
+  "branch": "master",
+  "owner": "kristianfreeman",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/kristianfreeman/mailinglisthackers-members/master/package.json",
+  "repo": "mailinglisthackers-members",
+  "repoUrl": "https://github.com/kristianfreeman/mailinglisthackers-members",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/kristianfreeman/mailinglisthackers-members/master/wrangler.toml"
+}

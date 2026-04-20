@@ -1,0 +1,16 @@
+{
+  "name": "git-pulse",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+  },
+  // GITHUB_CLIENT_ID is public — safe to store in config.
+  // Replace with your actual GitHub OAuth App client ID.
+  "vars": {
+    "GITHUB_CLIENT_ID": "Ov23liWMKeCqiNGIYO5y"
+  }
+  // GITHUB_CLIENT_SECRET must be set via: npx wrangler secret put GITHUB_CLIENT_SECRET
+}

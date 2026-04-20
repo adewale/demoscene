@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "yusukebe",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/yusukebe/hono-cli-request-body-api-removal-bug/main/package.json",
+  "repo": "hono-cli-request-body-api-removal-bug",
+  "repoUrl": "https://github.com/yusukebe/hono-cli-request-body-api-removal-bug",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/yusukebe/hono-cli-request-body-api-removal-bug/main/wrangler.jsonc"
+}

@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/workshop-build-ai-app-api/main/package.json",
+  "repo": "workshop-build-ai-app-api",
+  "repoUrl": "https://github.com/harshil1712/workshop-build-ai-app-api",
+  "wranglerPath": "wrangler.jsonc",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/workshop-build-ai-app-api/main/wrangler.jsonc"
+}

@@ -1,0 +1,14 @@
+name = "discourse-utils"
+main = "src/worker.tsx"
+compatibility_date = "2024-02-21"
+account_id = "95e065d2e3f97a1e50bae58aea71df6d"
+
+[vars]
+DEFAULT_RESPONSE = "Hi {original_poster}, your topic {has a solution here}.\n\nLet us know what you think of the solution, :+1: or :-1:.\n\n---\n\nSolutions help the person that asked the question and anyone else that sees the answer later. Tell us what *you* think of the solution.\n\n---\n\nThis message was sent from an account that is unable to receive messages. If you have additional questions, please create a new topic."
+
+[[queues.producers]]
+queue = "answers"
+binding = "QUEUE"
+
+[[queues.consumers]]
+queue = "answers"

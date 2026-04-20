@@ -1,0 +1,12 @@
+{
+  "branch": "main",
+  "owner": "harshil1712",
+  "packageJson": "found",
+  "packageJsonStatus": null,
+  "packageJsonUrl": "https://raw.githubusercontent.com/harshil1712/r2-pre-signed-upload-metadata/main/package.json",
+  "repo": "r2-pre-signed-upload-metadata",
+  "repoUrl": "https://github.com/harshil1712/r2-pre-signed-upload-metadata",
+  "wranglerPath": "wrangler.toml",
+  "wranglerStatus": null,
+  "wranglerUrl": "https://raw.githubusercontent.com/harshil1712/r2-pre-signed-upload-metadata/main/wrangler.toml"
+}
