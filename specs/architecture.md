@@ -41,10 +41,10 @@ For each sync run:
 9. Extract homepage and preview-image candidates from the repo page HTML.
 10. Try the top-level Wrangler config URLs in a fixed order, preferring the repo's actual default branch first.
 11. If no top-level Wrangler config exists, the repo is not shown in the site.
-12. Fetch `package.json` best-effort for supplementary product heuristics such as Sandboxes and Agents.
+12. Fetch `package.json` best-effort for supplementary product heuristics when Wrangler config alone is not enough.
 13. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
 14. Normalize README preview content into readable body text during preview derivation, stripping headings, badge blocks, deploy buttons, and decorative image-link icon strips.
-15. Infer Cloudflare products from the Wrangler config plus package heuristics.
+15. Infer Cloudflare products from the Wrangler config plus package heuristics, including package-signaled products like Agents, Sandboxes, Browser Run, Realtime, Stream, Voice, and AI Gateway.
 16. Create or update the project record, including `repoCreatedAt` and `repoCreationOrder`.
 17. Refresh homepage and preview media metadata on later runs.
 18. Ignore later README changes.

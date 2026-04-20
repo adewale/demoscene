@@ -17,7 +17,7 @@ It discovers repositories with the GitHub API, detects top-level Wrangler config
 - GitHub API discovery with stable pagination handling
 - GitHub-first feed cards ordered by real repository creation time
 - top-level Wrangler detection for `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
-- inferred Cloudflare product metadata on each card, with Sandboxes and Agents detected from package heuristics
+- inferred Cloudflare product metadata on each card from Wrangler config and package heuristics
 - cleaned README preview generation for feed cards, including heading, badge, and icon-strip cleanup
 - machine-readable project JSON and RSS output
 - committed offline corpus cache for future analysis
@@ -184,7 +184,7 @@ README preview normalization removes decorative noise before cards are derived. 
 ## Notes
 
 - README previews are normalized during ingestion so heading-heavy, badge-heavy, and HTML-heavy READMEs read like feed copy instead of raw markup.
-- Sandboxes and Agents are inferred from committed heuristics over cached Wrangler configs and `package.json` files.
+- Product detection is driven by committed heuristics over cached Wrangler configs and `package.json` files, including package-signaled products such as Agents, Sandboxes, Browser Run, Realtime, Stream, Voice, and AI Gateway.
 - The homepage is the product. Project titles link directly to GitHub.
 - Cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain.
 

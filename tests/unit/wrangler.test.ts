@@ -67,6 +67,14 @@ describe("inferCloudflareProducts", () => {
       workflows: [{ binding: "FLOW", name: "demo" }],
       vectorize: [{ binding: "INDEX" }],
       ai: { binding: "AI" },
+      browser: { binding: "BROWSER", type: "browser" },
+      containers: [{ class_name: "MyContainer", image: "./Dockerfile" }],
+      hyperdrive: [{ binding: "HYPERDRIVE" }],
+      images: { binding: "IMAGES" },
+      send_email: [{ name: "EMAIL" }],
+      analytics_engine_datasets: [{ binding: "ANALYTICS" }],
+      dispatch_namespaces: [{ binding: "DISPATCHER" }],
+      secrets_store_secrets: [{ binding: "SECRET_STORE" }],
     });
 
     expect(products.map((product) => product.key)).toEqual([
@@ -80,6 +88,50 @@ describe("inferCloudflareProducts", () => {
       "workflows",
       "vectorize",
       "ai",
+      "browser-run",
+      "containers",
+      "hyperdrive",
+      "images",
+      "email",
+      "analytics-engine",
+      "workers-for-platforms",
+      "secret-store",
+    ]);
+  });
+
+  it("infers package-signaled products from exact Cloudflare dependencies and Pages scripts", () => {
+    const products = inferCloudflareProducts(
+      {},
+      parsePackageManifest(`{
+        "scripts": {
+          "deploy": "npm run build && wrangler pages deploy dist"
+        },
+        "dependencies": {
+          "@cloudflare/ai-gateway": "1.0.0",
+          "@cloudflare/ai-chat": "1.0.0",
+          "@cloudflare/containers": "1.0.0",
+          "@cloudflare/playwright": "1.0.0",
+          "@cloudflare/realtimekit-react": "1.0.0",
+          "@cloudflare/sandbox": "1.0.0",
+          "@cloudflare/stream-react": "1.0.0",
+          "@cloudflare/voice": "1.0.0",
+          "agents": "1.0.0"
+        }
+      }`),
+    );
+
+    expect(products.map((product) => product.key)).toEqual([
+      "workers",
+      "pages",
+      "ai",
+      "ai-gateway",
+      "browser-run",
+      "containers",
+      "realtime",
+      "stream",
+      "voice",
+      "sandboxes",
+      "agents",
     ]);
   });
 
@@ -91,6 +143,7 @@ describe("inferCloudflareProducts", () => {
 
     expect(products.map((product) => product.key)).toEqual([
       "workers",
+      "ai",
       "agents",
     ]);
   });
@@ -148,6 +201,44 @@ describe("inferCloudflareProducts", () => {
           );
 
           expect(products.some((product) => product.key === "agents")).toBe(
+            true,
+          );
+        },
+      ),
+    );
+  });
+
+  it("property: explicit wrangler product keys always map to the intended product", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom(
+          ["browser-run", { browser: { binding: "BROWSER", type: "browser" } }],
+          [
+            "containers",
+            {
+              containers: [{ class_name: "Container", image: "./Dockerfile" }],
+            },
+          ],
+          ["hyperdrive", { hyperdrive: [{ binding: "HYPERDRIVE" }] }],
+          ["images", { images: { binding: "IMAGES" } }],
+          ["email", { send_email: [{ name: "EMAIL" }] }],
+          [
+            "analytics-engine",
+            { analytics_engine_datasets: [{ binding: "ANALYTICS" }] },
+          ],
+          [
+            "workers-for-platforms",
+            { dispatch_namespaces: [{ binding: "DISPATCHER" }] },
+          ],
+          [
+            "secret-store",
+            { secrets_store_secrets: [{ binding: "SECRET_STORE" }] },
+          ],
+        ),
+        ([productKey, config]) => {
+          const products = inferCloudflareProducts(config);
+
+          expect(products.some((product) => product.key === productKey)).toBe(
             true,
           );
         },
@@ -223,11 +314,62 @@ describe("inferCloudflareProducts", () => {
     );
   });
 
+  it("property: exact Cloudflare package signals map to the intended product", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom(
+          "dependencies",
+          "devDependencies",
+          "peerDependencies",
+          "optionalDependencies",
+        ),
+        fc.constantFrom(
+          ["ai", "@cloudflare/ai-chat"],
+          ["ai-gateway", "@cloudflare/ai-gateway"],
+          ["browser-run", "@cloudflare/puppeteer"],
+          ["containers", "@cloudflare/containers"],
+          ["realtime", "@cloudflare/realtimekit-react"],
+          ["stream", "@cloudflare/stream-react"],
+          ["voice", "@cloudflare/voice"],
+        ),
+        (section, [productKey, dependencyName]) => {
+          const products = inferCloudflareProducts(
+            {},
+            {
+              [section]: { [dependencyName]: "1.0.0" },
+            },
+          );
+
+          expect(products.some((product) => product.key === productKey)).toBe(
+            true,
+          );
+        },
+      ),
+    );
+  });
+
+  it("property: Pages package heuristics detect wrangler pages scripts", () => {
+    fc.assert(
+      fc.property(fc.string(), (prefix) => {
+        const products = inferCloudflareProducts(
+          {},
+          {
+            scripts: { deploy: `${prefix} wrangler pages deploy dist` },
+          },
+        );
+
+        expect(products.some((product) => product.key === "pages")).toBe(true);
+      }),
+    );
+  });
+
   it("sorts products into UI order", () => {
     expect(
       sortCloudflareProducts([
+        { key: "browser-run", label: "Browser Run" },
         { key: "agents", label: "Agents" },
         { key: "d1", label: "D1" },
+        { key: "containers", label: "Containers" },
         { key: "sandboxes", label: "Sandboxes" },
         { key: "workers", label: "Workers" },
         { key: "pages", label: "Pages" },
@@ -236,6 +378,8 @@ describe("inferCloudflareProducts", () => {
       { key: "workers", label: "Workers" },
       { key: "pages", label: "Pages" },
       { key: "d1", label: "D1" },
+      { key: "browser-run", label: "Browser Run" },
+      { key: "containers", label: "Containers" },
       { key: "sandboxes", label: "Sandboxes" },
       { key: "agents", label: "Agents" },
     ]);

@@ -39,9 +39,9 @@ Sync:
 - treat a repo as a Cloudflare project if one of those top-level Wrangler config files exists
 - if a Cloudflare repo is discovered for the first time, create a new feed entry
 - fetch and store the repo README using the branch fallback rules above
-- fetch `package.json` best-effort for supplementary product heuristics such as Sandboxes and Agents
+- fetch `package.json` best-effort for supplementary product heuristics when Wrangler config alone is not enough
 - persist the real repository creation time from GitHub as `repoCreatedAt` and use it for feed chronology when present
-- infer which Cloudflare primitives and products the repo uses from the top-level Wrangler config plus package heuristics, for example Workers, Pages, D1, KV, R2, Durable Objects, Queues, Workflows, Vectorize, AI, Sandboxes, or Agents
+- infer which Cloudflare primitives and products the repo uses from the top-level Wrangler config plus package heuristics, for example Workers, Pages, D1, KV, R2, Durable Objects, Queues, Workflows, Vectorize, AI, Browser Run, Containers, Hyperdrive, Images, Email, AI Gateway, Realtime, Stream, Voice, Sandboxes, or Agents
 - fetch and store the repo homepage and lightweight preview media when available
 - preview image validation failures must not block the repo sync; keep the prior image when validation fails transiently
 - ignore later README changes

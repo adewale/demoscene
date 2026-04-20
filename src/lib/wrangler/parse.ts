@@ -15,10 +15,30 @@ const AGENT_PACKAGE_NAMES = [
   "hono-agents",
   "@cloudflare/agents",
 ] as const;
+const AI_GATEWAY_PACKAGE_NAMES = ["@cloudflare/ai-gateway"] as const;
+const AI_PACKAGE_NAMES = [
+  "@cloudflare/ai",
+  "@cloudflare/ai-chat",
+  "@cloudflare/ai-utils",
+  "workers-ai-provider",
+] as const;
+const BROWSER_RUN_PACKAGE_NAMES = [
+  "@cloudflare/playwright",
+  "@cloudflare/playwright-mcp",
+  "@cloudflare/puppeteer",
+] as const;
+const CONTAINER_PACKAGE_NAMES = ["@cloudflare/containers"] as const;
+const PAGE_PACKAGE_NAMES = [
+  "@cloudflare/next-on-pages",
+  "@cloudflare/pages-plugin-cloudflare-access",
+] as const;
+const REALTIME_PACKAGE_PREFIXES = ["@cloudflare/realtimekit"] as const;
 const SANDBOX_PACKAGE_NAMES = ["@cloudflare/sandbox"] as const;
 const SANDBOX_PACKAGE_COMBINATIONS = [
   ["@cloudflare/shell", "@cloudflare/think"],
 ] as const;
+const STREAM_PACKAGE_NAMES = ["@cloudflare/stream-react"] as const;
+const VOICE_PACKAGE_NAMES = ["@cloudflare/voice"] as const;
 
 export type CloudflareProduct = {
   key: string;
@@ -36,6 +56,18 @@ const PRODUCT_LABELS: Record<string, string> = {
   workflows: "Workflows",
   vectorize: "Vectorize",
   ai: "AI",
+  "ai-gateway": "AI Gateway",
+  "browser-run": "Browser Run",
+  containers: "Containers",
+  hyperdrive: "Hyperdrive",
+  images: "Images",
+  email: "Email",
+  "analytics-engine": "Analytics Engine",
+  "workers-for-platforms": "Workers for Platforms",
+  "secret-store": "Secret Store",
+  realtime: "Realtime",
+  stream: "Stream",
+  voice: "Voice",
   sandboxes: "Sandboxes",
   agents: "Agents",
 };
@@ -130,6 +162,27 @@ function hasAllDependencies(
   return packageNames.every((packageName) => names.has(packageName));
 }
 
+function hasDependencyPrefix(
+  manifest: PackageManifest | undefined,
+  prefixes: readonly string[],
+): boolean {
+  const names = dependencyNames(manifest);
+  return [...names].some((name) =>
+    prefixes.some((prefix) => name.startsWith(prefix)),
+  );
+}
+
+function hasPagesScript(manifest: PackageManifest | undefined): boolean {
+  if (!manifest || !isRecord(manifest.scripts)) {
+    return false;
+  }
+
+  return Object.values(manifest.scripts).some(
+    (command) =>
+      typeof command === "string" && /\bwrangler\s+pages\b/i.test(command),
+  );
+}
+
 export function inferCloudflareProducts(
   config: WranglerConfig,
   packageManifest?: PackageManifest,
@@ -138,7 +191,11 @@ export function inferCloudflareProducts(
 
   addProduct(products, "workers");
 
-  if (config.pages_build_output_dir) {
+  if (
+    config.pages_build_output_dir ||
+    hasAnyDependency(packageManifest, PAGE_PACKAGE_NAMES) ||
+    hasPagesScript(packageManifest)
+  ) {
     addProduct(products, "pages");
   }
 
@@ -176,8 +233,65 @@ export function inferCloudflareProducts(
     addProduct(products, "vectorize");
   }
 
-  if (hasEntries(config.ai)) {
+  if (
+    hasEntries(config.ai) ||
+    hasAnyDependency(packageManifest, AI_PACKAGE_NAMES)
+  ) {
     addProduct(products, "ai");
+  }
+
+  if (hasAnyDependency(packageManifest, AI_GATEWAY_PACKAGE_NAMES)) {
+    addProduct(products, "ai-gateway");
+  }
+
+  if (
+    hasEntries(config.browser) ||
+    hasAnyDependency(packageManifest, BROWSER_RUN_PACKAGE_NAMES)
+  ) {
+    addProduct(products, "browser-run");
+  }
+
+  if (
+    hasEntries(config.containers) ||
+    hasAnyDependency(packageManifest, CONTAINER_PACKAGE_NAMES)
+  ) {
+    addProduct(products, "containers");
+  }
+
+  if (hasEntries(config.hyperdrive)) {
+    addProduct(products, "hyperdrive");
+  }
+
+  if (hasEntries(config.images)) {
+    addProduct(products, "images");
+  }
+
+  if (hasEntries(config.send_email)) {
+    addProduct(products, "email");
+  }
+
+  if (hasEntries(config.analytics_engine_datasets)) {
+    addProduct(products, "analytics-engine");
+  }
+
+  if (hasEntries(config.dispatch_namespaces)) {
+    addProduct(products, "workers-for-platforms");
+  }
+
+  if (hasEntries(config.secrets_store_secrets)) {
+    addProduct(products, "secret-store");
+  }
+
+  if (hasDependencyPrefix(packageManifest, REALTIME_PACKAGE_PREFIXES)) {
+    addProduct(products, "realtime");
+  }
+
+  if (hasAnyDependency(packageManifest, STREAM_PACKAGE_NAMES)) {
+    addProduct(products, "stream");
+  }
+
+  if (hasAnyDependency(packageManifest, VOICE_PACKAGE_NAMES)) {
+    addProduct(products, "voice");
   }
 
   if (
