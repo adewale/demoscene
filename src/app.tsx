@@ -14,6 +14,7 @@ import {
 import { renderRssFeed } from "./lib/rss";
 
 import { AppShell } from "./components/AppShell";
+import { DesignPage } from "./components/DesignPage";
 import { FeedPage } from "./components/FeedPage";
 import { syncRepositories } from "./sync";
 
@@ -105,6 +106,25 @@ export function createApp() {
       renderHtml(
         <AppShell title="demoscene">
           <FeedPage page={page} projects={projects} totalPages={totalPages} />
+        </AppShell>,
+      ),
+    );
+  });
+
+  app.get("/design", async (c) => {
+    const db = createDb(c.env.DB);
+    const projects = await listProjectsPage(db, 6, 0);
+
+    return c.html(
+      renderHtml(
+        <AppShell
+          title="demoscene"
+          subtitle="Design language assembled from the same chips, cards, copy, and feed primitives as the live app."
+        >
+          <DesignPage
+            featuredProject={projects[0] ?? null}
+            projects={projects}
+          />
         </AppShell>,
       ),
     );

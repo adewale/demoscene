@@ -1,3 +1,8 @@
+import {
+  type CloudflareProductKey,
+  CLOUDFLARE_PRODUCT_LABELS,
+} from "../cloudflare-products";
+
 import { parse as parseJsonc } from "jsonc-parser";
 import { parse as parseToml } from "smol-toml";
 
@@ -41,38 +46,11 @@ const STREAM_PACKAGE_NAMES = ["@cloudflare/stream-react"] as const;
 const VOICE_PACKAGE_NAMES = ["@cloudflare/voice"] as const;
 
 export type CloudflareProduct = {
-  key: string;
+  key: CloudflareProductKey;
   label: string;
 };
 
-const PRODUCT_LABELS: Record<string, string> = {
-  workers: "Workers",
-  pages: "Pages",
-  d1: "D1",
-  kv: "KV",
-  r2: "R2",
-  "durable-objects": "Durable Objects",
-  queues: "Queues",
-  workflows: "Workflows",
-  vectorize: "Vectorize",
-  ai: "AI",
-  "ai-gateway": "AI Gateway",
-  "browser-run": "Browser Run",
-  containers: "Containers",
-  hyperdrive: "Hyperdrive",
-  images: "Images",
-  email: "Email",
-  "analytics-engine": "Analytics Engine",
-  "workers-for-platforms": "Workers for Platforms",
-  "secret-store": "Secret Store",
-  realtime: "Realtime",
-  stream: "Stream",
-  voice: "Voice",
-  sandboxes: "Sandboxes",
-  agents: "Agents",
-};
-
-const PRODUCT_ORDER = Object.keys(PRODUCT_LABELS);
+const PRODUCT_ORDER = Object.keys(CLOUDFLARE_PRODUCT_LABELS);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -92,10 +70,10 @@ function hasEntries(value: unknown): boolean {
 
 function addProduct(
   products: CloudflareProduct[],
-  key: keyof typeof PRODUCT_LABELS,
+  key: CloudflareProductKey,
 ): void {
   if (!products.some((product) => product.key === key)) {
-    products.push({ key, label: PRODUCT_LABELS[key] });
+    products.push({ key, label: CLOUDFLARE_PRODUCT_LABELS[key] });
   }
 }
 

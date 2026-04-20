@@ -393,7 +393,7 @@ binding = "DB"
       { key: "workers", label: "Workers" },
       { key: "r2", label: "R2" },
       { key: "durable-objects", label: "Durable Objects" },
-      { key: "ai", label: "AI" },
+      { key: "ai", label: "Workers AI" },
       { key: "sandboxes", label: "Sandboxes" },
       { key: "agents", label: "Agents" },
     ]);
@@ -887,8 +887,11 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     const sitemapText = await sitemap.text();
     const rss = await SELF.fetch("https://example.com/rss.xml");
     const rssText = await rss.text();
+    const design = await SELF.fetch("https://example.com/design");
+    const designText = await design.text();
 
     expect(page.status).toBe(404);
+    expect(design.status).toBe(200);
     expect(await robots.text()).toContain("Sitemap: /sitemap.xml");
     expect(sitemapText).toContain("/rss.xml");
     expect(sitemapText).not.toContain("/projects/acme/demo");
@@ -911,6 +914,10 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(rssText).not.toContain("&lt;div");
     expect(rssText).not.toContain("[](");
     expect(rssText).toContain("<content:encoded><![CDATA[");
+    expect(designText).toContain("Design language");
+    expect(designText).toContain("Cloudflare chips");
+    expect(designText).toContain("Workers AI");
+    expect(designText).toContain("Sandbox");
   });
 
   it("supports repos whose names end in .json", async () => {

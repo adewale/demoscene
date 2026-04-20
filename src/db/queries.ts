@@ -2,6 +2,10 @@ import { and, count, desc, eq, inArray, notInArray } from "drizzle-orm";
 
 import type { ProjectRecord, ProjectWithProducts } from "../domain";
 import {
+  CLOUDFLARE_PRODUCT_BY_KEY,
+  isCloudflareProductKey,
+} from "../lib/cloudflare-products";
+import {
   sortCloudflareProducts,
   type CloudflareProduct,
 } from "../lib/wrangler/parse";
@@ -64,7 +68,14 @@ function attachProducts(
 
   for (const row of productRows) {
     const existing = productsBySlug.get(row.projectSlug) ?? [];
-    existing.push({ key: row.productKey, label: row.productLabel });
+
+    if (isCloudflareProductKey(row.productKey)) {
+      existing.push({
+        key: row.productKey,
+        label: CLOUDFLARE_PRODUCT_BY_KEY[row.productKey].label,
+      });
+    }
+
     productsBySlug.set(row.projectSlug, existing);
   }
 

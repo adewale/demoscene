@@ -175,22 +175,23 @@ const styles = `
   .product-strip {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .product-pill {
+  .product-chip {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    gap: 6px;
+    min-height: 28px;
+    padding: 4px 10px 4px 6px;
+    border: 1px solid rgb(var(--product-rgb) / 0.18);
+    border-radius: 999px;
     background: var(--surface);
     color: var(--text);
+    line-height: 1;
   }
 
   .product-link {
@@ -200,8 +201,32 @@ const styles = `
 
   .product-link:hover,
   .product-link:focus-visible {
-    border-color: var(--text);
+    border-color: rgb(var(--product-rgb) / 0.36);
     background: var(--surface-hover);
+  }
+
+  .product-chip-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgb(var(--product-rgb) / 0.12);
+    color: rgb(var(--product-rgb));
+    flex: 0 0 auto;
+  }
+
+  .product-chip-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .product-chip-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
   }
 
   .product-tooltip {
@@ -239,30 +264,6 @@ const styles = `
     font-size: 0.76rem;
     line-height: 1.4;
     color: var(--muted);
-  }
-
-  .product-icon {
-    width: 20px;
-    height: 20px;
-    fill: rgba(82, 16, 0, 0.06);
-    stroke: rgba(82, 16, 0, 0.3);
-    stroke-width: 1.4;
-  }
-
-  .product-icon text {
-    fill: var(--text);
-    stroke: none;
-    font-size: 9px;
-    font-weight: 800;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-    letter-spacing: 0.04em;
-  }
-
-  .product-fallback-text {
-    font-size: 0.72rem;
-    font-weight: 800;
-    line-height: 1;
-    text-align: center;
   }
 
   .markdown-preview,
@@ -488,6 +489,105 @@ const styles = `
     min-width: 72px;
   }
 
+  .design-shell {
+    display: grid;
+    gap: 24px;
+  }
+
+  .design-section {
+    display: grid;
+    gap: 14px;
+    height: 100%;
+  }
+
+  .design-section-body {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    height: 100%;
+  }
+
+  .design-heading-block {
+    display: grid;
+    gap: 6px;
+  }
+
+  .design-title {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    line-height: 1.1;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .design-subtitle {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  .design-copy {
+    margin: 0;
+    max-width: 64ch;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .design-intro {
+    gap: 20px;
+  }
+
+  .design-section-grid {
+    display: grid;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .design-token-grid {
+    display: grid;
+    gap: 10px;
+  }
+
+  .design-token-card {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border: 1px dashed var(--border);
+    background: rgba(255, 255, 255, 0.48);
+  }
+
+  .design-token-card strong {
+    font-size: 0.8rem;
+  }
+
+  .design-token-card span:last-child {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .design-token-swatch {
+    display: block;
+    width: 100%;
+    height: 42px;
+    border: 1px solid var(--border);
+  }
+
+  .design-type-sample {
+    display: grid;
+    gap: 10px;
+  }
+
+  .design-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .design-section-grid-featured {
+    align-items: stretch;
+  }
+
   .empty-state {
     padding: 40px 24px;
     text-align: center;
@@ -508,6 +608,19 @@ const styles = `
   }
 
   @media (min-width: 960px) {
+    .design-section-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    .design-section-grid-featured {
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+    }
+
+    .design-token-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .feed-card-links {
       justify-content: end;
     }

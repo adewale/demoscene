@@ -60,6 +60,12 @@ describe("ProjectCard", () => {
       "href",
       "https://developers.cloudflare.com/workers/",
     );
+    expect(
+      screen.getByText("Workers", { selector: ".product-chip-label" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("D1", { selector: ".product-chip-label" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Workers" })).not.toHaveAttribute(
       "title",
     );
@@ -98,6 +104,12 @@ describe("ProjectCard", () => {
       screen.getByLabelText("Sandboxes").querySelector("svg"),
     ).not.toBeNull();
     expect(screen.getByLabelText("Agents").querySelector("svg")).not.toBeNull();
+    expect(
+      screen.getByText("Sandbox", { selector: ".product-chip-label" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Agents", { selector: ".product-chip-label" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sandboxes" })).toHaveAttribute(
       "href",
       "https://developers.cloudflare.com/sandbox/",

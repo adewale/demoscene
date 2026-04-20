@@ -28,8 +28,16 @@ INSERT INTO projects (
   'main',
   'wrangler.toml',
   'toml',
-  '# Demo Scene\n\nThis project shows a card-oriented feed.\n\n[Watch demo](https://www.loom.com/share/demo-scene)',
-  '# Demo Scene\n\nThis project shows a card-oriented feed.\n\n[Watch demo](https://www.loom.com/share/demo-scene)',
+  '# Demo Scene
+
+This project shows a card-oriented feed.
+
+[Watch demo](https://www.loom.com/share/demo-scene)',
+  '# Demo Scene
+
+This project shows a card-oriented feed.
+
+[Watch demo](https://www.loom.com/share/demo-scene)',
   'https://images.example.com/demo-scene.png',
   '2026-04-14T12:00:00.000Z',
   '2026-04-14T12:00:00.000Z'
