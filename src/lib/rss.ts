@@ -70,7 +70,7 @@ function renderRssDescription(project: ProjectWithProducts): string {
 
 function renderRssItem(project: ProjectWithProducts): string {
   const description = renderRssDescription(project);
-  const publishedAt = project.repoCreatedAt ?? project.firstSeenAt;
+  const publishedAt = project.repoCreatedAt;
 
   return [
     "<item>",

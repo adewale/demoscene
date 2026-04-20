@@ -138,7 +138,7 @@ async function seedProjectRecord(values: {
   repo: string;
   repoUrl: string;
   firstSeenAt?: string;
-  repoCreatedAt?: string | null;
+  repoCreatedAt?: string;
   repoCreationOrder?: number;
 }) {
   await testEnv.DB.prepare(
@@ -318,6 +318,38 @@ binding = "DB"
     ]);
   });
 
+  it("normalizes HTML-heavy README hero content into readable preview markdown", async () => {
+    await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [buildRepositoryApiUrl("acme", "demo")]: buildRepositoryApiResponse({
+          owner: "acme",
+          repo: "demo",
+        }),
+        "https://github.com/acme/demo": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/wrangler.toml": {
+          body: `name = "demo"`,
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/README.md": {
+          body: `<div align="center">
+  <h1>Demo</h1>
+  <p><em>Ship a clearer feed preview</em></p>
+</div>
+
+<p>Built on Cloudflare Workers.</p>`,
+        },
+      }) as typeof fetch,
+      repositories: ["https://github.com/acme/demo"],
+    });
+
+    const payload = await fetchFeedPayload();
+
+    expect(payload.items[0]?.readmePreviewMarkdown).toBe(
+      "Demo\n\nShip a clearer feed preview\n\nBuilt on Cloudflare Workers.",
+    );
+  });
+
   it("drops extracted preview image URLs that would render as broken images", async () => {
     await syncRepositories(testEnv, {
       fetch: createMockFetch({
@@ -398,12 +430,13 @@ binding = "DB"
     );
   });
 
-  it("automatically picks up a newly listed repo and backfills known repo chronology", async () => {
+  it("automatically picks up a newly listed repo without disturbing known repos", async () => {
     await seedProjectRecord({
       owner: "adewale",
       repo: "known-repo",
       repoUrl: "https://github.com/adewale/known-repo",
-      repoCreatedAt: null,
+      repoCreatedAt: "2026-04-10T12:00:00.000Z",
+      repoCreationOrder: 100,
     });
 
     const mockFetch = createMockFetch({
@@ -447,9 +480,7 @@ binding = "DB"
       reposAdded: 1,
     });
     expectFeedToContainRepos(payload, ["new-repo"]);
-    expect(
-      payload.items.find((item) => item.repo === "known-repo")?.repoCreatedAt,
-    ).toBe("2026-04-10T12:00:00.000Z");
+    expectFeedToContainRepos(payload, ["known-repo"]);
   });
 
   it("follows GitHub API pagination when discovering team repos", async () => {
@@ -596,42 +627,6 @@ binding = "DB"
     });
 
     expect(await fetchFeedItems()).toHaveLength(0);
-  });
-
-  it("updates the creation date for older known projects without re-ingesting them", async () => {
-    await seedProjectRecord({
-      owner: "adewale",
-      repo: "known-repo",
-      repoUrl: "https://github.com/adewale/known-repo",
-      firstSeenAt: "2026-04-14T12:00:00.000Z",
-      repoCreatedAt: null,
-    });
-
-    const mockFetch = createMockFetch({
-      [buildUserRepositoriesApiUrl("adewale", 1)]:
-        buildUserRepositoriesApiResponse({
-          login: "adewale",
-          repositories: [
-            {
-              createdAt: "2026-03-01T12:00:00.000Z",
-              repo: "known-repo",
-              repoId: 100,
-            },
-          ],
-        }),
-    });
-
-    await syncRepositories(testEnv, {
-      fetch: mockFetch as typeof fetch,
-      now: new Date("2026-04-20T12:00:00.000Z"),
-      teamMembers: [{ login: "adewale", name: "Ade" }],
-    });
-
-    const payload = await fetchFeedPayload();
-
-    expect(
-      payload.items.find((item) => item.repo === "known-repo")?.repoCreatedAt,
-    ).toBe("2026-03-01T12:00:00.000Z");
   });
 
   it("keeps paging past ten GitHub API pages so older tracked repos are not pruned", async () => {

@@ -8,6 +8,15 @@ const DEFAULT_OPTIONS: PreviewOptions = {
   maxChars: 620,
 };
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+  "&amp;": "&",
+  "&quot;": '"',
+  "&#39;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&nbsp;": " ",
+};
+
 function isImageOnlyBlock(block: string): boolean {
   const trimmed = block.trim();
   return /^!?\[[^\]]*\]\([^)]*\)$/.test(trimmed);
@@ -57,6 +66,47 @@ function takeFirstParagraphs(markdown: string, count: number): string {
     .join("\n\n");
 }
 
+function decodeHtmlEntities(markdown: string): string {
+  return markdown.replace(
+    /&(amp|quot|#39|lt|gt|nbsp);/g,
+    (match) => HTML_ENTITY_MAP[match] ?? match,
+  );
+}
+
+function stripHtmlTags(markdown: string): string {
+  return decodeHtmlEntities(markdown.replace(/<[^>]+>/g, ""));
+}
+
+function normalizeHtmlBlocks(markdown: string): string {
+  return decodeHtmlEntities(
+    markdown
+      .replace(/<!--[^]*?-->/g, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(
+        /<h[1-6]\b[^>]*>([^]*?)<\/h[1-6]>/gi,
+        (_, contents) => `${stripHtmlTags(contents).trim()}\n\n`,
+      )
+      .replace(
+        /<p\b[^>]*>([^]*?)<\/p>/gi,
+        (_, contents) => `${stripHtmlTags(contents).trim()}\n\n`,
+      )
+      .replace(
+        /<li\b[^>]*>([^]*?)<\/li>/gi,
+        (_, contents) => `- ${stripHtmlTags(contents).trim()}\n`,
+      )
+      .replace(
+        /<\/?(div|section|article|header|footer|main|aside|figure|figcaption|summary|details|ul|ol)\b[^>]*>/gi,
+        "\n",
+      )
+      .replace(/<img\b[^>]*>/gi, "")
+      .replace(/\n{3,}/g, "\n\n"),
+  );
+}
+
+function normalizePreviewSource(markdown: string): string {
+  return normalizeMarkdownHeadings(normalizeHtmlBlocks(markdown)).trim();
+}
+
 function normalizeMarkdownHeadings(markdown: string): string {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const normalized: string[] = [];
@@ -99,7 +149,7 @@ export function deriveMarkdownPreview(
   options?: Partial<PreviewOptions>,
 ): string {
   const { maxBlocks, maxChars } = { ...DEFAULT_OPTIONS, ...options };
-  const normalized = normalizeMarkdownHeadings(markdown).trim();
+  const normalized = normalizePreviewSource(markdown);
 
   if (!normalized) {
     return "";
@@ -139,7 +189,9 @@ export function formatMarkdownPreviewForCard(
   repo: string,
 ): string {
   return takeFirstParagraphs(
-    stripPreviewNoise(stripLeadingRepositoryHeading(markdown, repo)),
+    stripPreviewNoise(
+      stripLeadingRepositoryHeading(normalizePreviewSource(markdown), repo),
+    ),
     2,
   );
 }

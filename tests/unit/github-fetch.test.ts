@@ -135,6 +135,7 @@ describe("discoverRepositoriesForTeamMember", () => {
             body: JSON.stringify([
               {
                 created_at: "2026-04-02T12:00:00.000Z",
+                default_branch: "main",
                 html_url: "https://github.com/adewale/repo-b",
                 id: 2,
                 name: "repo-b",
@@ -142,6 +143,7 @@ describe("discoverRepositoriesForTeamMember", () => {
               },
               {
                 created_at: "2026-04-02T12:00:00.000Z",
+                default_branch: "main",
                 html_url: "https://github.com/adewale/repo-a",
                 id: 3,
                 name: "repo-a",

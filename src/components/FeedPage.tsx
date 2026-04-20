@@ -12,10 +12,6 @@ function buildPageHref(page: number): string {
   return page <= 1 ? "/" : `/?page=${page}`;
 }
 
-function feedTimestamp(project: ProjectWithProducts): string {
-  return project.repoCreatedAt ?? project.firstSeenAt;
-}
-
 function feedDayKey(isoString: string): string {
   return isoString.slice(0, 10);
 }
@@ -87,7 +83,7 @@ export function FeedPage({ page, projects, totalPages }: FeedPageProps) {
     <div className="feed-shell">
       <section aria-label="Project feed" className="feed-list">
         {projects.map((project) => {
-          const timestamp = feedTimestamp(project);
+          const timestamp = project.repoCreatedAt;
           const currentDayKey = feedDayKey(timestamp);
           const showDayMarker = currentDayKey !== previousDayKey;
           previousDayKey = currentDayKey;

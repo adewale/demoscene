@@ -43,6 +43,23 @@ This is the third real paragraph.
     expect(preview).toBe("Heading One\n\nHeading Two\n\nHeading Three");
   });
 
+  it("normalizes simple HTML hero blocks into readable preview text", () => {
+    const preview = deriveMarkdownPreview(
+      `<div align="center">
+  <h1>Agentic Inbox</h1>
+  <p><em>A self-hosted email client with an AI agent</em></p>
+</div>
+
+<p>Built on Cloudflare Workers.</p>`,
+      { maxBlocks: 3, maxChars: 200 },
+    );
+
+    expect(preview).toBe(
+      "Agentic Inbox\n\nA self-hosted email client with an AI agent\n\nBuilt on Cloudflare Workers.",
+    );
+    expect(preview).not.toMatch(/<\/?(div|h1|p|em)\b/i);
+  });
+
   it("always respects the maximum character budget", () => {
     fc.assert(
       fc.property(fc.string(), (value) => {
@@ -104,5 +121,18 @@ This is the third paragraph.`,
     expect(preview).toBe(
       "Welcome to the **demo** project.\n\nThis is the second paragraph.",
     );
+  });
+
+  it("normalizes stored HTML preview content before trimming card copy", () => {
+    const preview = formatMarkdownPreviewForCard(
+      `<div align="center"><h1>Demo Scene</h1><p><em>Readable preview copy</em></p></div>
+
+<p>Second paragraph.</p>
+
+<p>Third paragraph.</p>`,
+      "demo-scene",
+    );
+
+    expect(preview).toBe("Readable preview copy\n\nSecond paragraph.");
   });
 });

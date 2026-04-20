@@ -10,10 +10,10 @@ import {
 export type FetchLike = typeof fetch;
 
 export type GitHubRepositoryMetadata = ParsedRepositoryUrl & {
-  defaultBranch: string | null;
+  defaultBranch: string;
   homepageUrl: string | null;
-  repoCreatedAt: string | null;
-  repoCreationOrder: number | null;
+  repoCreatedAt: string;
+  repoCreationOrder: number;
 };
 
 type RawFileResult = {
@@ -134,7 +134,10 @@ function parseGitHubRepositoryMetadata(
   }>;
 
   if (
+    typeof repository.created_at !== "string" ||
+    typeof repository.default_branch !== "string" ||
     typeof repository.html_url !== "string" ||
+    typeof repository.id !== "number" ||
     typeof repository.name !== "string" ||
     typeof repository.owner !== "object" ||
     repository.owner === null
@@ -149,19 +152,15 @@ function parseGitHubRepositoryMetadata(
   }
 
   return {
-    defaultBranch:
-      typeof repository.default_branch === "string"
-        ? repository.default_branch
-        : null,
+    defaultBranch: repository.default_branch,
     homepageUrl:
       typeof repository.homepage === "string" && repository.homepage.trim()
         ? repository.homepage
         : null,
     owner: owner.login,
     repo: repository.name,
-    repoCreatedAt:
-      typeof repository.created_at === "string" ? repository.created_at : null,
-    repoCreationOrder: typeof repository.id === "number" ? repository.id : null,
+    repoCreatedAt: repository.created_at,
+    repoCreationOrder: repository.id,
     slug: `${owner.login}/${repository.name}`,
     url: repository.html_url,
   };
@@ -285,15 +284,15 @@ export async function discoverRepositoriesForTeamMember(
   }
 
   return repositories.sort((left, right) => {
-    const createdComparison = (right.repoCreatedAt ?? "").localeCompare(
-      left.repoCreatedAt ?? "",
+    const createdComparison = right.repoCreatedAt.localeCompare(
+      left.repoCreatedAt,
     );
 
     if (createdComparison !== 0) {
       return createdComparison;
     }
 
-    return (right.repoCreationOrder ?? 0) - (left.repoCreationOrder ?? 0);
+    return right.repoCreationOrder - left.repoCreationOrder;
   });
 }
 

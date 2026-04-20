@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, notInArray } from "drizzle-orm";
 
 import type { ProjectRecord, ProjectWithProducts } from "../domain";
 import {
@@ -11,10 +11,23 @@ import { projectProducts, projects } from "./schema";
 type Database = ReturnType<typeof import("./client").createDb>;
 const PRODUCT_LOOKUP_BATCH_SIZE = 90;
 
+function requireProjectChronology(
+  row: typeof projects.$inferSelect,
+): Pick<ProjectRecord, "repoCreatedAt" | "repoCreationOrder"> {
+  if (row.repoCreatedAt === null || row.repoCreationOrder === null) {
+    throw new Error(`Project ${row.slug} is missing chronology metadata`);
+  }
+
+  return {
+    repoCreatedAt: row.repoCreatedAt,
+    repoCreationOrder: row.repoCreationOrder,
+  };
+}
+
 function projectOrdering() {
   return [
-    desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
-    desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+    desc(projects.repoCreatedAt),
+    desc(projects.repoCreationOrder),
     desc(projects.firstSeenAt),
   ] as const;
 }
@@ -56,12 +69,11 @@ function attachProducts(
   }
 
   return projectRows.map((row) => ({
+    ...requireProjectChronology(row),
     slug: row.slug,
     owner: row.owner,
     repo: row.repo,
     repoUrl: row.repoUrl,
-    repoCreationOrder: row.repoCreationOrder,
-    repoCreatedAt: row.repoCreatedAt,
     homepageUrl: row.homepageUrl,
     branch: row.branch,
     wranglerPath: row.wranglerPath,
@@ -142,23 +154,6 @@ export async function deleteProjectBySlug(
   slug: string,
 ): Promise<void> {
   await db.delete(projects).where(eq(projects.slug, slug));
-}
-
-export async function updateProjectChronology(
-  db: Database,
-  values: {
-    repoCreatedAt: string | null;
-    repoCreationOrder: number | null;
-    slug: string;
-  },
-): Promise<void> {
-  await db
-    .update(projects)
-    .set({
-      repoCreatedAt: values.repoCreatedAt,
-      repoCreationOrder: values.repoCreationOrder,
-    })
-    .where(eq(projects.slug, values.slug));
 }
 
 export async function getProjectByOwnerRepo(

@@ -19,7 +19,6 @@ describe("extractRepositoryPageMetadata", () => {
     expect(extractRepositoryPageMetadata(html)).toEqual({
       homepageUrl: "https://demo.example.com",
       previewImageUrl: "https://opengraph.githubassets.com/example/image.png",
-      repoCreationOrder: null,
     });
   });
 
@@ -29,7 +28,6 @@ describe("extractRepositoryPageMetadata", () => {
     ).toEqual({
       homepageUrl: null,
       previewImageUrl: null,
-      repoCreationOrder: null,
     });
   });
 
@@ -47,16 +45,6 @@ describe("extractRepositoryPageMetadata", () => {
       homepageUrl: "https://developers.cloudflare.com/workers/",
       previewImageUrl:
         "https://opengraph.githubassets.com/6d972d5d4cd6462200f45fa620d20d17ce090eaa2abe65ed0c76580ee135081e/cloudflare/workers-sdk",
-      repoCreationOrder: null,
     });
-  });
-
-  it("extracts repository id from octolytics metadata", () => {
-    const html =
-      '<meta name="octolytics-dimension-repository_id" content="465030396" />';
-
-    expect(extractRepositoryPageMetadata(html).repoCreationOrder).toBe(
-      465030396,
-    );
   });
 });

@@ -1,36 +1,160 @@
 # demoscene
 
-Public Cloudflare app that turns a source-controlled list of team GitHub accounts into a reverse-chronological feed of Cloudflare projects.
+`demoscene` is a Cloudflare Worker that scans a curated set of GitHub accounts and publishes a reverse-chronological feed of public Cloudflare projects.
 
-## Chosen Stack
+It discovers repositories with the GitHub API, detects top-level Wrangler configs, stores the first README it sees, derives a cleaned preview for cards, and renders the result as HTML, JSON, and RSS.
 
-- TypeScript
-- Cloudflare Workers
-- Hono
-- React SSR
-- D1
-- Drizzle ORM
-- `react-markdown` with sanitization
-- Vitest
-- React Testing Library
-- `@cloudflare/vitest-pool-workers`
-- Playwright
-- `fast-check`
+## Live Surfaces
 
-## Scope
+- Site: `https://demoscene.adewale-883.workers.dev/`
+- JSON feed: `https://demoscene.adewale-883.workers.dev/feed.json`
+- RSS feed: `https://demoscene.adewale-883.workers.dev/rss.xml`
 
-- run a scheduled sync every day at `12:00 UTC`
-- read a source-controlled list of public GitHub team accounts
-- use the GitHub REST API for repository discovery and repository metadata
-- use `GITHUB_TOKEN` for higher GitHub API limits in deployed environments
-- treat a repo as a Cloudflare project if it has a top-level `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc`
-- infer Cloudflare products from that Wrangler config and show them as icons on feed cards
-- fetch and store the repo README once
-- derive a bounded README preview once and render the first 2 cleaned preview paragraphs on feed cards
-- normalize README heading syntax into body text during preview derivation
-- make the main card link go to the GitHub repo
-- group the feed by newest day first using `repoCreatedAt`, with `firstSeenAt` as a fallback
-- remove a repo from the site if it can no longer be found
+## Features
+
+- daily scheduled sync at `12:00 UTC`
+- GitHub API discovery with stable pagination handling
+- GitHub-first feed cards ordered by real repository creation time
+- top-level Wrangler detection for `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
+- inferred Cloudflare product metadata on each card
+- cleaned README preview generation for feed cards
+- machine-readable project JSON and RSS output
+
+## Requirements
+
+Runs entirely on the Cloudflare free tier for normal development and small-scale use.
+
+You will still need:
+
+- a Cloudflare account
+- a GitHub personal access token for higher GitHub API limits
+
+If Cloudflare pricing changes, double-check the current Workers and D1 limits before deploying at larger scale.
+
+## Cloudflare Services
+
+| Service       | Purpose                                       |
+| ------------- | --------------------------------------------- |
+| Workers       | App runtime, routing, SSR, and scheduled sync |
+| D1            | Persistent project storage                    |
+| Cron Triggers | Daily repository sync at `12:00 UTC`          |
+
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+npm install
+npx playwright install
+```
+
+### 2. Create your Cloudflare D1 databases
+
+Create one database for production data and one for preview/local preview data:
+
+```bash
+npx wrangler d1 create demoscene
+npx wrangler d1 create demoscene-preview
+```
+
+Copy the returned `database_id` values into `wrangler.jsonc`:
+
+- `database_id` for your main database
+- `preview_database_id` for your preview database
+
+### 3. Configure local secrets
+
+Create a local `.dev.vars` file from the checked-in example:
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+Set at least:
+
+- `GITHUB_TOKEN` for GitHub API access
+
+Optional local debug settings:
+
+- `ENABLE_DEBUG_ROUTES=true`
+- `DEBUG_SYNC_TOKEN=your-local-token`
+
+### 4. Apply local migrations
+
+```bash
+npm run db:migrate:local
+```
+
+### 5. Start the app locally
+
+```bash
+npm run dev
+```
+
+The local app runs with Wrangler and serves the same routes as production.
+
+## Fork And Deploy
+
+### 1. Fork the repository
+
+Fork this repo to your own GitHub account before deploying your own instance.
+
+### 2. Create your own Cloudflare resources
+
+Do not reuse the checked-in D1 IDs. Create your own databases and update `wrangler.jsonc` in your fork.
+
+### 3. Set required secrets
+
+Add your GitHub token to the deployed Worker:
+
+```bash
+npx wrangler secret put GITHUB_TOKEN
+```
+
+Optional debug-route secret:
+
+```bash
+npx wrangler secret put DEBUG_SYNC_TOKEN
+```
+
+If you want deployed debug sync access, also set `ENABLE_DEBUG_ROUTES` in your Wrangler config or environment-specific config.
+
+### 4. Apply remote migrations
+
+```bash
+npx wrangler d1 migrations apply DB --remote --config wrangler.jsonc
+```
+
+### 5. Deploy your fork
+
+```bash
+npx wrangler deploy
+```
+
+### 6. Populate the feed
+
+The scheduled sync will populate the feed automatically at `12:00 UTC`.
+
+If you want to trigger an immediate sync after deploy, temporarily enable the debug route, call `/debug/sync` with the correct `x-debug-sync-token`, then disable it again.
+
+## Deploy Button
+
+Cloudflare deploy buttons only work for public GitHub or GitLab repositories.
+
+Once your fork is public, add this to your fork README with your actual repository URL:
+
+```markdown
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=<REPO_URL>)
+```
+
+## How It Works
+
+1. The app reads a source-controlled list of GitHub accounts.
+2. It calls `GET /users/:login/repos?sort=created&direction=desc&per_page=100&page=:n` until GitHub stops returning `rel="next"`.
+3. For each repo, it fetches metadata from `GET /repos/:owner/:repo`.
+4. It fetches the top-level Wrangler config from the repo's default branch, then falls back to `main` and `master`.
+5. If the repo is a Cloudflare project, it stores the repo record, inferred Cloudflare products, and a normalized README preview in D1.
+6. The homepage, JSON feed, and RSS feed all render from the stored project data.
 
 ## Routes
 
@@ -39,62 +163,20 @@ Public Cloudflare app that turns a source-controlled list of team GitHub account
 - `/feed.json`
 - `/rss.xml`
 - `/projects/:owner/:repo.json`
-- `/debug/sync` for local/manual verification when debug access is allowed
+- `/debug/sync`
 - `/robots.txt`
 - `/sitemap.xml`
 
-## Fetch Rules
+## Testing
 
-For each team account, repository discovery uses the GitHub REST API:
-
-- `GET /users/:login/repos?sort=created&direction=desc&per_page=100&page=:n`
-- continue paging while the GitHub `Link` header exposes `rel="next"`
-
-For each discovered repo `https://github.com/:owner/:repo`:
-
-- fetch repository metadata from `GET /repos/:owner/:repo`
-- prefer the repo's actual `default_branch` when fetching raw files, then fall back to `main` and `master`
-- README URLs:
-  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/README.md`
-  - `https://raw.githubusercontent.com/:owner/:repo/main/README.md`
-  - `https://raw.githubusercontent.com/:owner/:repo/master/README.md`
-- top-level Wrangler URLs:
-  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.toml`
-  - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.toml`
-  - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.toml`
-  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.json`
-  - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.json`
-  - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.json`
-  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.jsonc`
-  - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.jsonc`
-  - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.jsonc`
-- homepage is extracted from the public repo page HTML at `https://github.com/:owner/:repo`
-- preview images are best-effort metadata from the repo page and transient validation failures do not block sync
-
-## Sync Observability
-
-- scheduled runs emit a sync summary to logs
-- the summary includes accounts scanned and repos discovered, added, updated, removed, invalid-config, and skipped-transiently counts
-- `GET /debug/sync` runs a manual sync and returns the same summary JSON when either:
-  - the app is running on `localhost` or `127.0.0.1`
-  - `ENABLE_DEBUG_ROUTES === "true"` and `x-debug-sync-token` matches `DEBUG_SYNC_TOKEN`
-
-## Local Development
-
-- `npm run db:migrate:local` applies D1 migrations to the local database
 - `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests
-- `npm run test:full` runs the full verification suite, including E2E, coverage, audits, duplicate-code detection, and secrets scanning
-- `wrangler.jsonc` uses a separate `preview_database_id` from production
+- `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection, and secrets scanning
 
-## Feed Model
+## Notes
 
-- the homepage is the product; it is not a replacement for GitHub
-- the latest day stays at the top of the feed
-- cards within a day are ordered newest-first by `repoCreatedAt`, then `repoCreationOrder`, then `firstSeenAt`
-- the main card link goes to the GitHub repository
-- cards show the first 2 cleaned preview paragraphs, not the full README
-- cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain
-- `/projects/:owner/:repo.json` exists for machine consumers only
+- README previews are normalized during ingestion so heading-heavy and HTML-heavy READMEs read like feed copy instead of raw markup.
+- The homepage is the product. Project titles link directly to GitHub.
+- Cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain.
 
 ## Docs
 
@@ -102,3 +184,7 @@ For each discovered repo `https://github.com/:owner/:repo`:
 - architecture: `specs/architecture.md`
 - roadmap: `specs/roadmap.md`
 - stack: `specs/stack.md`
+
+## License
+
+MIT
