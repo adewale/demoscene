@@ -98,7 +98,7 @@ Unit tests:
 
 Property tests:
 
-- parser and normalizer behavior using `fast-check`
+- parser and preview-normalizer behavior using `fast-check`
 
 Component tests:
 

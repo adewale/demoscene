@@ -13,11 +13,12 @@ It discovers repositories with the GitHub API, detects top-level Wrangler config
 ## Features
 
 - daily scheduled sync at `12:00 UTC`
+- London schedule: `13:00` during BST and `12:00` during GMT
 - GitHub API discovery with stable pagination handling
 - GitHub-first feed cards ordered by real repository creation time
 - top-level Wrangler detection for `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
 - inferred Cloudflare product metadata on each card
-- cleaned README preview generation for feed cards
+- cleaned README preview generation for feed cards, including heading, badge, and icon-strip cleanup
 - machine-readable project JSON and RSS output
 
 ## Requirements
@@ -156,6 +157,8 @@ Once your fork is public, add this to your fork README with your actual reposito
 5. If the repo is a Cloudflare project, it stores the repo record, inferred Cloudflare products, and a normalized README preview in D1.
 6. The homepage, JSON feed, and RSS feed all render from the stored project data.
 
+README preview normalization removes decorative noise before cards are derived. That includes Markdown headings, common badge blocks, deploy buttons, and HTML image-link icon strips like browser-store buttons, so card copy starts with meaningful text instead of repo chrome.
+
 ## Routes
 
 - `/`
@@ -174,7 +177,7 @@ Once your fork is public, add this to your fork README with your actual reposito
 
 ## Notes
 
-- README previews are normalized during ingestion so heading-heavy and HTML-heavy READMEs read like feed copy instead of raw markup.
+- README previews are normalized during ingestion so heading-heavy, badge-heavy, and HTML-heavy READMEs read like feed copy instead of raw markup.
 - The homepage is the product. Project titles link directly to GitHub.
 - Cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain.
 

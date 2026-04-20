@@ -130,6 +130,7 @@ Scope:
 - per-repo error isolation
 - initial README fetch and storage
 - bounded README preview derivation and storage
+- README preview normalization that strips decorative heading, badge, and icon noise
 - repository creation date and creation-order persistence for feed chronology
 - homepage and preview media storage
 - periodic stale-entry cleanup for older tracked repos

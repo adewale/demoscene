@@ -8,7 +8,7 @@ Smallest concrete architecture:
 - Hono for routing
 - React SSR for HTML pages
 - one scheduled handler
-- one D1 database
+- one production D1 database plus a separate preview D1 database
 - one source-controlled team account list in the codebase
 - Drizzle for schema and query typing
 
@@ -42,7 +42,7 @@ For each sync run:
 10. Try the top-level Wrangler config URLs in a fixed order, preferring the repo's actual default branch first.
 11. If no top-level Wrangler config exists, the repo is not shown in the site.
 12. If a Wrangler config exists and the repo is new, fetch the README and derive a bounded Markdown preview for feed cards.
-13. Normalize Markdown headings into body text during preview derivation.
+13. Normalize README preview content into readable body text during preview derivation, stripping headings, badge blocks, deploy buttons, and decorative image-link icon strips.
 14. Infer Cloudflare products from the Wrangler config.
 15. Create or update the project record, including `repoCreatedAt` and `repoCreationOrder`.
 16. Refresh homepage and preview media metadata on later runs.
@@ -104,6 +104,8 @@ Inference is best-effort metadata, not a guarantee that every configured product
 ## Storage
 
 Use D1.
+
+Production and preview use separate D1 database IDs in `wrangler.jsonc` so preview work does not touch production content.
 
 Suggested tables:
 

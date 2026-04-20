@@ -44,7 +44,7 @@ Sync:
 - fetch and store the repo homepage and lightweight preview media when available
 - preview image validation failures must not block the repo sync; keep the prior image when validation fails transiently
 - ignore later README changes
-- normalize Markdown heading syntax into plain body text when deriving the stored feed preview
+- normalize README preview content into readable body text when deriving the stored feed preview, including Markdown headings, common badge blocks, deploy buttons, and decorative HTML image-link icon strips
 - transient upstream failures must not remove existing projects or abort the full sync
 - malformed Wrangler config should be counted explicitly in the sync summary
 - if a repo cannot be found, remove it from the site
