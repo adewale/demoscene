@@ -22,6 +22,33 @@ function isImageOnlyBlock(block: string): boolean {
   return /^!?\[[^\]]*\]\([^)]*\)$/.test(trimmed);
 }
 
+function isLinkedImageOnlyLine(line: string): boolean {
+  return /^\[!?\[[^\]]*\]\([^)]*\)\]\([^)]*\)$/.test(line.trim());
+}
+
+function isVisualNoiseLine(line: string): boolean {
+  const trimmed = line.trim();
+
+  if (!trimmed) {
+    return false;
+  }
+
+  return isImageOnlyBlock(trimmed) || isLinkedImageOnlyLine(trimmed);
+}
+
+function isVisualNoiseBlock(block: string): boolean {
+  const lines = block
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return true;
+  }
+
+  return lines.every(isVisualNoiseLine);
+}
+
 function stripLeadingRepositoryHeading(markdown: string, repo: string): string {
   const normalized = markdown.trim();
 
@@ -49,6 +76,7 @@ function stripPreviewNoise(markdown: string): string {
     .split("\n")
     .filter(
       (line) =>
+        !isVisualNoiseLine(line) &&
         !line.includes("deploy.workers.cloudflare.com/button") &&
         !/\[!\[[^\]]*deploy to cloudflare/i.test(line),
     )
@@ -81,7 +109,10 @@ function normalizeHtmlBlocks(markdown: string): string {
   return decodeHtmlEntities(
     markdown
       .replace(/<!--[^]*?-->/g, "")
-      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/?br\s*\/?>/gi, "\n")
+      .replace(/<a\b[^>]*>([^]*?)<\/a>/gi, (_, contents) =>
+        stripHtmlTags(contents).trim(),
+      )
       .replace(
         /<h[1-6]\b[^>]*>([^]*?)<\/h[1-6]>/gi,
         (_, contents) => `${stripHtmlTags(contents).trim()}\n\n`,
@@ -159,7 +190,8 @@ export function deriveMarkdownPreview(
     .split(/\n\s*\n/g)
     .map((block) => block.trim())
     .filter(Boolean)
-    .filter((block) => !isImageOnlyBlock(block));
+    .filter((block) => !isImageOnlyBlock(block))
+    .filter((block) => !isVisualNoiseBlock(block));
 
   if (blocks.length === 0) {
     return clampToMaxChars(normalized, maxChars);

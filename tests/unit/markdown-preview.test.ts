@@ -60,6 +60,43 @@ This is the third real paragraph.
     expect(preview).not.toMatch(/<\/?(div|h1|p|em)\b/i);
   });
 
+  it("drops decorative badge and icon blocks before meaningful README text", () => {
+    const preview = deriveMarkdownPreview(
+      `# Web2Kindle 📚
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/megaconfidence/web2kindle.svg)](https://github.com/megaconfidence/web2kindle/stargazers)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/megaconfidence/web2kindle)
+
+Transform any web article into a beautifully formatted Kindle ebook with just one click.
+
+<a href="https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk" target="_blank">
+  <img src="/public/images/chrome.webp" style="height:50px;" />
+</a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/web2kindle/" target="_blank">
+  <img src="/public/images/firefox.webp" style="height:50px;" />
+</a>
+</br>
+</br>
+
+## Features ✨
+
+- Fast delivery to any Kindle device`,
+    );
+
+    expect(preview).toContain(
+      "Transform any web article into a beautifully formatted Kindle ebook with just one click.",
+    );
+    expect(preview).toContain("Features ✨");
+    expect(preview).not.toContain("img.shields.io");
+    expect(preview).not.toContain("deploy.workers.cloudflare.com/button");
+    expect(preview).not.toContain("chromewebstore.google.com");
+    expect(preview).not.toContain("addons.mozilla.org");
+    expect(preview).not.toContain("<a");
+    expect(preview).not.toContain("<img");
+  });
+
   it("always respects the maximum character budget", () => {
     fc.assert(
       fc.property(fc.string(), (value) => {
@@ -82,6 +119,39 @@ This is the third real paragraph.
 
         expect(preview).not.toMatch(/^#+\s/m);
       }),
+    );
+  });
+
+  it("property: badge and icon noise never displaces the first meaningful paragraph", () => {
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.constantFrom(
+            "[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)",
+            "[![GitHub stars](https://img.shields.io/github/stars/megaconfidence/web2kindle.svg)](https://github.com/megaconfidence/web2kindle/stargazers)",
+            "[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/megaconfidence/web2kindle)",
+            '<a href="https://chromewebstore.google.com/detail/web2kindle/demo" target="_blank"><img src="/public/images/chrome.webp" style="height:50px;" /></a>',
+            '<a href="https://addons.mozilla.org/en-US/firefox/addon/web2kindle/" target="_blank"><img src="/public/images/firefox.webp" style="height:50px;" /></a>',
+            "</br>",
+            "<br />",
+          ),
+          { minLength: 1, maxLength: 12 },
+        ),
+        (noiseLines) => {
+          const preview = deriveMarkdownPreview(
+            `# Demo Scene\n\n${noiseLines.join("\n")}\n\nMeaningful preview copy.`,
+            { maxBlocks: 4, maxChars: 220 },
+          );
+
+          expect(preview).toContain("Meaningful preview copy.");
+          expect(preview).not.toContain("img.shields.io");
+          expect(preview).not.toContain("deploy.workers.cloudflare.com/button");
+          expect(preview).not.toContain("chromewebstore.google.com");
+          expect(preview).not.toContain("addons.mozilla.org");
+          expect(preview).not.toContain("<a");
+          expect(preview).not.toContain("<img");
+        },
+      ),
     );
   });
 

@@ -350,6 +350,61 @@ binding = "DB"
     );
   });
 
+  it("drops decorative badge and icon blocks during README preview ingestion", async () => {
+    await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [buildRepositoryApiUrl("acme", "web2kindle")]:
+          buildRepositoryApiResponse({
+            owner: "acme",
+            repo: "web2kindle",
+          }),
+        "https://github.com/acme/web2kindle": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/acme/web2kindle/main/wrangler.toml":
+          {
+            body: `name = "web2kindle"`,
+          },
+        "https://raw.githubusercontent.com/acme/web2kindle/main/README.md": {
+          body: `# Web2Kindle 📚
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/megaconfidence/web2kindle.svg)](https://github.com/megaconfidence/web2kindle/stargazers)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/megaconfidence/web2kindle)
+
+Transform any web article into a beautifully formatted Kindle ebook with just one click.
+
+<a href="https://chromewebstore.google.com/detail/web2kindle/demo" target="_blank">
+  <img src="/public/images/chrome.webp" style="height:50px;" />
+</a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/web2kindle/" target="_blank">
+  <img src="/public/images/firefox.webp" style="height:50px;" />
+</a>
+</br>
+</br>
+
+## Features ✨
+
+- Fast delivery to any Kindle device`,
+        },
+      }) as typeof fetch,
+      repositories: ["https://github.com/acme/web2kindle"],
+    });
+
+    const payload = await fetchFeedPayload();
+    const preview = payload.items[0]?.readmePreviewMarkdown;
+
+    expect(preview).toContain(
+      "Transform any web article into a beautifully formatted Kindle ebook with just one click.",
+    );
+    expect(preview).toContain("Features ✨");
+    expect(preview).not.toContain("img.shields.io");
+    expect(preview).not.toContain("deploy.workers.cloudflare.com/button");
+    expect(preview).not.toContain("chromewebstore.google.com");
+    expect(preview).not.toContain("addons.mozilla.org");
+  });
+
   it("drops extracted preview image URLs that would render as broken images", async () => {
     await syncRepositories(testEnv, {
       fetch: createMockFetch({
