@@ -10,6 +10,7 @@ const project: ProjectWithProducts = {
   repo: "demo-feed",
   repoUrl: "https://github.com/acme/demo-feed",
   repoCreationOrder: 10,
+  repoCreatedAt: "2026-04-14T12:00:00.000Z",
   homepageUrl: null,
   branch: "main",
   wranglerPath: "wrangler.toml",
@@ -59,7 +60,7 @@ describe("FeedPage", () => {
     expect(screen.getByText("Page 2 of 4")).toBeInTheDocument();
   });
 
-  it("inserts a day marker when a new day starts in the feed", () => {
+  it("inserts a day marker when a new created day starts in the feed", () => {
     render(
       <FeedPage
         page={1}
@@ -70,7 +71,7 @@ describe("FeedPage", () => {
             slug: "acme/demo-feed-next-day",
             repo: "demo-feed-next-day",
             repoUrl: "https://github.com/acme/demo-feed-next-day",
-            firstSeenAt: "2026-04-15T12:00:00.000Z",
+            repoCreatedAt: "2026-04-15T12:00:00.000Z",
           },
         ]}
         totalPages={1}

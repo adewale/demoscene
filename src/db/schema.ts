@@ -14,6 +14,7 @@ export const projects = sqliteTable(
     repo: text("repo").notNull(),
     repoUrl: text("repo_url").notNull(),
     repoCreationOrder: integer("repo_creation_order"),
+    repoCreatedAt: text("repo_created_at"),
     homepageUrl: text("homepage_url"),
     branch: text("branch").notNull(),
     wranglerPath: text("wrangler_path").notNull(),

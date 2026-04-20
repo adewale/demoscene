@@ -3,8 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildRawFileCandidates,
+  buildRepositoryApiUrl,
   buildRepositoriesPageUrl,
+  buildUserRepositoriesApiUrl,
   extractRepositoryUrlsFromAccountPage,
+  hasNextPageLink,
   normalizeRepositoryUrl,
   parseRepositoryUrl,
 } from "../../src/lib/github/repositories";
@@ -101,12 +104,93 @@ describe("buildRawFileCandidates", () => {
       },
     ]);
   });
+
+  it("prefers the provided default branch before fallback branches", () => {
+    expect(
+      buildRawFileCandidates("cloudflare", "workers-sdk", ["README.md"], "dev"),
+    ).toEqual([
+      {
+        branch: "dev",
+        fileName: "README.md",
+        url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/dev/README.md",
+      },
+      {
+        branch: "main",
+        fileName: "README.md",
+        url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/README.md",
+      },
+      {
+        branch: "master",
+        fileName: "README.md",
+        url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/master/README.md",
+      },
+    ]);
+  });
+
+  it("does not duplicate fallback branches when the preferred branch already matches one", () => {
+    expect(
+      buildRawFileCandidates(
+        "cloudflare",
+        "workers-sdk",
+        ["README.md"],
+        "main",
+      ),
+    ).toEqual([
+      {
+        branch: "main",
+        fileName: "README.md",
+        url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/README.md",
+      },
+      {
+        branch: "master",
+        fileName: "README.md",
+        url: "https://raw.githubusercontent.com/cloudflare/workers-sdk/master/README.md",
+      },
+    ]);
+  });
 });
 
 describe("GitHub account discovery", () => {
   it("builds repository listing URLs", () => {
     expect(buildRepositoriesPageUrl("adewale", 2)).toBe(
       "https://github.com/adewale?page=2&tab=repositories&sort=created",
+    );
+  });
+
+  it("builds GitHub API repository listing URLs", () => {
+    expect(buildUserRepositoriesApiUrl("a/dewale", 3, 50)).toBe(
+      "https://api.github.com/users/a%2Fdewale/repos?sort=created&direction=desc&per_page=50&page=3",
+    );
+  });
+
+  it("builds GitHub API repository detail URLs", () => {
+    expect(buildRepositoryApiUrl("cloudflare", "workers sdk")).toBe(
+      "https://api.github.com/repos/cloudflare/workers%20sdk",
+    );
+  });
+
+  it("detects next-page links from GitHub API pagination headers", () => {
+    expect(
+      hasNextPageLink(
+        '<https://api.github.com/user/1/repos?page=2>; rel="next", <https://api.github.com/user/1/repos?page=4>; rel="last"',
+      ),
+    ).toBe(true);
+    expect(
+      hasNextPageLink(
+        '<https://api.github.com/user/1/repos?page=1>; rel="prev", <https://api.github.com/user/1/repos?page=4>; rel="last"',
+      ),
+    ).toBe(false);
+    expect(hasNextPageLink(null)).toBe(false);
+  });
+
+  it("only reports next-page links when the header actually contains rel=next", () => {
+    fc.assert(
+      fc.property(
+        fc.string().filter((value) => !/rel="?next"?/i.test(value)),
+        (header) => {
+          expect(hasNextPageLink(header)).toBe(false);
+        },
+      ),
     );
   });
 

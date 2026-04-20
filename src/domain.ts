@@ -4,6 +4,7 @@ export type AppEnv = {
   DB: D1Database;
   APP_NAME: string;
   ENABLE_DEBUG_ROUTES?: string;
+  GITHUB_TOKEN?: string;
 };
 
 export type SyncSummary = {
@@ -21,6 +22,7 @@ export type ProjectRecord = {
   repo: string;
   repoUrl: string;
   repoCreationOrder: number | null;
+  repoCreatedAt: string | null;
   homepageUrl: string | null;
   branch: string;
   wranglerPath: string;

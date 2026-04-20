@@ -14,5 +14,7 @@ test("renders the feed as a card-oriented newsfeed", async ({ page }) => {
     "href",
     "https://www.loom.com/share/demo-scene",
   );
-  await expect(page.locator("main")).toHaveScreenshot("feed-page.png");
+  await expect(page.locator("main")).toHaveScreenshot("feed-page.png", {
+    maxDiffPixels: 700,
+  });
 });

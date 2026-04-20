@@ -12,6 +12,7 @@ const project: ProjectWithProducts = {
   repo: "demo-scene",
   repoUrl: "https://github.com/acme/demo-scene",
   repoCreationOrder: 42,
+  repoCreatedAt: "2026-04-14T12:00:00.000Z",
   homepageUrl: "https://demo.example.com",
   branch: "main",
   wranglerPath: "wrangler.toml",

@@ -1,4 +1,5 @@
 const GITHUB_HOST = "github.com";
+const GITHUB_API_HOST = "api.github.com";
 const BRANCHES = ["main", "master"] as const;
 export type ParsedRepositoryUrl = {
   owner: string;
@@ -8,7 +9,7 @@ export type ParsedRepositoryUrl = {
 };
 
 type RawFileCandidate = {
-  branch: (typeof BRANCHES)[number];
+  branch: string;
   fileName: string;
   url: string;
 };
@@ -65,6 +66,28 @@ function isRepositoryAnchorTag(tag: string): boolean {
 
 export function buildRepositoriesPageUrl(login: string, page: number): string {
   return `https://${GITHUB_HOST}/${login}?page=${page}&tab=repositories&sort=created`;
+}
+
+export function buildUserRepositoriesApiUrl(
+  login: string,
+  page: number,
+  perPage = 100,
+): string {
+  return `https://${GITHUB_API_HOST}/users/${encodeURIComponent(login)}/repos?sort=created&direction=desc&per_page=${perPage}&page=${page}`;
+}
+
+export function buildRepositoryApiUrl(owner: string, repo: string): string {
+  return `https://${GITHUB_API_HOST}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+}
+
+export function hasNextPageLink(linkHeader: string | null): boolean {
+  if (!linkHeader) {
+    return false;
+  }
+
+  return linkHeader
+    .split(",")
+    .some((part) => /rel="?next"?/i.test(part.trim()));
 }
 
 export function extractRepositoryUrlsFromAccountPage(
@@ -143,9 +166,15 @@ export function buildRawFileCandidates(
   owner: string,
   repo: string,
   fileNames: string[],
+  preferredBranch?: string | null,
 ): RawFileCandidate[] {
+  const branches = [preferredBranch, ...BRANCHES].filter(
+    (branch, index, values): branch is string =>
+      Boolean(branch) && values.indexOf(branch) === index,
+  );
+
   return fileNames.flatMap((fileName) =>
-    BRANCHES.map((branch) => ({
+    branches.map((branch) => ({
       branch,
       fileName,
       url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fileName}`,

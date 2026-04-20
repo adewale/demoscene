@@ -70,13 +70,14 @@ function renderRssDescription(project: ProjectWithProducts): string {
 
 function renderRssItem(project: ProjectWithProducts): string {
   const description = renderRssDescription(project);
+  const publishedAt = project.repoCreatedAt ?? project.firstSeenAt;
 
   return [
     "<item>",
     `<title>${escapeXml(`${project.owner}/${project.repo}`)}</title>`,
     `<link>${escapeXml(project.repoUrl)}</link>`,
     `<guid isPermaLink="true">${escapeXml(project.repoUrl)}</guid>`,
-    `<pubDate>${new Date(project.firstSeenAt).toUTCString()}</pubDate>`,
+    `<pubDate>${new Date(publishedAt).toUTCString()}</pubDate>`,
     `<dc:creator>${escapeXml(project.owner)}</dc:creator>`,
     ...project.products.map(
       (product) => `<category>${escapeXml(product.label)}</category>`,

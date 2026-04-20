@@ -53,6 +53,7 @@ function attachProducts(
     repo: row.repo,
     repoUrl: row.repoUrl,
     repoCreationOrder: row.repoCreationOrder,
+    repoCreatedAt: row.repoCreatedAt,
     homepageUrl: row.homepageUrl,
     branch: row.branch,
     wranglerPath: row.wranglerPath,
@@ -78,6 +79,7 @@ export async function upsertProject(
       set: {
         repoUrl: project.repoUrl,
         repoCreationOrder: project.repoCreationOrder,
+        repoCreatedAt: project.repoCreatedAt,
         homepageUrl: project.homepageUrl,
         branch: project.branch,
         wranglerPath: project.wranglerPath,
@@ -120,6 +122,23 @@ export async function deleteProjectBySlug(
   await db.delete(projects).where(eq(projects.slug, slug));
 }
 
+export async function updateProjectChronology(
+  db: Database,
+  values: {
+    repoCreatedAt: string | null;
+    repoCreationOrder: number | null;
+    slug: string;
+  },
+): Promise<void> {
+  await db
+    .update(projects)
+    .set({
+      repoCreatedAt: values.repoCreatedAt,
+      repoCreationOrder: values.repoCreationOrder,
+    })
+    .where(eq(projects.slug, values.slug));
+}
+
 export async function getProjectByOwnerRepo(
   db: Database,
   owner: string,
@@ -149,8 +168,9 @@ export async function listProjects(
     .select()
     .from(projects)
     .orderBy(
-      desc(projects.firstSeenAt),
+      desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
       desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+      desc(projects.firstSeenAt),
     );
 
   if (projectRows.length === 0) {
@@ -177,8 +197,9 @@ export async function listProjectsPage(
     .select()
     .from(projects)
     .orderBy(
-      desc(projects.firstSeenAt),
+      desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
       desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+      desc(projects.firstSeenAt),
     )
     .limit(limit)
     .offset(offset);
@@ -198,7 +219,9 @@ export async function listProjectsPage(
 export async function listProjectSyncStateByOwners(
   db: Database,
   owners: string[],
-): Promise<Array<{ lastSeenAt: string; owner: string; repoUrl: string }>> {
+): Promise<
+  Array<{ lastSeenAt: string; owner: string; repoUrl: string; slug: string }>
+> {
   if (owners.length === 0) {
     return [];
   }
@@ -208,6 +231,7 @@ export async function listProjectSyncStateByOwners(
       lastSeenAt: projects.lastSeenAt,
       owner: projects.owner,
       repoUrl: projects.repoUrl,
+      slug: projects.slug,
     })
     .from(projects)
     .where(inArray(projects.owner, owners));

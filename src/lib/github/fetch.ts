@@ -1,12 +1,20 @@
 import type { TeamMember } from "../../config/repositories";
 import type { ParsedRepositoryUrl } from "./repositories";
 import {
+  buildRepositoryApiUrl,
   buildRawFileCandidates,
-  buildRepositoriesPageUrl,
-  extractRepositoryUrlsFromAccountPage,
+  buildUserRepositoriesApiUrl,
+  hasNextPageLink,
 } from "./repositories";
 
 export type FetchLike = typeof fetch;
+
+export type GitHubRepositoryMetadata = ParsedRepositoryUrl & {
+  defaultBranch: string | null;
+  homepageUrl: string | null;
+  repoCreatedAt: string | null;
+  repoCreationOrder: number | null;
+};
 
 type RawFileResult = {
   branch: string;
@@ -56,6 +64,20 @@ export const WRANGLER_FILE_NAMES = [
   "wrangler.json",
   "wrangler.jsonc",
 ];
+const GITHUB_API_VERSION = "2026-03-10";
+const GITHUB_API_ACCEPT = "application/vnd.github+json";
+
+type RepositoryMetadataResult =
+  | {
+      kind: "found";
+      metadata: GitHubRepositoryMetadata;
+    }
+  | {
+      kind: "not_found";
+    }
+  | {
+      kind: "transient_error";
+    };
 
 function isNotFoundStatus(status: number): boolean {
   return status === 404;
@@ -78,6 +100,71 @@ function isImageLikeContentType(contentType: string | null): boolean {
   }
 
   return contentType.toLowerCase().startsWith("image/");
+}
+
+function createGitHubApiHeaders(token?: string): Headers {
+  const headers = new Headers({
+    Accept: GITHUB_API_ACCEPT,
+    "User-Agent": "demoscene",
+    "X-GitHub-Api-Version": GITHUB_API_VERSION,
+  });
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  return headers;
+}
+
+function parseGitHubRepositoryMetadata(
+  value: unknown,
+): GitHubRepositoryMetadata | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const repository = value as Partial<{
+    created_at: unknown;
+    default_branch: unknown;
+    homepage: unknown;
+    html_url: unknown;
+    id: unknown;
+    name: unknown;
+    owner: unknown;
+  }>;
+
+  if (
+    typeof repository.html_url !== "string" ||
+    typeof repository.name !== "string" ||
+    typeof repository.owner !== "object" ||
+    repository.owner === null
+  ) {
+    return null;
+  }
+
+  const owner = repository.owner as Partial<{ login: unknown }>;
+
+  if (typeof owner.login !== "string") {
+    return null;
+  }
+
+  return {
+    defaultBranch:
+      typeof repository.default_branch === "string"
+        ? repository.default_branch
+        : null,
+    homepageUrl:
+      typeof repository.homepage === "string" && repository.homepage.trim()
+        ? repository.homepage
+        : null,
+    owner: owner.login,
+    repo: repository.name,
+    repoCreatedAt:
+      typeof repository.created_at === "string" ? repository.created_at : null,
+    repoCreationOrder: typeof repository.id === "number" ? repository.id : null,
+    slug: `${owner.login}/${repository.name}`,
+    url: repository.html_url,
+  };
 }
 
 async function validatePreviewImageRequest(
@@ -150,14 +237,16 @@ export async function validatePreviewImageUrl(
 export async function discoverRepositoriesForTeamMember(
   fetchImpl: FetchLike,
   teamMember: TeamMember,
-  knownRepositoryUrls: Set<string> = new Set(),
+  token?: string,
   maxPages = 10,
-): Promise<string[]> {
-  const repositoryUrls = new Set<string>();
+): Promise<GitHubRepositoryMetadata[]> {
+  const repositories: GitHubRepositoryMetadata[] = [];
 
   for (let page = 1; page <= maxPages; page += 1) {
     const response = await fetchImpl(
-      buildRepositoriesPageUrl(teamMember.login, page),
+      new Request(buildUserRepositoriesApiUrl(teamMember.login, page), {
+        headers: createGitHubApiHeaders(token),
+      }),
     );
 
     if (response.status === 404) {
@@ -170,38 +259,86 @@ export async function discoverRepositoriesForTeamMember(
       );
     }
 
-    const html = await response.text();
-    const discovery = extractRepositoryUrlsFromAccountPage(
-      html,
-      teamMember.login,
-    );
-    let sawKnownRepository = false;
+    const payload = await response.json();
 
-    for (const repositoryUrl of discovery.repositoryUrls) {
-      repositoryUrls.add(repositoryUrl);
-
-      if (knownRepositoryUrls.has(repositoryUrl)) {
-        sawKnownRepository = true;
-      }
+    if (!Array.isArray(payload)) {
+      throw new Error(
+        `Invalid repository payload for ${teamMember.login} on page ${page}`,
+      );
     }
 
-    if (!discovery.hasNextPage || sawKnownRepository) {
+    repositories.push(
+      ...payload
+        .map((item) => parseGitHubRepositoryMetadata(item))
+        .filter((item): item is GitHubRepositoryMetadata => item !== null),
+    );
+
+    if (!hasNextPageLink(response.headers.get("link"))) {
       break;
     }
   }
 
-  return [...repositoryUrls].sort();
+  return repositories.sort((left, right) => {
+    const createdComparison = (right.repoCreatedAt ?? "").localeCompare(
+      left.repoCreatedAt ?? "",
+    );
+
+    if (createdComparison !== 0) {
+      return createdComparison;
+    }
+
+    return (right.repoCreationOrder ?? 0) - (left.repoCreationOrder ?? 0);
+  });
+}
+
+export async function fetchRepositoryMetadata(
+  fetchImpl: FetchLike,
+  repository: ParsedRepositoryUrl,
+  token?: string,
+): Promise<RepositoryMetadataResult> {
+  try {
+    const response = await fetchImpl(
+      new Request(buildRepositoryApiUrl(repository.owner, repository.repo), {
+        headers: createGitHubApiHeaders(token),
+      }),
+    );
+
+    if (!response.ok) {
+      if (isNotFoundStatus(response.status)) {
+        return { kind: "not_found" };
+      }
+
+      return isTransientStatus(response.status)
+        ? { kind: "transient_error" }
+        : { kind: "not_found" };
+    }
+
+    const metadata = parseGitHubRepositoryMetadata(await response.json());
+
+    if (!metadata) {
+      return { kind: "transient_error" };
+    }
+
+    return {
+      kind: "found",
+      metadata,
+    };
+  } catch {
+    return { kind: "transient_error" };
+  }
 }
 
 export async function fetchFirstAvailableRawFile(
   fetchImpl: FetchLike,
   repository: ParsedRepositoryUrl,
   fileNames: string[],
+  preferredBranch?: string | null,
 ): Promise<RawFileLookupResult> {
   const candidates = buildRawFileCandidates(
     repository.owner,
     repository.repo,
     fileNames,
+    preferredBranch,
   );
   let sawTransientError = false;
 

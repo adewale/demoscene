@@ -7,12 +7,15 @@ import {
   getProjectByOwnerRepo,
   listProjectSyncStateByOwners,
   replaceProjectProducts,
+  updateProjectChronology,
   upsertProject,
 } from "./db/queries";
 import {
   discoverRepositoriesForTeamMember,
+  fetchRepositoryMetadata,
   fetchFirstAvailableRawFile,
   fetchRepositoryPage,
+  type GitHubRepositoryMetadata,
   README_FILE_NAMES,
   type FetchLike,
   validatePreviewImageUrl,
@@ -44,7 +47,9 @@ type SyncOutcome =
 
 type DiscoveryResult = {
   accountsScanned: number;
-  repositories: string[];
+  missingProjectSlugs: string[];
+  repositories: GitHubRepositoryMetadata[];
+  repositoriesToProcess: GitHubRepositoryMetadata[];
   reposDiscovered: number;
 };
 
@@ -101,9 +106,28 @@ function normalizeDiscoveryResult(
   discovery: DiscoveryResult | string[],
 ): DiscoveryResult {
   if (Array.isArray(discovery)) {
+    const repositories = discovery.flatMap((repositoryUrl) => {
+      try {
+        return [
+          {
+            ...parseRepositoryUrl(repositoryUrl),
+            defaultBranch: null,
+            homepageUrl: null,
+            repoCreatedAt: null,
+            repoCreationOrder: null,
+          },
+        ];
+      } catch (error) {
+        console.error(`Failed to normalize repository ${repositoryUrl}`, error);
+        return [];
+      }
+    });
+
     return {
       accountsScanned: 0,
-      repositories: discovery,
+      missingProjectSlugs: [],
+      repositories,
+      repositoriesToProcess: repositories,
       reposDiscovered: 0,
     };
   }
@@ -130,6 +154,7 @@ export async function syncRepositories(
           fetchImpl,
           currentTime,
           options.teamMembers ?? TEAM_MEMBERS,
+          env.GITHUB_TOKEN,
         ),
   );
   const summary = createEmptySummary(
@@ -144,14 +169,27 @@ export async function syncRepositories(
     );
   }
 
-  for (const repositoryUrl of discovery.repositories) {
+  for (const repository of discovery.repositories) {
+    await updateProjectChronology(db, {
+      repoCreatedAt: repository.repoCreatedAt,
+      repoCreationOrder: repository.repoCreationOrder,
+      slug: repository.slug,
+    });
+  }
+
+  for (const slug of discovery.missingProjectSlugs) {
+    await deleteProjectBySlug(db, slug);
+    summary.reposRemoved += 1;
+  }
+
+  for (const repository of discovery.repositoriesToProcess) {
     try {
       applyOutcome(
         summary,
-        await syncRepository(db, fetchImpl, repositoryUrl, now),
+        await syncRepository(db, fetchImpl, repository, now, env.GITHUB_TOKEN),
       );
     } catch (error) {
-      console.error(`Failed to sync repository ${repositoryUrl}`, error);
+      console.error(`Failed to sync repository ${repository.url}`, error);
     }
   }
 
@@ -163,25 +201,29 @@ async function resolveTrackedRepositories(
   fetchImpl: FetchLike,
   currentTime: Date,
   teamMembers: TeamMember[],
+  githubToken?: string,
 ): Promise<DiscoveryResult> {
-  const discoveredRepositories = new Set<string>();
-  const repositoriesToProcess = new Set<string>();
+  const discoveredRepositories = new Map<string, GitHubRepositoryMetadata>();
+  const repositoriesToProcess = new Map<string, GitHubRepositoryMetadata>();
+  const missingProjectSlugs = new Set<string>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
-  const existingRepoUrlsByOwner = new Map<string, Set<string>>();
+  const existingProjectsByOwner = new Map<
+    string,
+    Map<string, { lastSeenAt: string; slug: string }>
+  >();
   const staleCutoff = new Date(currentTime);
 
   staleCutoff.setUTCDate(staleCutoff.getUTCDate() - STALE_REVISIT_AFTER_DAYS);
 
   for (const row of await listProjectSyncStateByOwners(db, [...teamLogins])) {
-    const parsed = parseRepositoryUrl(row.repoUrl);
-    const knownRepoUrls =
-      existingRepoUrlsByOwner.get(parsed.owner) ?? new Set<string>();
-    knownRepoUrls.add(row.repoUrl);
-    existingRepoUrlsByOwner.set(parsed.owner, knownRepoUrls);
-
-    if (new Date(row.lastSeenAt) <= staleCutoff) {
-      repositoriesToProcess.add(row.repoUrl);
-    }
+    const knownProjects =
+      existingProjectsByOwner.get(row.owner) ??
+      new Map<string, { lastSeenAt: string; slug: string }>();
+    knownProjects.set(row.repoUrl, {
+      lastSeenAt: row.lastSeenAt,
+      slug: row.slug,
+    });
+    existingProjectsByOwner.set(row.owner, knownProjects);
   }
 
   for (const teamMember of teamMembers) {
@@ -189,12 +231,31 @@ async function resolveTrackedRepositories(
       const accountRepositories = await discoverRepositoriesForTeamMember(
         fetchImpl,
         teamMember,
-        existingRepoUrlsByOwner.get(teamMember.login) ?? new Set<string>(),
+        githubToken,
       );
+      const knownProjects =
+        existingProjectsByOwner.get(teamMember.login) ??
+        new Map<string, { lastSeenAt: string; slug: string }>();
+      const discoveredUrls = new Set<string>();
 
-      for (const repositoryUrl of accountRepositories) {
-        repositoriesToProcess.add(repositoryUrl);
-        discoveredRepositories.add(repositoryUrl);
+      for (const repository of accountRepositories) {
+        discoveredRepositories.set(repository.url, repository);
+        discoveredUrls.add(repository.url);
+
+        const existingProject = knownProjects.get(repository.url);
+
+        if (
+          !existingProject ||
+          new Date(existingProject.lastSeenAt) <= staleCutoff
+        ) {
+          repositoriesToProcess.set(repository.url, repository);
+        }
+      }
+
+      for (const [repositoryUrl, existingProject] of knownProjects) {
+        if (!discoveredUrls.has(repositoryUrl)) {
+          missingProjectSlugs.add(existingProject.slug);
+        }
       }
     } catch (error) {
       console.error(
@@ -206,7 +267,13 @@ async function resolveTrackedRepositories(
 
   return {
     accountsScanned: teamMembers.length,
-    repositories: [...repositoriesToProcess].sort(),
+    missingProjectSlugs: [...missingProjectSlugs].sort(),
+    repositories: [...discoveredRepositories.values()].sort((left, right) =>
+      left.url.localeCompare(right.url),
+    ),
+    repositoriesToProcess: [...repositoriesToProcess.values()].sort(
+      (left, right) => left.url.localeCompare(right.url),
+    ),
     reposDiscovered: discoveredRepositories.size,
   };
 }
@@ -214,18 +281,21 @@ async function resolveTrackedRepositories(
 async function syncRepository(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
-  repositoryUrl: string,
+  repository: GitHubRepositoryMetadata,
   now: string,
+  githubToken?: string,
 ): Promise<SyncOutcome> {
-  const repository = parseRepositoryUrl(repositoryUrl);
   const existing = await getProjectByOwnerRepo(
     db,
     repository.owner,
     repository.repo,
   );
-  const repoPage = await fetchRepositoryPage(fetchImpl, repository);
 
-  if (repoPage.kind === "not_found") {
+  const repositoryMetadataResult = repository.repoCreatedAt
+    ? { kind: "found" as const, metadata: repository }
+    : await fetchRepositoryMetadata(fetchImpl, repository, githubToken);
+
+  if (repositoryMetadataResult.kind === "not_found") {
     if (!existing) {
       return "ignored";
     }
@@ -234,19 +304,30 @@ async function syncRepository(
     return "removed";
   }
 
-  if (repoPage.kind !== "found") {
+  if (repositoryMetadataResult.kind !== "found") {
     return "skipped_transiently";
   }
 
-  const repoMetadata = extractRepositoryPageMetadata(repoPage.html);
+  const repositoryMetadata = repositoryMetadataResult.metadata;
+  const repoPage = await fetchRepositoryPage(fetchImpl, repository);
+  const repoPageMetadata =
+    repoPage.kind === "found"
+      ? extractRepositoryPageMetadata(repoPage.html)
+      : {
+          homepageUrl: null,
+          previewImageUrl: null,
+          repoCreationOrder: null,
+        };
+
   const previewImageResult = await validatePreviewImageUrl(
     fetchImpl,
-    repoMetadata.previewImageUrl,
+    repoPageMetadata.previewImageUrl,
   );
   const wranglerFile = await fetchFirstAvailableRawFile(
     fetchImpl,
     repository,
     WRANGLER_FILE_NAMES,
+    repositoryMetadata.defaultBranch,
   );
 
   if (wranglerFile.kind === "transient_error") {
@@ -280,6 +361,7 @@ async function syncRepository(
       fetchImpl,
       repository,
       README_FILE_NAMES,
+      repositoryMetadata.defaultBranch,
     );
 
     if (readmeFile.kind === "transient_error") {
@@ -298,15 +380,25 @@ async function syncRepository(
     repo: repository.repo,
     repoUrl: repository.url,
     repoCreationOrder:
-      repoMetadata.repoCreationOrder ?? existing?.repoCreationOrder ?? null,
-    homepageUrl: repoMetadata.homepageUrl,
+      repositoryMetadata.repoCreationOrder ??
+      repoPageMetadata.repoCreationOrder ??
+      existing?.repoCreationOrder ??
+      null,
+    repoCreatedAt:
+      repositoryMetadata.repoCreatedAt ?? existing?.repoCreatedAt ?? null,
+    homepageUrl:
+      repoPageMetadata.homepageUrl ?? repositoryMetadata.homepageUrl ?? null,
     branch: wranglerFile.file.branch,
     wranglerPath: wranglerFile.file.fileName,
     wranglerFormat: getWranglerFormat(wranglerFile.file.fileName),
     readmeMarkdown,
     readmePreviewMarkdown,
     previewImageUrl:
-      previewImageResult.kind === "valid" ? previewImageResult.url : null,
+      previewImageResult.kind === "valid"
+        ? previewImageResult.url
+        : repoPage.kind === "found"
+          ? null
+          : (existing?.previewImageUrl ?? null),
     firstSeenAt: existing?.firstSeenAt ?? now,
     lastSeenAt: now,
   };
