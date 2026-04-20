@@ -122,6 +122,49 @@ async function fetchFeedItems(): Promise<unknown[]> {
   return payload.items;
 }
 
+function expectFeedToContainRepos(
+  payload: { items: Array<Record<string, unknown>> },
+  repos: string[],
+) {
+  for (const repo of repos) {
+    expect(payload.items.some((item) => item.repo === repo)).toBe(true);
+  }
+}
+
+function expectSummaryToInclude(
+  summary: Awaited<ReturnType<typeof syncRepositories>>,
+  values: Record<string, number>,
+) {
+  expect(summary).toEqual(expect.objectContaining(values));
+}
+
+function getMockFetchUrls(
+  mockFetch: ReturnType<typeof createMockFetch>,
+): string[] {
+  return mockFetch.mock.calls.map(([input]) =>
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : input.url,
+  );
+}
+
+function expectMockFetchNotToContain(
+  mockFetch: ReturnType<typeof createMockFetch>,
+  url: string,
+) {
+  expect(getMockFetchUrls(mockFetch)).not.toContain(url);
+}
+
+async function fetchFeedPayload(): Promise<{
+  items: Array<Record<string, unknown>>;
+}> {
+  return (await (await SELF.fetch("https://example.com/feed.json")).json()) as {
+    items: Array<Record<string, unknown>>;
+  };
+}
+
 function createMockFetch(responses: Record<string, MockResponse>) {
   return vi.fn(async (input: string | URL | Request) => {
     const url =
@@ -329,28 +372,15 @@ binding = "DB"
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
 
-    const payload = (await (
-      await SELF.fetch("https://example.com/feed.json")
-    ).json()) as {
-      items: Array<Record<string, unknown>>;
-    };
+    const payload = await fetchFeedPayload();
 
-    expect(summary).toEqual(
-      expect.objectContaining({
-        reposAdded: 1,
-        reposUpdated: 1,
-      }),
-    );
-    expect(payload.items.some((item) => item.repo === "new-repo")).toBe(true);
-    expect(
-      mockFetch.mock.calls.map(([input]) =>
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input.url,
-      ),
-    ).not.toContain(
+    expectSummaryToInclude(summary, {
+      reposAdded: 1,
+      reposUpdated: 1,
+    });
+    expectFeedToContainRepos(payload, ["new-repo"]);
+    expectMockFetchNotToContain(
+      mockFetch,
       "https://github.com/adewale?page=2&tab=repositories&sort=created",
     );
   });
@@ -412,29 +442,15 @@ binding = "DB"
       fetch: mockFetch as typeof fetch,
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
-    const payload = (await (
-      await SELF.fetch("https://example.com/feed.json")
-    ).json()) as {
-      items: Array<Record<string, unknown>>;
-    };
+    const payload = await fetchFeedPayload();
 
-    expect(summary).toEqual(
-      expect.objectContaining({
-        reposAdded: 2,
-        reposUpdated: 1,
-      }),
-    );
-    expect(payload.items.some((item) => item.repo === "new-repo-a")).toBe(true);
-    expect(payload.items.some((item) => item.repo === "new-repo-b")).toBe(true);
-    expect(
-      mockFetch.mock.calls.map(([input]) =>
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input.url,
-      ),
-    ).not.toContain(
+    expectSummaryToInclude(summary, {
+      reposAdded: 2,
+      reposUpdated: 1,
+    });
+    expectFeedToContainRepos(payload, ["new-repo-a", "new-repo-b"]);
+    expectMockFetchNotToContain(
+      mockFetch,
       "https://github.com/adewale?page=3&tab=repositories&sort=created",
     );
   });
@@ -470,15 +486,8 @@ binding = "DB"
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
 
-    expect(
-      mockFetch.mock.calls.map(([input]) =>
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input.url,
-      ),
-    ).not.toContain(
+    expectMockFetchNotToContain(
+      mockFetch,
       "https://github.com/adewale?page=2&tab=repositories&sort=created",
     );
   });
@@ -576,11 +585,7 @@ binding = "DB"
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
 
-    const payload = (await (
-      await SELF.fetch("https://example.com/feed.json")
-    ).json()) as {
-      items: Array<Record<string, unknown>>;
-    };
+    const payload = await fetchFeedPayload();
 
     expect(summary.reposRemoved).toBe(1);
     expect(payload.items.some((item) => item.repo === "stale-repo")).toBe(

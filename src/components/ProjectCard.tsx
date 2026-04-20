@@ -2,7 +2,6 @@ import type { ProjectWithProducts } from "../domain";
 import { extractProjectPresence } from "../lib/project-presence";
 
 import { MarkdownPreview } from "./MarkdownContent";
-import { PreviewMedia } from "./PreviewMedia";
 import { ProductIconStrip } from "./ProductIconStrip";
 import { ProjectMetaRow } from "./ProjectMetaRow";
 
@@ -68,6 +67,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <article className="card feed-card">
+      <span aria-hidden="true" className="card-corner card-corner-tl" />
+      <span aria-hidden="true" className="card-corner card-corner-tr" />
+      <span aria-hidden="true" className="card-corner card-corner-bl" />
+      <span aria-hidden="true" className="card-corner card-corner-br" />
       <div className="card-body feed-card-body">
         <div className="feed-card-topline">
           <div className="feed-card-author">
@@ -87,11 +90,35 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <ProjectMetaRow owner={project.owner} repo={project.repo} />
             </div>
           </div>
+        </div>
+
+        <div className="feed-card-copy">
+          <h2 className="project-title feed-card-title">
+            <a
+              className="feed-title-link"
+              href={project.repoUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {project.repo}
+            </a>
+          </h2>
+          <ProductIconStrip products={project.products} />
+          <MarkdownPreview markdown={previewMarkdown} />
+        </div>
+
+        {presenceItems.length > 0 ? (
           <div className="feed-card-links">
             {presenceItems.map((item) => (
               <a
                 key={`${item.kind}-${item.href}`}
-                className={`feed-inline-link feed-inline-link-${item.kind}`}
+                className={`button-base ${
+                  item.kind === "live"
+                    ? "button-primary"
+                    : item.kind === "video"
+                      ? "button-secondary"
+                      : "button-ghost"
+                } feed-inline-link feed-inline-link-${item.kind}`}
                 href={item.href}
                 rel="noreferrer"
                 target="_blank"
@@ -100,30 +127,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </a>
             ))}
           </div>
-        </div>
-
-        <div className="feed-card-main">
-          <div className="feed-card-copy">
-            <h2 className="project-title feed-card-title">
-              <a
-                className="feed-title-link"
-                href={project.repoUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {project.repo}
-              </a>
-            </h2>
-            <ProductIconStrip products={project.products} />
-            <MarkdownPreview markdown={previewMarkdown} />
-          </div>
-          <div className="feed-card-media">
-            <PreviewMedia
-              alt={`${project.repo} preview`}
-              previewImageUrl={project.previewImageUrl}
-            />
-          </div>
-        </div>
+        ) : null}
       </div>
     </article>
   );

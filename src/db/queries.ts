@@ -195,22 +195,6 @@ export async function listProjectsPage(
   return attachProducts(projectRows, productRows);
 }
 
-export async function listProjectRepoUrlsByOwners(
-  db: Database,
-  owners: string[],
-): Promise<string[]> {
-  if (owners.length === 0) {
-    return [];
-  }
-
-  const rows = await db
-    .select({ repoUrl: projects.repoUrl })
-    .from(projects)
-    .where(inArray(projects.owner, owners));
-
-  return rows.map((row) => row.repoUrl);
-}
-
 export async function listProjectSyncStateByOwners(
   db: Database,
   owners: string[],

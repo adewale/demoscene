@@ -38,6 +38,8 @@ describe("ProjectCard", () => {
 
     expect(markup).toContain("overflow: visible;");
     expect(markup).toContain("border-radius: 0;");
+    expect(markup).toContain("card-corner card-corner-tl");
+    expect(markup).toContain("card-corner card-corner-br");
   });
 
   it("renders a scannable project card with links and product pills", () => {
@@ -62,8 +64,8 @@ describe("ProjectCard", () => {
     );
     expect(screen.getAllByRole("tooltip")).toHaveLength(2);
     expect(
-      screen.getByRole("img", { name: "demo-scene preview" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("img", { name: "demo-scene preview" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Live" })).toHaveAttribute(
       "href",
       "https://demo.example.com",
@@ -90,9 +92,7 @@ describe("ProjectCard", () => {
       />,
     );
 
-    expect(
-      within(container).getByText("Preview unavailable"),
-    ).toBeInTheDocument();
+    expect(within(container).queryByText("Preview unavailable")).toBeNull();
     expect(
       within(container).queryByRole("link", { name: "Live" }),
     ).not.toBeInTheDocument();

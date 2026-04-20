@@ -33,7 +33,3 @@ function MarkdownContent({ className, markdown }: MarkdownContentProps) {
 export function MarkdownPreview({ markdown }: { markdown: string }) {
   return <MarkdownContent className="markdown-preview" markdown={markdown} />;
 }
-
-export function MarkdownDocument({ markdown }: { markdown: string }) {
-  return <MarkdownContent className="markdown-document" markdown={markdown} />;
-}

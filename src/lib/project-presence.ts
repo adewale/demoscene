@@ -28,7 +28,7 @@ type PresenceLink = {
   url: string;
 };
 
-export type ProjectPresenceItem = {
+type ProjectPresenceItem = {
   href: string;
   kind: "github" | "live" | "video";
   label: string;

@@ -38,7 +38,10 @@ function Pagination({
   return (
     <nav aria-label="Pagination" className="feed-pager">
       {page > 1 ? (
-        <a className="link-button" href={buildPageHref(page - 1)}>
+        <a
+          className="button-base button-secondary"
+          href={buildPageHref(page - 1)}
+        >
           Newer
         </a>
       ) : (
@@ -48,7 +51,10 @@ function Pagination({
         Page {page} of {totalPages}
       </span>
       {page < totalPages ? (
-        <a className="link-button primary" href={buildPageHref(page + 1)}>
+        <a
+          className="button-base button-primary"
+          href={buildPageHref(page + 1)}
+        >
           Older
         </a>
       ) : (
