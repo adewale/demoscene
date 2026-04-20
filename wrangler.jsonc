@@ -11,7 +11,7 @@
       "binding": "DB",
       "database_name": "demoscene",
       "database_id": "7a740366-a401-4147-a401-8661d6a16c32",
-      "preview_database_id": "7a740366-a401-4147-a401-8661d6a16c32",
+      "preview_database_id": "dfffbc00-0ddd-41f0-9106-50c632431b9b",
       "migrations_dir": "migrations",
     },
   ],

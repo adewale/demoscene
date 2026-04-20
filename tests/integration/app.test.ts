@@ -50,6 +50,7 @@ function buildRepositoryApiResponse(values: {
 function buildUserRepositoriesApiResponse(values: {
   hasNextPage?: boolean;
   login: string;
+  nextPage?: number;
   repositories: Array<{
     createdAt?: string;
     defaultBranch?: string;
@@ -72,9 +73,9 @@ function buildUserRepositoriesApiResponse(values: {
     ),
     headers: {
       "content-type": "application/json",
-      ...(values.hasNextPage
+      ...((values.nextPage ?? (values.hasNextPage ? 2 : undefined))
         ? {
-            link: `<${buildUserRepositoriesApiUrl(values.login, 2)}>; rel="next"`,
+            link: `<${buildUserRepositoriesApiUrl(values.login, values.nextPage ?? 2)}>; rel="next"`,
           }
         : {}),
     },
@@ -308,7 +309,7 @@ binding = "DB"
     expect(payload.items[0]?.repoCreatedAt).toBe("2026-04-14T12:00:00.000Z");
     expect(payload.items[0]?.repoCreationOrder).toBe(12345);
     expect(payload.items[0]?.readmePreviewMarkdown).toBe(
-      "# Demo\n\nThe first project in the feed.",
+      "Demo\n\nThe first project in the feed.",
     );
     expect(payload.items[0]?.products).toEqual([
       { key: "workers", label: "Workers" },
@@ -633,6 +634,49 @@ binding = "DB"
     ).toBe("2026-03-01T12:00:00.000Z");
   });
 
+  it("keeps paging past ten GitHub API pages so older tracked repos are not pruned", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+    });
+
+    const responses: Record<string, MockResponse> = {
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: 'name = "known-repo"',
+        },
+    };
+
+    for (let page = 1; page <= 11; page += 1) {
+      responses[buildUserRepositoriesApiUrl("adewale", page)] =
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          nextPage: page < 11 ? page + 1 : undefined,
+          repositories: [
+            {
+              createdAt: `2026-04-${String(12 - page).padStart(2, "0")}T12:00:00.000Z`,
+              repo: page === 11 ? "known-repo" : `repo-${page}`,
+              repoId: 1000 - page,
+            },
+          ],
+        });
+    }
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: createMockFetch(responses) as typeof fetch,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    const payload = await fetchFeedPayload();
+
+    expect(summary.reposRemoved).toBe(0);
+    expect(payload.items.some((item) => item.repo === "known-repo")).toBe(true);
+  });
+
   it("can prune repos for owners removed from the tracked team list", async () => {
     await seedProjectRecord({
       owner: "someoneelse",
@@ -670,6 +714,61 @@ binding = "DB"
       ...buildRateLimitedWranglerResponses(),
     });
 
+    expect(await fetchFeedItems()).toHaveLength(1);
+  });
+
+  it("keeps syncing a project when preview image validation fails transiently", async () => {
+    const summary = await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [buildRepositoryApiUrl("acme", "demo")]: buildRepositoryApiResponse({
+          owner: "acme",
+          repo: "demo",
+        }),
+        [DEMO_REPOSITORY_URL]: {
+          body: `
+            <html>
+              <head>
+                <meta property="og:image" content="https://images.example.com/transient.png" />
+              </head>
+              <body>
+                <a data-testid="repository-homepage-url" href="https://demo.example.com">demo</a>
+              </body>
+            </html>
+          `,
+        },
+        "https://images.example.com/transient.png": {
+          body: "temporarily unavailable",
+          status: 503,
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/wrangler.toml": {
+          body: 'name = "demo"',
+        },
+        "https://raw.githubusercontent.com/acme/demo/main/README.md": {
+          body: "# Demo",
+        },
+      }) as typeof fetch,
+      repositories: [DEMO_REPOSITORY_URL],
+    });
+
+    const payload = await fetchFeedPayload();
+
+    expect(summary.reposAdded).toBe(1);
+    expect(payload.items[0]?.previewImageUrl).toBeNull();
+  });
+
+  it("counts malformed Wrangler configs without silently dropping existing projects", async () => {
+    await syncDemoRepository(buildDemoRepositoryResponses());
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: createMockFetch(
+        buildDemoRepositoryResponses({
+          wrangler: "name =",
+        }),
+      ) as typeof fetch,
+      repositories: [DEMO_REPOSITORY_URL],
+    });
+
+    expect(summary.reposInvalidConfig).toBe(1);
     expect(await fetchFeedItems()).toHaveLength(1);
   });
 
@@ -842,7 +941,7 @@ binding = "DB"
     vi.unstubAllGlobals();
   });
 
-  it("exposes a local debug sync route only when enabled", async () => {
+  it("keeps deployed debug sync routes disabled without a matching token", async () => {
     vi.stubGlobal(
       "fetch",
       createMockFetch(
@@ -862,7 +961,11 @@ binding = "DB"
     );
     const enabledResponse = await app.fetch(
       new Request("https://example.com/debug/sync"),
-      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      {
+        ...testEnv,
+        DEBUG_SYNC_TOKEN: "secret-token",
+        ENABLE_DEBUG_ROUTES: "true",
+      },
       {
         waitUntil: () => undefined,
         passThroughOnException: () => undefined,
@@ -870,8 +973,52 @@ binding = "DB"
     );
 
     expect(disabledResponse.status).toBe(404);
-    expect(enabledResponse.status).toBe(200);
-    await expect(enabledResponse.json()).resolves.toEqual(
+    expect(enabledResponse.status).toBe(404);
+    vi.unstubAllGlobals();
+  });
+
+  it("allows localhost debug sync without a token and deployed debug sync with the right token", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch(
+        buildDemoRepositoryResponses({
+          repoPageBody: buildRepositoryHomepageHtml("https://demo.example.com"),
+        }),
+      ) as typeof fetch,
+    );
+
+    const localResponse = await app.fetch(
+      new Request("http://127.0.0.1/debug/sync"),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "false" },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+    const remoteResponse = await app.fetch(
+      new Request("https://example.com/debug/sync", {
+        headers: { "x-debug-sync-token": "secret-token" },
+      }),
+      {
+        ...testEnv,
+        DEBUG_SYNC_TOKEN: "secret-token",
+        ENABLE_DEBUG_ROUTES: "true",
+      },
+      {
+        waitUntil: () => undefined,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+
+    expect(localResponse.status).toBe(200);
+    expect(remoteResponse.status).toBe(200);
+    await expect(localResponse.json()).resolves.toEqual(
+      expect.objectContaining({
+        accountsScanned: expect.any(Number),
+        reposDiscovered: expect.any(Number),
+      }),
+    );
+    await expect(remoteResponse.json()).resolves.toEqual(
       expect.objectContaining({
         accountsScanned: expect.any(Number),
         reposDiscovered: expect.any(Number),
@@ -903,8 +1050,14 @@ binding = "DB"
     );
 
     const response = await app.fetch(
-      new Request("https://example.com/debug/sync?member=adewale"),
-      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      new Request("https://example.com/debug/sync?member=adewale", {
+        headers: { "x-debug-sync-token": "secret-token" },
+      }),
+      {
+        ...testEnv,
+        DEBUG_SYNC_TOKEN: "secret-token",
+        ENABLE_DEBUG_ROUTES: "true",
+      },
       {
         waitUntil: () => undefined,
         passThroughOnException: () => undefined,
@@ -946,8 +1099,15 @@ binding = "DB"
     const response = await app.fetch(
       new Request(
         "https://example.com/debug/sync?repo=https%3A%2F%2Fgithub.com%2Fyusukebe%2Fdemo",
+        {
+          headers: { "x-debug-sync-token": "secret-token" },
+        },
       ),
-      { ...testEnv, ENABLE_DEBUG_ROUTES: "true" },
+      {
+        ...testEnv,
+        DEBUG_SYNC_TOKEN: "secret-token",
+        ENABLE_DEBUG_ROUTES: "true",
+      },
       {
         waitUntil: () => undefined,
         passThroughOnException: () => undefined,

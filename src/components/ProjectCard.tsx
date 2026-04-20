@@ -1,4 +1,5 @@
 import type { ProjectWithProducts } from "../domain";
+import { formatMarkdownPreviewForCard } from "../lib/markdown/preview";
 import { extractProjectPresence } from "../lib/project-presence";
 
 import { MarkdownPreview } from "./MarkdownContent";
@@ -13,57 +14,16 @@ function githubAvatarUrl(owner: string): string {
   return `https://github.com/${owner}.png?size=80`;
 }
 
-function stripLeadingHeading(markdown: string, repo: string): string {
-  const normalized = markdown.trim();
-  const lines = normalized.split("\n");
-  const firstLine = lines[0]?.trim() ?? "";
-  const slug = repo.replace(/[._-]+/g, " ").toLowerCase();
-  const headingText = firstLine
-    .replace(/^#+\s*/, "")
-    .trim()
-    .toLowerCase();
-
-  if (!firstLine.startsWith("#") || headingText !== slug) {
-    return markdown;
-  }
-
-  return lines.slice(1).join("\n").trim() || markdown;
-}
-
-function stripPreviewNoise(markdown: string): string {
-  return markdown
-    .split("\n")
-    .filter(
-      (line) =>
-        !line.includes("deploy.workers.cloudflare.com/button") &&
-        !/\[!\[[^\]]*deploy to cloudflare/i.test(line),
-    )
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function takeFirstParagraphs(markdown: string, count: number): string {
-  return markdown
-    .split(/\n\s*\n/g)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .slice(0, count)
-    .join("\n\n");
-}
-
 export function ProjectCard({ project }: ProjectCardProps) {
-  const previewMarkdown = takeFirstParagraphs(
-    stripPreviewNoise(
-      stripLeadingHeading(project.readmePreviewMarkdown, project.repo),
-    ),
-    2,
+  const previewMarkdown = formatMarkdownPreviewForCard(
+    project.readmePreviewMarkdown,
+    project.repo,
   );
   const presenceItems = extractProjectPresence({
     homepageUrl: project.homepageUrl,
     readmeMarkdown: project.readmeMarkdown,
     repoUrl: project.repoUrl,
-  }).filter((item) => item.kind !== "github");
+  }).filter((item) => item.kind !== "github" && item.kind !== "live");
 
   return (
     <article className="card feed-card">
@@ -113,11 +73,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <a
                 key={`${item.kind}-${item.href}`}
                 className={`button-base ${
-                  item.kind === "live"
-                    ? "button-primary"
-                    : item.kind === "video"
-                      ? "button-secondary"
-                      : "button-ghost"
+                  item.kind === "video" ? "button-secondary" : "button-ghost"
                 } feed-inline-link feed-inline-link-${item.kind}`}
                 href={item.href}
                 rel="noreferrer"

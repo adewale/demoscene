@@ -13,6 +13,12 @@ Use a server-first React stack on Cloudflare:
 
 This keeps the app simple at runtime while giving the feed a strong card-oriented component model.
 
+## External Integrations
+
+- GitHub REST API for repository discovery and repository metadata
+- GitHub raw content endpoints for top-level `README.md` and Wrangler config fetches
+- GitHub repo HTML for homepage and preview-image hints
+
 ## Packages
 
 Application:
@@ -63,12 +69,10 @@ Core page components:
 
 Feed components:
 
-- `FeedGrid`
 - `ProjectCard`
 - `ProductIconStrip`
 - `ProjectMetaRow`
 - `MarkdownPreview`
-- `PreviewMedia`
 
 The feed should optimize for scanning and outbound click-through to GitHub.
 
@@ -87,7 +91,7 @@ Feed card data should include:
 Unit tests:
 
 - repo URL parsing
-- branch fallback logic
+- GitHub API paging and branch fallback logic
 - Wrangler parsing
 - Cloudflare product inference
 - preview derivation
@@ -101,7 +105,6 @@ Component tests:
 - `ProjectCard`
 - `ProductIconStrip`
 - `MarkdownPreview`
-- `MarkdownDocument`
 
 Integration tests:
 
@@ -113,7 +116,7 @@ E2E tests:
 
 - `/` renders feed cards correctly
 - mobile layout remains usable
-- homepage links and icon strips are visible and correct
+- GitHub-first links and icon strips are visible and correct
 
 ## Suggested Project Structure
 

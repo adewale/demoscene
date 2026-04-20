@@ -41,6 +41,7 @@ type SyncOptions = {
 type SyncOutcome =
   | "added"
   | "ignored"
+  | "invalid_config"
   | "removed"
   | "skipped_transiently"
   | "updated";
@@ -75,6 +76,7 @@ function createEmptySummary(
     accountsScanned,
     reposAdded: 0,
     reposDiscovered,
+    reposInvalidConfig: 0,
     reposRemoved: 0,
     reposSkippedTransiently: 0,
     reposUpdated: 0,
@@ -94,6 +96,11 @@ function applyOutcome(summary: SyncSummary, outcome: SyncOutcome): void {
 
   if (outcome === "removed") {
     summary.reposRemoved += 1;
+    return;
+  }
+
+  if (outcome === "invalid_config") {
+    summary.reposInvalidConfig += 1;
     return;
   }
 
@@ -343,15 +350,18 @@ async function syncRepository(
     return "removed";
   }
 
-  const wranglerConfig = parseWranglerConfig(
-    wranglerFile.file.contents,
-    wranglerFile.file.fileName,
-  );
-  const products = inferCloudflareProducts(wranglerConfig);
+  let wranglerConfig;
 
-  if (previewImageResult.kind === "transient_error") {
-    return "skipped_transiently";
+  try {
+    wranglerConfig = parseWranglerConfig(
+      wranglerFile.file.contents,
+      wranglerFile.file.fileName,
+    );
+  } catch {
+    return "invalid_config";
   }
+
+  const products = inferCloudflareProducts(wranglerConfig);
 
   let readmeMarkdown = existing?.readmeMarkdown ?? "";
   let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
@@ -396,9 +406,11 @@ async function syncRepository(
     previewImageUrl:
       previewImageResult.kind === "valid"
         ? previewImageResult.url
-        : repoPage.kind === "found"
-          ? null
-          : (existing?.previewImageUrl ?? null),
+        : previewImageResult.kind === "transient_error"
+          ? (existing?.previewImageUrl ?? null)
+          : repoPage.kind === "found"
+            ? null
+            : (existing?.previewImageUrl ?? null),
     firstSeenAt: existing?.firstSeenAt ?? now,
     lastSeenAt: now,
   };

@@ -1,4 +1,4 @@
-Simple public Cloudflare web app built with Hono and React SSR.
+Simple public Cloudflare web app built with Hono and React SSR showing a timeline of the public projects started by the Cloudflare DevRel team.
 
 Purpose:
 
@@ -7,21 +7,26 @@ Purpose:
 Input:
 
 - a source-controlled list of public GitHub team accounts
-- no auth
-- no GitHub API
+- a `GITHUB_TOKEN` secret for higher GitHub API limits in deployed environments
 
 Fetch rules:
 
-- for each team account `https://github.com/:owner?tab=repositories`, fetch public repository listing pages directly from GitHub HTML and discover repository URLs from those pages
-- for each repo URL `https://github.com/:owner/:repo`, try branch `main` first, then `master`
+- for each team account, discover repositories through the GitHub REST API using `GET /users/:login/repos?sort=created&direction=desc&per_page=100&page=:n`
+- continue paging while GitHub returns a `Link` header with `rel="next"`
+- for each repo URL `https://github.com/:owner/:repo`, fetch repository metadata from `GET /repos/:owner/:repo`
+- for raw README and Wrangler files, prefer the repo's actual default branch first, then fall back to `main` and `master`
 - README URLs:
+  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/README.md`
   - `https://raw.githubusercontent.com/:owner/:repo/main/README.md`
   - `https://raw.githubusercontent.com/:owner/:repo/master/README.md`
 - top-level Wrangler URLs:
+  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.toml`
   - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.toml`
   - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.toml`
+  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.json`
   - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.json`
   - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.json`
+  - `https://raw.githubusercontent.com/:owner/:repo/:default_branch/wrangler.jsonc`
   - `https://raw.githubusercontent.com/:owner/:repo/main/wrangler.jsonc`
   - `https://raw.githubusercontent.com/:owner/:repo/master/wrangler.jsonc`
 - repo homepage is extracted from the public repo page HTML at `https://github.com/:owner/:repo`
@@ -34,33 +39,26 @@ Sync:
 - treat a repo as a Cloudflare project if one of those top-level Wrangler config files exists
 - if a Cloudflare repo is discovered for the first time, create a new feed entry
 - fetch and store the repo README using the branch fallback rules above
+- persist the real repository creation time from GitHub as `repoCreatedAt` and use it for feed chronology when present
 - infer which Cloudflare primitives and products the repo uses from that top-level Wrangler config, for example Workers, Pages, D1, KV, R2, Durable Objects, Queues, Workflows, Vectorize, or AI
 - fetch and store the repo homepage and lightweight preview media when available
+- preview image validation failures must not block the repo sync; keep the prior image when validation fails transiently
 - ignore later README changes
+- normalize Markdown heading syntax into plain body text when deriving the stored feed preview
 - transient upstream failures must not remove existing projects or abort the full sync
-- each sync produces summary counts for accounts scanned and repos discovered, added, updated, removed, and skipped transiently
+- malformed Wrangler config should be counted explicitly in the sync summary
 - if a repo cannot be found, remove it from the site
 
 Output:
 
 - a public card-oriented web feed
 - each feed card represents one repo
-- the feed is reverse-chronological by repo creation-order proxy, not by ingestion time
-- the feed should insert a clear day marker whenever a new day starts in the stream, instead of showing a date on every card
-- each feed card shows recognizable icons that clearly signal which Cloudflare primitives and products are used
-- those product indicators should link to the relevant Cloudflare product landing pages and explain the feature with hover/focus tooltips
-- each feed card renders the first 2 README paragraphs as the preview content
-- each feed card should prioritize compact, scan-first information: owner identity, project name, Cloudflare product signals, the first 2 README paragraphs, and a GitHub link
-- each feed card may show a `Live` link only when there is a strong explicit signal that the target is a real live site for the project; weak or generic reference links should not be shown as `Live`
-- each card's main link should go to the GitHub repo
-- there should be no first-party project detail pages; this app is a feed, not a replacement for GitHub
-- each card can also show lightweight preview media when available, with a stable fallback state when no preview image exists
-- the homepage should not include an extra summary panel above the feed cards
-- provide `/` for the feed
-- provide `/feed.json` for machine consumers
-- provide `/projects/:owner/:repo.json` for machine consumers of individual project records
-- provide `/rss.xml` for feed readers; it should be valid RSS, rich enough to be worth subscribing to, and include useful excerpts plus action links
-- provide `/debug/sync` for local or explicitly enabled manual sync verification
+- the feed is grouped by day with the latest day first
+- cards within a day are ordered newest-first by repository creation time, using `repoCreatedAt` with stable fallbacks
+- each feed card shows icons that clearly signal which Cloudflare primitives and products are used
+- each feed card renders a bounded preview of the stored README as Markdown
+- each card links primarily to the GitHub repo, with optional supplementary actions such as video links
+- provide `/` for the feed and `/projects/:owner/:repo.json` for machine-readable project data
 
 Visual cues:
 

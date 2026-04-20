@@ -3,6 +3,7 @@ import type { CloudflareProduct } from "./lib/wrangler/parse";
 export type AppEnv = {
   DB: D1Database;
   APP_NAME: string;
+  DEBUG_SYNC_TOKEN?: string;
   ENABLE_DEBUG_ROUTES?: string;
   GITHUB_TOKEN?: string;
 };
@@ -11,6 +12,7 @@ export type SyncSummary = {
   accountsScanned: number;
   reposAdded: number;
   reposDiscovered: number;
+  reposInvalidConfig: number;
   reposRemoved: number;
   reposSkippedTransiently: number;
   reposUpdated: number;

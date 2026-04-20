@@ -238,7 +238,7 @@ export async function discoverRepositoriesForTeamMember(
   fetchImpl: FetchLike,
   teamMember: TeamMember,
   token?: string,
-  maxPages = 10,
+  maxPages = Number.MAX_SAFE_INTEGER,
 ): Promise<GitHubRepositoryMetadata[]> {
   const repositories: GitHubRepositoryMetadata[] = [];
 
@@ -275,6 +275,12 @@ export async function discoverRepositoriesForTeamMember(
 
     if (!hasNextPageLink(response.headers.get("link"))) {
       break;
+    }
+
+    if (page >= maxPages) {
+      throw new Error(
+        `Repository discovery for ${teamMember.login} exceeded page limit ${maxPages}`,
+      );
     }
   }
 

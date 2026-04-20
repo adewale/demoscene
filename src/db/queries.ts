@@ -11,6 +11,14 @@ import { projectProducts, projects } from "./schema";
 type Database = ReturnType<typeof import("./client").createDb>;
 const PRODUCT_LOOKUP_BATCH_SIZE = 90;
 
+function projectOrdering() {
+  return [
+    desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
+    desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
+    desc(projects.firstSeenAt),
+  ] as const;
+}
+
 async function listProjectProductsForSlugs(
   db: Database,
   slugs: string[],
@@ -65,6 +73,20 @@ function attachProducts(
     lastSeenAt: row.lastSeenAt,
     products: sortCloudflareProducts(productsBySlug.get(row.slug) ?? []),
   }));
+}
+
+async function hydrateProjects(
+  db: Database,
+  projectRows: (typeof projects.$inferSelect)[],
+): Promise<ProjectWithProducts[]> {
+  if (projectRows.length === 0) {
+    return [];
+  }
+
+  const slugs = projectRows.map((project) => project.slug);
+  const productRows = await listProjectProductsForSlugs(db, slugs);
+
+  return attachProducts(projectRows, productRows);
 }
 
 export async function upsertProject(
@@ -167,20 +189,9 @@ export async function listProjects(
   const projectRows = await db
     .select()
     .from(projects)
-    .orderBy(
-      desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
-      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
-      desc(projects.firstSeenAt),
-    );
+    .orderBy(...projectOrdering());
 
-  if (projectRows.length === 0) {
-    return [];
-  }
-
-  const slugs = projectRows.map((project) => project.slug);
-  const productRows = await listProjectProductsForSlugs(db, slugs);
-
-  return attachProducts(projectRows, productRows);
+  return hydrateProjects(db, projectRows);
 }
 
 export async function countProjects(db: Database): Promise<number> {
@@ -196,24 +207,11 @@ export async function listProjectsPage(
   const projectRows = await db
     .select()
     .from(projects)
-    .orderBy(
-      desc(sql`coalesce(${projects.repoCreatedAt}, ${projects.firstSeenAt})`),
-      desc(sql`coalesce(${projects.repoCreationOrder}, 0)`),
-      desc(projects.firstSeenAt),
-    )
+    .orderBy(...projectOrdering())
     .limit(limit)
     .offset(offset);
 
-  if (projectRows.length === 0) {
-    return [];
-  }
-
-  const productRows = await listProjectProductsForSlugs(
-    db,
-    projectRows.map((project) => project.slug),
-  );
-
-  return attachProducts(projectRows, productRows);
+  return hydrateProjects(db, projectRows);
 }
 
 export async function listProjectSyncStateByOwners(

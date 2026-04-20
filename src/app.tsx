@@ -28,13 +28,24 @@ function renderHtml(markup: ReactNode): string {
   return `<!DOCTYPE html>${renderToString(markup)}`;
 }
 
-function areDebugRoutesEnabled(url: string, env: AppEnv): boolean {
+function isLocalDebugRequest(url: string): boolean {
   const hostname = new URL(url).hostname;
-  return (
-    env.ENABLE_DEBUG_ROUTES === "true" ||
-    hostname === "127.0.0.1" ||
-    hostname === "localhost"
-  );
+  return hostname === "127.0.0.1" || hostname === "localhost";
+}
+
+function hasValidDebugSyncToken(c: Context<{ Bindings: AppEnv }>): boolean {
+  const expectedToken = c.env.DEBUG_SYNC_TOKEN;
+  const providedToken = c.req.header("x-debug-sync-token");
+
+  return Boolean(expectedToken) && providedToken === expectedToken;
+}
+
+function areDebugRoutesEnabled(c: Context<{ Bindings: AppEnv }>): boolean {
+  if (isLocalDebugRequest(c.req.url)) {
+    return true;
+  }
+
+  return c.env.ENABLE_DEBUG_ROUTES === "true" && hasValidDebugSyncToken(c);
 }
 
 function extractProjectJsonPathParts(url: string): ProjectPathParts | null {
@@ -118,7 +129,7 @@ export function createApp() {
   });
 
   app.get("/debug/sync", async (c) => {
-    if (!areDebugRoutesEnabled(c.req.url, c.env)) {
+    if (!areDebugRoutesEnabled(c)) {
       return c.notFound();
     }
 
