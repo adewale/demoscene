@@ -60,7 +60,7 @@ This is the third real paragraph.
     expect(preview).not.toMatch(/<\/?(div|h1|p|em)\b/i);
   });
 
-  it("drops decorative badge and icon blocks before meaningful README text", () => {
+  it("keeps the meaningful two-sentence web2kindle summary after removing decorative noise", () => {
     const preview = deriveMarkdownPreview(
       `# Web2Kindle 📚
 
@@ -69,7 +69,7 @@ This is the third real paragraph.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/megaconfidence/web2kindle)
 
-Transform any web article into a beautifully formatted Kindle ebook with just one click.
+Transform any web article into a beautifully formatted Kindle ebook with just one click. Web2Kindle is a free and open-source Chrome extension that sends web content directly to your Kindle device for distraction-free reading.
 
 <a href="https://chromewebstore.google.com/detail/web2kindle/kcafopmhdmijjdgckohoecjahhlhbbjk" target="_blank">
   <img src="/public/images/chrome.webp" style="height:50px;" />
@@ -86,7 +86,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
 
     expect(preview).toContain(
-      "Transform any web article into a beautifully formatted Kindle ebook with just one click.",
+      "Transform any web article into a beautifully formatted Kindle ebook with just one click. Web2Kindle is a free and open-source Chrome extension that sends web content directly to your Kindle device for distraction-free reading.",
     );
     expect(preview).toContain("Features ✨");
     expect(preview).not.toContain("img.shields.io");
