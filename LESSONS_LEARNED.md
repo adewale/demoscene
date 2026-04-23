@@ -53,3 +53,10 @@
 **What happened:** Cloudflare rejected the weekly cron expression `17 3 * * 0` even though it looked like a standard Sunday schedule.
 **Resolution:** Switched the weekly schedule to `17 3 * * SUN` in both Worker code and Wrangler config, then redeployed.
 **Rule:** In this repo, use named weekdays like `SUN` for Cloudflare weekly cron schedules instead of numeric day-of-week values.
+
+### 2026-04-23 — RSS readers treat our HTML body as product UI
+
+**Context:** Cleaning up how Demoscene entries appear in downstream readers like Planet Cloudflare.
+**What happened:** The RSS item title, description HTML, and `content:encoded` were all rendered almost verbatim, so repeated repo-name headings, generic README section headings, and large preview images made entries look noisy.
+**Resolution:** Kept the repo title in RSS `<title>` only, removed preview images from RSS bodies, and filtered generic heading-only paragraphs before truncating the description.
+**Rule:** For RSS in this repo, treat description HTML like shipped UI: de-duplicate against the item title and keep the body text-first.

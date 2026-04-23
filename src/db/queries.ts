@@ -193,17 +193,6 @@ export async function getProjectByOwnerRepo(
   return attachProducts(projectRows, productRows)[0] ?? null;
 }
 
-export async function listProjects(
-  db: Database,
-): Promise<ProjectWithProducts[]> {
-  const projectRows = await db
-    .select()
-    .from(projects)
-    .orderBy(...projectOrdering());
-
-  return hydrateProjects(db, projectRows);
-}
-
 export async function countProjects(db: Database): Promise<number> {
   const [row] = await db.select({ value: count() }).from(projects);
   return row?.value ?? 0;

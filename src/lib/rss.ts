@@ -1,6 +1,8 @@
 import type { ProjectWithProducts } from "../domain";
-import { RSS_ITEM_LIMIT } from "./sync-policy";
 import { extractProjectPresence } from "./project-presence";
+import { RSS_ITEM_LIMIT } from "./sync-policy";
+
+const RSS_DESCRIPTION_PARAGRAPH_LIMIT = 3;
 
 function escapeXml(value: string): string {
   return value
@@ -10,6 +12,25 @@ function escapeXml(value: string): string {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
 }
+
+function normalizeComparableText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const LOW_SIGNAL_RSS_HEADINGS = new Set(
+  [
+    "features",
+    "how it works",
+    "stack",
+    "tech stack",
+    "what you'll build",
+    "what you ll build",
+  ].map(normalizeComparableText),
+);
 
 function stripMarkdown(markdown: string): string {
   return markdown
@@ -32,8 +53,26 @@ function paragraphize(text: string): string[] {
   return text
     .split(/\n\s*\n/g)
     .map((paragraph) => paragraph.trim())
-    .filter(Boolean)
-    .slice(0, 3);
+    .filter(Boolean);
+}
+
+function isDuplicateTitleParagraph(
+  paragraph: string,
+  project: ProjectWithProducts,
+): boolean {
+  const normalizedParagraph = normalizeComparableText(paragraph);
+
+  if (!normalizedParagraph) {
+    return false;
+  }
+
+  return [project.repo, project.slug, `${project.owner}/${project.repo}`].some(
+    (candidate) => normalizeComparableText(candidate) === normalizedParagraph,
+  );
+}
+
+function isLowSignalHeadingParagraph(paragraph: string): boolean {
+  return LOW_SIGNAL_RSS_HEADINGS.has(normalizeComparableText(paragraph));
 }
 
 function renderRssDescription(project: ProjectWithProducts): string {
@@ -42,7 +81,13 @@ function renderRssDescription(project: ProjectWithProducts): string {
     readmeMarkdown: project.readmeMarkdown,
     repoUrl: project.repoUrl,
   }).filter((item) => item.kind !== "github");
-  const paragraphs = paragraphize(stripMarkdown(project.readmePreviewMarkdown));
+  const paragraphs = paragraphize(stripMarkdown(project.readmePreviewMarkdown))
+    .filter(
+      (paragraph, index) =>
+        !(index === 0 && isDuplicateTitleParagraph(paragraph, project)),
+    )
+    .filter((paragraph) => !isLowSignalHeadingParagraph(paragraph))
+    .slice(0, RSS_DESCRIPTION_PARAGRAPH_LIMIT);
   const productLabels = project.products
     .map((product) => product.label)
     .join(", ");
@@ -55,14 +100,10 @@ function renderRssDescription(project: ProjectWithProducts): string {
   ].join(" &middot; ");
 
   return [
-    `<p><strong>${escapeXml(project.owner)}/${escapeXml(project.repo)}</strong></p>`,
     productLabels
       ? `<p><strong>Cloudflare:</strong> ${escapeXml(productLabels)}</p>`
       : null,
     ...paragraphs.map((paragraph) => `<p>${escapeXml(paragraph)}</p>`),
-    project.previewImageUrl
-      ? `<p><img src="${escapeXml(project.previewImageUrl)}" alt="${escapeXml(project.repo)} preview" /></p>`
-      : null,
     `<p>${actionLinks}</p>`,
   ]
     .filter(Boolean)

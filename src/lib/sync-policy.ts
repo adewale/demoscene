@@ -1,11 +1,8 @@
 import type { RepositoryScanStatus, SyncMode } from "../domain";
 
 export const FEED_PAGE_SIZE = 24;
-export const POSITIVE_REVISIT_AFTER_DAYS = 14;
-export const REPOSITORY_SCAN_REVISIT_DAYS: Record<
-  RepositoryScanStatus,
-  number
-> = {
+const POSITIVE_REVISIT_AFTER_DAYS = 14;
+const REPOSITORY_SCAN_REVISIT_DAYS: Record<RepositoryScanStatus, number> = {
   ignored: 30,
   invalid_config: 7,
 };
