@@ -193,7 +193,7 @@ Scope:
 - React SSR card list for all discovered projects
 - product icons derived from Wrangler inference
 - Markdown preview rendering for stored README previews
-- GitHub-first card links, video presence links, and preview media
+- GitHub-first card links and preview media
 - visual cues from the spec
 
 Done when:

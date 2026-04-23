@@ -1,12 +1,21 @@
-import type { AppEnv, ProjectRecord, SyncSummary } from "./domain";
+import type {
+  AppEnv,
+  ProjectRecord,
+  RepositoryScanStateRecord,
+  SyncMode,
+  SyncSummary,
+} from "./domain";
 import { TEAM_MEMBERS, type TeamMember } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
   deleteProjectsByOwnersNotIn,
   deleteProjectBySlug,
+  deleteRepositoryScanStateByRepoUrl,
   getProjectByOwnerRepo,
   listProjectSyncStateByOwners,
+  listRepositoryScanStateByOwners,
   replaceProjectProducts,
+  upsertRepositoryScanState,
   upsertProject,
 } from "./db/queries";
 import {
@@ -14,6 +23,7 @@ import {
   fetchRepositoryMetadata,
   fetchFirstAvailableRawFile,
   fetchRepositoryPage,
+  GitHubRateLimitError,
   type GitHubRepositoryMetadata,
   PACKAGE_FILE_NAMES,
   README_FILE_NAMES,
@@ -23,6 +33,10 @@ import {
 } from "./lib/github/fetch";
 import { extractRepositoryPageMetadata } from "./lib/github/html";
 import { deriveMarkdownPreview } from "./lib/markdown/preview";
+import {
+  getRepositoryScanNextCheckAt,
+  shouldProcessDiscoveredRepository,
+} from "./lib/sync-policy";
 import {
   type CloudflareProduct,
   inferCloudflareProducts,
@@ -38,6 +52,7 @@ import {
 
 type SyncOptions = {
   fetch?: FetchLike;
+  mode?: SyncMode;
   now?: Date;
   pruneUntrackedOwners?: boolean;
   repositories?: string[];
@@ -46,22 +61,30 @@ type SyncOptions = {
 
 type SyncOutcome =
   | "added"
+  | "deferred_by_rate_limit"
   | "ignored"
   | "invalid_config"
   | "removed"
   | "skipped_transiently"
   | "updated";
 
+type SyncResult = {
+  outcome: SyncOutcome;
+  retryAfter?: string | null;
+};
+
 type DiscoveryResult = {
+  accountsFailed: number;
   accountsScanned: number;
+  accountsSucceeded: number;
   missingProjectSlugs: string[];
+  rateLimitedUntil: string | null;
   repositoriesToProcess: GitHubRepositoryMetadata[];
   reposDiscovered: number;
 };
 
 type SyncTarget = ParsedRepositoryUrl | GitHubRepositoryMetadata;
 
-const STALE_REVISIT_AFTER_DAYS = 14;
 const PACKAGE_DERIVED_PRODUCT_KEYS = new Set(["agents", "sandboxes"]);
 
 function getWranglerFormat(fileName: string): string {
@@ -78,16 +101,22 @@ function getWranglerFormat(fileName: string): string {
 
 function createEmptySummary(
   accountsScanned = 0,
+  accountsSucceeded = 0,
+  accountsFailed = 0,
   reposDiscovered = 0,
 ): SyncSummary {
   return {
     accountsScanned,
+    accountsFailed,
+    accountsSucceeded,
     reposAdded: 0,
+    reposDeferredByRateLimit: 0,
     reposDiscovered,
     reposInvalidConfig: 0,
     reposRemoved: 0,
     reposSkippedTransiently: 0,
     reposUpdated: 0,
+    rateLimitedUntil: null,
   };
 }
 
@@ -115,6 +144,25 @@ function applyOutcome(summary: SyncSummary, outcome: SyncOutcome): void {
   if (outcome === "skipped_transiently") {
     summary.reposSkippedTransiently += 1;
   }
+}
+
+function updateRateLimit(
+  summary: SyncSummary,
+  retryAfter?: string | null,
+): void {
+  if (!retryAfter) {
+    return;
+  }
+
+  if (!summary.rateLimitedUntil) {
+    summary.rateLimitedUntil = retryAfter;
+    return;
+  }
+
+  summary.rateLimitedUntil =
+    new Date(retryAfter) > new Date(summary.rateLimitedUntil)
+      ? retryAfter
+      : summary.rateLimitedUntil;
 }
 
 function parseRequestedRepositories(
@@ -159,12 +207,14 @@ export async function syncRepositories(
   options: SyncOptions = {},
 ): Promise<SyncSummary> {
   const fetchImpl = options.fetch ?? fetch;
+  const mode = options.mode ?? "reconcile";
   const currentTime = options.now ?? new Date();
-  const now = currentTime.toISOString();
   const db = createDb(env.DB);
   const shouldPruneUntrackedOwners =
     options.pruneUntrackedOwners ??
-    (options.repositories === undefined && options.teamMembers === undefined);
+    (mode === "reconcile" &&
+      options.repositories === undefined &&
+      options.teamMembers === undefined);
   const requestedRepositories = options.repositories
     ? parseRequestedRepositories([...new Set(options.repositories)])
     : null;
@@ -174,13 +224,17 @@ export async function syncRepositories(
         db,
         fetchImpl,
         currentTime,
+        mode,
         options.teamMembers ?? TEAM_MEMBERS,
         env.GITHUB_TOKEN,
       );
   const summary = createEmptySummary(
     discovery?.accountsScanned ?? 0,
+    discovery?.accountsSucceeded ?? 0,
+    discovery?.accountsFailed ?? 0,
     discovery?.reposDiscovered ?? 0,
   );
+  updateRateLimit(summary, discovery?.rateLimitedUntil ?? null);
 
   if (shouldPruneUntrackedOwners) {
     summary.reposRemoved += await deleteProjectsByOwnersNotIn(
@@ -194,14 +248,27 @@ export async function syncRepositories(
     summary.reposRemoved += 1;
   }
 
-  for (const repository of requestedRepositories ??
-    discovery?.repositoriesToProcess ??
-    []) {
+  const repositoriesToProcess =
+    requestedRepositories ?? discovery?.repositoriesToProcess ?? [];
+
+  for (const [index, repository] of repositoriesToProcess.entries()) {
     try {
-      applyOutcome(
-        summary,
-        await syncRepository(db, fetchImpl, repository, now, env.GITHUB_TOKEN),
+      const result = await syncRepository(
+        db,
+        fetchImpl,
+        repository,
+        currentTime,
+        env.GITHUB_TOKEN,
       );
+
+      if (result.outcome === "deferred_by_rate_limit") {
+        summary.reposDeferredByRateLimit +=
+          repositoriesToProcess.length - index;
+        updateRateLimit(summary, result.retryAfter ?? null);
+        break;
+      }
+
+      applyOutcome(summary, result.outcome);
     } catch (error) {
       console.error(`Failed to sync repository ${repository.url}`, error);
     }
@@ -214,20 +281,22 @@ async function resolveTrackedRepositories(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
   currentTime: Date,
+  mode: SyncMode,
   teamMembers: TeamMember[],
   githubToken?: string,
 ): Promise<DiscoveryResult> {
+  let accountsFailed = 0;
+  let accountsScanned = 0;
+  let accountsSucceeded = 0;
   const discoveredRepositories = new Map<string, GitHubRepositoryMetadata>();
   const repositoriesToProcess = new Map<string, GitHubRepositoryMetadata>();
   const missingProjectSlugs = new Set<string>();
+  const repositoryScanStateByUrl = new Map<string, RepositoryScanStateRecord>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
   const existingProjectsByOwner = new Map<
     string,
     Map<string, { lastSeenAt: string; slug: string }>
   >();
-  const staleCutoff = new Date(currentTime);
-
-  staleCutoff.setUTCDate(staleCutoff.getUTCDate() - STALE_REVISIT_AFTER_DAYS);
 
   for (const row of await listProjectSyncStateByOwners(db, [...teamLogins])) {
     const knownProjects =
@@ -240,13 +309,22 @@ async function resolveTrackedRepositories(
     existingProjectsByOwner.set(row.owner, knownProjects);
   }
 
+  for (const row of await listRepositoryScanStateByOwners(db, [
+    ...teamLogins,
+  ])) {
+    repositoryScanStateByUrl.set(row.repoUrl, row);
+  }
+
   for (const teamMember of teamMembers) {
+    accountsScanned += 1;
+
     try {
       const accountRepositories = await discoverRepositoriesForTeamMember(
         fetchImpl,
         teamMember,
         githubToken,
       );
+      accountsSucceeded += 1;
       const knownProjects =
         existingProjectsByOwner.get(teamMember.login) ??
         new Map<string, { lastSeenAt: string; slug: string }>();
@@ -257,21 +335,42 @@ async function resolveTrackedRepositories(
         discoveredUrls.add(repository.url);
 
         const existingProject = knownProjects.get(repository.url);
+        const negativeState = repositoryScanStateByUrl.get(repository.url);
 
         if (
-          !existingProject ||
-          new Date(existingProject.lastSeenAt) <= staleCutoff
+          shouldProcessDiscoveredRepository({
+            existingProjectLastSeenAt: existingProject?.lastSeenAt ?? null,
+            mode,
+            negativeScanNextCheckAt: negativeState?.nextCheckAt ?? null,
+            now: currentTime,
+          })
         ) {
           repositoriesToProcess.set(repository.url, repository);
         }
       }
 
-      for (const [repositoryUrl, existingProject] of knownProjects) {
-        if (!discoveredUrls.has(repositoryUrl)) {
-          missingProjectSlugs.add(existingProject.slug);
+      if (mode === "reconcile") {
+        for (const [repositoryUrl, existingProject] of knownProjects) {
+          if (!discoveredUrls.has(repositoryUrl)) {
+            missingProjectSlugs.add(existingProject.slug);
+          }
         }
       }
     } catch (error) {
+      accountsFailed += 1;
+
+      if (error instanceof GitHubRateLimitError) {
+        return {
+          accountsFailed,
+          accountsScanned,
+          accountsSucceeded,
+          missingProjectSlugs: [...missingProjectSlugs].sort(),
+          rateLimitedUntil: error.retryAfter,
+          repositoriesToProcess: [...repositoriesToProcess.values()],
+          reposDiscovered: discoveredRepositories.size,
+        };
+      }
+
       console.error(
         `Failed to discover repositories for ${teamMember.login}`,
         error,
@@ -280,11 +379,12 @@ async function resolveTrackedRepositories(
   }
 
   return {
-    accountsScanned: teamMembers.length,
+    accountsFailed,
+    accountsScanned,
+    accountsSucceeded,
     missingProjectSlugs: [...missingProjectSlugs].sort(),
-    repositoriesToProcess: [...repositoriesToProcess.values()].sort(
-      (left, right) => left.url.localeCompare(right.url),
-    ),
+    rateLimitedUntil: null,
+    repositoriesToProcess: [...repositoriesToProcess.values()],
     reposDiscovered: discoveredRepositories.size,
   };
 }
@@ -293,9 +393,10 @@ async function syncRepository(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
   repository: SyncTarget,
-  now: string,
+  currentTime: Date,
   githubToken?: string,
-): Promise<SyncOutcome> {
+): Promise<SyncResult> {
+  const now = currentTime.toISOString();
   const existing = await getProjectByOwnerRepo(
     db,
     repository.owner,
@@ -307,32 +408,28 @@ async function syncRepository(
     : await fetchRepositoryMetadata(fetchImpl, repository, githubToken);
 
   if (repositoryMetadataResult.kind === "not_found") {
+    await deleteRepositoryScanStateByRepoUrl(db, repository.url);
+
     if (!existing) {
-      return "ignored";
+      return { outcome: "ignored" };
     }
 
     await deleteProjectBySlug(db, repository.slug);
-    return "removed";
+    return { outcome: "removed" };
+  }
+
+  if (repositoryMetadataResult.kind === "rate_limited") {
+    return {
+      outcome: "deferred_by_rate_limit",
+      retryAfter: repositoryMetadataResult.retryAfter,
+    };
   }
 
   if (repositoryMetadataResult.kind !== "found") {
-    return "skipped_transiently";
+    return { outcome: "skipped_transiently" };
   }
 
   const repositoryMetadata = repositoryMetadataResult.metadata;
-  const repoPage = await fetchRepositoryPage(fetchImpl, repository);
-  const repoPageMetadata =
-    repoPage.kind === "found"
-      ? extractRepositoryPageMetadata(repoPage.html)
-      : {
-          homepageUrl: null,
-          previewImageUrl: null,
-        };
-
-  const previewImageResult = await validatePreviewImageUrl(
-    fetchImpl,
-    repoPageMetadata.previewImageUrl,
-  );
   const wranglerFile = await fetchFirstAvailableRawFile(
     fetchImpl,
     repository,
@@ -340,17 +437,33 @@ async function syncRepository(
     repositoryMetadata.defaultBranch,
   );
 
+  if (wranglerFile.kind === "rate_limited") {
+    return {
+      outcome: "deferred_by_rate_limit",
+      retryAfter: wranglerFile.retryAfter,
+    };
+  }
+
   if (wranglerFile.kind === "transient_error") {
-    return "skipped_transiently";
+    return { outcome: "skipped_transiently" };
   }
 
   if (wranglerFile.kind === "not_found") {
+    await upsertRepositoryScanState(db, {
+      lastCheckedAt: now,
+      nextCheckAt: getRepositoryScanNextCheckAt("ignored", currentTime),
+      owner: repository.owner,
+      repo: repository.repo,
+      repoUrl: repository.url,
+      status: "ignored",
+    });
+
     if (!existing) {
-      return "ignored";
+      return { outcome: "ignored" };
     }
 
     await deleteProjectBySlug(db, repository.slug);
-    return "removed";
+    return { outcome: "removed" };
   }
 
   let wranglerConfig;
@@ -361,7 +474,16 @@ async function syncRepository(
       wranglerFile.file.fileName,
     );
   } catch {
-    return "invalid_config";
+    await upsertRepositoryScanState(db, {
+      lastCheckedAt: now,
+      nextCheckAt: getRepositoryScanNextCheckAt("invalid_config", currentTime),
+      owner: repository.owner,
+      repo: repository.repo,
+      repoUrl: repository.url,
+      status: "invalid_config",
+    });
+
+    return { outcome: "invalid_config" };
   }
 
   const packageFile = await fetchFirstAvailableRawFile(
@@ -371,6 +493,13 @@ async function syncRepository(
     repositoryMetadata.defaultBranch,
   );
   let packageManifest;
+
+  if (packageFile.kind === "rate_limited") {
+    return {
+      outcome: "deferred_by_rate_limit",
+      retryAfter: packageFile.retryAfter,
+    };
+  }
 
   if (packageFile.kind === "found") {
     try {
@@ -388,6 +517,27 @@ async function syncRepository(
         )
       : inferCloudflareProducts(wranglerConfig, packageManifest);
 
+  const repoPage = await fetchRepositoryPage(fetchImpl, repository);
+
+  if (repoPage.kind === "rate_limited") {
+    return {
+      outcome: "deferred_by_rate_limit",
+      retryAfter: repoPage.retryAfter,
+    };
+  }
+
+  const repoPageMetadata =
+    repoPage.kind === "found"
+      ? extractRepositoryPageMetadata(repoPage.html)
+      : {
+          homepageUrl: null,
+          previewImageUrl: null,
+        };
+  const previewImageResult = await validatePreviewImageUrl(
+    fetchImpl,
+    repoPageMetadata.previewImageUrl,
+  );
+
   let readmeMarkdown = existing?.readmeMarkdown ?? "";
   let readmePreviewMarkdown = existing?.readmePreviewMarkdown ?? "";
 
@@ -399,8 +549,15 @@ async function syncRepository(
       repositoryMetadata.defaultBranch,
     );
 
+    if (readmeFile.kind === "rate_limited") {
+      return {
+        outcome: "deferred_by_rate_limit",
+        retryAfter: readmeFile.retryAfter,
+      };
+    }
+
     if (readmeFile.kind === "transient_error") {
-      return "skipped_transiently";
+      return { outcome: "skipped_transiently" };
     }
 
     if (readmeFile.kind === "found") {
@@ -437,6 +594,7 @@ async function syncRepository(
 
   await upsertProject(db, project);
   await replaceProjectProducts(db, project.slug, products);
+  await deleteRepositoryScanStateByRepoUrl(db, repository.url);
 
-  return existing ? "updated" : "added";
+  return { outcome: existing ? "updated" : "added" };
 }

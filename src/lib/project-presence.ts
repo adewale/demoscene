@@ -11,17 +11,6 @@ const NON_LIVE_HOSTS = new Set([
   "www.cloudflare.com",
 ]);
 
-const VIDEO_HOSTS = new Set([
-  "loom.com",
-  "player.vimeo.com",
-  "user-images.githubusercontent.com",
-  "vimeo.com",
-  "www.loom.com",
-  "www.youtube.com",
-  "youtu.be",
-  "youtube.com",
-]);
-
 type PresenceLink = {
   label: string | null;
   line: string;
@@ -30,7 +19,7 @@ type PresenceLink = {
 
 type ProjectPresenceItem = {
   href: string;
-  kind: "github" | "live" | "video";
+  kind: "github" | "live";
   label: string;
 };
 
@@ -94,40 +83,9 @@ function isLiveCandidate(url: string): boolean {
   return Boolean(
     parsed &&
     parsed.protocol === "https:" &&
-    !isVideoCandidate(url) &&
     !NON_LIVE_HOSTS.has(hostname) &&
     !isGenericCloudflareHost,
   );
-}
-
-function isVideoCandidate(url: string): boolean {
-  const parsed = normalizeUrl(url);
-
-  if (!parsed) {
-    return false;
-  }
-
-  const hostname = parsed.hostname.toLowerCase();
-  const pathname = parsed.pathname.toLowerCase();
-
-  return (
-    VIDEO_HOSTS.has(hostname) ||
-    pathname.endsWith(".mov") ||
-    pathname.endsWith(".mp4")
-  );
-}
-
-function pickVideoUrl(links: PresenceLink[]): string | null {
-  const videoLink = links.find(
-    (link) =>
-      isVideoCandidate(link.url) ||
-      /\b(video|watch demo|demo clip|walkthrough|loom)\b/i.test(
-        link.label ?? "",
-      ) ||
-      /\b(video|watch demo|demo clip|walkthrough|loom)\b/i.test(link.line),
-  );
-
-  return videoLink?.url ?? null;
 }
 
 function pickLiveUrl(
@@ -175,16 +133,10 @@ export function extractProjectPresence({
   const items: ProjectPresenceItem[] = [];
   const seenUrls = new Set<string>();
   const liveUrl = pickLiveUrl(homepageUrl, markdownLinks, inlineLinks);
-  const videoUrl = pickVideoUrl([...markdownLinks, ...inlineLinks]);
 
   if (liveUrl && !seenUrls.has(liveUrl)) {
     items.push({ href: liveUrl, kind: "live", label: "Live" });
     seenUrls.add(liveUrl);
-  }
-
-  if (videoUrl && !seenUrls.has(videoUrl)) {
-    items.push({ href: videoUrl, kind: "video", label: "Video" });
-    seenUrls.add(videoUrl);
   }
 
   items.push({ href: repoUrl, kind: "github", label: "GitHub" });

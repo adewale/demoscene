@@ -6,7 +6,6 @@ import { FeedPage } from "./FeedPage";
 import { MarkdownPreview } from "./MarkdownContent";
 import { ProductIconStrip } from "./ProductIconStrip";
 import { ProjectCard } from "./ProjectCard";
-import { ProjectMetaRow } from "./ProjectMetaRow";
 
 type DesignPageProps = {
   featuredProject: ProjectWithProducts | null;
@@ -18,6 +17,40 @@ function allProducts() {
     key,
     label,
   }));
+}
+
+type DesignAction = {
+  href: string;
+  label: string;
+  tone: "ghost" | "primary" | "secondary";
+};
+
+const DESIGN_ACTIONS: DesignAction[] = [
+  { href: "/", label: "View live feed", tone: "primary" },
+  { href: "/feed.json", label: "Inspect feed JSON", tone: "secondary" },
+  { href: "/rss.xml", label: "Open RSS", tone: "ghost" },
+];
+
+const BUTTON_STYLE_SAMPLES: DesignAction[] = [
+  { href: "/", label: "Primary", tone: "primary" },
+  { href: "/feed.json", label: "Secondary", tone: "secondary" },
+  { href: "/rss.xml", label: "Ghost", tone: "ghost" },
+];
+
+function DesignActionRow({ actions }: { actions: DesignAction[] }) {
+  return (
+    <div className="design-button-row">
+      {actions.map((action) => (
+        <a
+          key={`${action.tone}-${action.href}-${action.label}`}
+          className={`button-base button-${action.tone}`}
+          href={action.href}
+        >
+          {action.label}
+        </a>
+      ))}
+    </div>
+  );
 }
 
 export function DesignPage({ featuredProject, projects }: DesignPageProps) {
@@ -43,17 +76,7 @@ export function DesignPage({ featuredProject, projects }: DesignPageProps) {
               creating a second visual language.
             </p>
           </div>
-          <div className="design-button-row">
-            <a className="button-base button-primary" href="/">
-              View live feed
-            </a>
-            <a className="button-base button-secondary" href="/feed.json">
-              Inspect feed JSON
-            </a>
-            <a className="button-base button-ghost" href="/rss.xml">
-              Open RSS
-            </a>
-          </div>
+          <DesignActionRow actions={DESIGN_ACTIONS} />
         </div>
       </section>
 
@@ -114,19 +137,20 @@ export function DesignPage({ featuredProject, projects }: DesignPageProps) {
             <div className="design-heading-block">
               <p className="feed-card-kicker">Typography</p>
               <h3 className="project-title design-subtitle">Live text stack</h3>
+              <p className="design-copy">
+                Titles, supporting metadata, and markdown preview copy should be
+                readable without rebuilding the entire project card structure.
+              </p>
             </div>
             {featuredProject ? (
               <div className="design-type-sample">
-                <p className="feed-card-kicker">
-                  <strong>{featuredProject.owner}</strong> started a new project
-                </p>
-                <h3 className="project-title feed-card-title">
+                <p className="feed-card-kicker">Project title</p>
+                <h3 className="project-title design-type-title">
                   {featuredProject.repo}
                 </h3>
-                <ProjectMetaRow
-                  owner={featuredProject.owner}
-                  repo={featuredProject.repo}
-                />
+                <p className="design-copy">
+                  {featuredProject.owner}/{featuredProject.repo}
+                </p>
                 <MarkdownPreview markdown={featuredPreview} />
               </div>
             ) : (
@@ -179,17 +203,7 @@ export function DesignPage({ featuredProject, projects }: DesignPageProps) {
                 secondary, and ghost treatment reused across the feed.
               </p>
             </div>
-            <div className="design-button-row">
-              <a className="button-base button-primary" href="/">
-                Primary
-              </a>
-              <a className="button-base button-secondary" href="/feed.json">
-                Secondary
-              </a>
-              <a className="button-base button-ghost" href="/rss.xml">
-                Ghost
-              </a>
-            </div>
+            <DesignActionRow actions={BUTTON_STYLE_SAMPLES} />
           </div>
         </article>
       </section>
@@ -204,7 +218,12 @@ export function DesignPage({ featuredProject, projects }: DesignPageProps) {
               exactly as the homepage renders it.
             </p>
           </div>
-          <FeedPage page={1} projects={projects} totalPages={1} />
+          <FeedPage
+            page={1}
+            projects={projects}
+            teamMembers={[]}
+            totalPages={1}
+          />
         </div>
       </section>
     </div>

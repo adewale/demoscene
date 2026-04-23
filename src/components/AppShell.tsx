@@ -70,6 +70,120 @@ const styles = `
     gap: 20px;
   }
 
+  .feed-layout {
+    display: grid;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .feed-layout-single-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feed-main-column {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .team-menu {
+    display: grid;
+    gap: 10px;
+  }
+
+  .team-menu summary {
+    list-style: none;
+  }
+
+  .team-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .team-menu-trigger {
+    width: fit-content;
+    cursor: pointer;
+  }
+
+  .team-menu-icon {
+    letter-spacing: -0.08em;
+    font-size: 0.72rem;
+  }
+
+  .team-menu-panel {
+    margin-top: 10px;
+  }
+
+  .team-rail {
+    display: none;
+    width: max-content;
+    min-width: 240px;
+  }
+
+  .team-directory-panel {
+    min-width: 0;
+  }
+
+  .team-directory-panel-body {
+    padding: 0;
+  }
+
+  .team-directory-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .team-directory-item + .team-directory-item {
+    border-top: 1px solid var(--border);
+  }
+
+  .team-card-link {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    padding: 8px 10px;
+    text-decoration: none;
+  }
+
+  .team-card-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.92);
+    flex: 0 0 auto;
+  }
+
+  .team-card-copy {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .team-card-heading-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .team-card-name {
+    font-size: 0.78rem;
+    line-height: 1.05;
+  }
+
+  .team-card-login {
+    color: var(--muted);
+    font-size: 0.66rem;
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+
+  .team-card-link:hover .team-card-name,
+  .team-card-link:focus-visible .team-card-name {
+    color: var(--accent);
+  }
+
   .feed-list {
     display: grid;
     gap: 14px;
@@ -370,16 +484,15 @@ const styles = `
 
   .feed-card-topline {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     gap: 10px;
-    align-items: start;
+    align-items: center;
   }
 
   .feed-card-author {
     display: flex;
     gap: 10px;
-    align-items: start;
+    align-items: center;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
@@ -395,7 +508,14 @@ const styles = `
   .feed-card-author-copy {
     min-width: 0;
     display: grid;
-    gap: 4px;
+    gap: 0;
+  }
+
+  .feed-card-headline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    align-items: center;
   }
 
   .feed-card-kicker {
@@ -407,13 +527,6 @@ const styles = `
   .feed-card-kicker strong {
     color: var(--text);
     font-weight: 700;
-  }
-
-  .feed-card-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: start;
   }
 
   .button-base {
@@ -471,9 +584,11 @@ const styles = `
   }
 
   .feed-card-title {
+    max-width: 16ch;
     font-size: 1.04rem;
     line-height: 1.25;
     font-weight: 500;
+    text-align: left;
   }
 
   .feed-title-link {
@@ -483,10 +598,6 @@ const styles = `
   .feed-title-link:hover,
   .feed-title-link:focus-visible {
     color: var(--accent);
-  }
-
-  .feed-card-links .button-primary {
-    min-width: 72px;
   }
 
   .design-shell {
@@ -578,6 +689,12 @@ const styles = `
     gap: 10px;
   }
 
+  .design-type-title {
+    font-size: 1.2rem;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
   .design-button-row {
     display: flex;
     flex-wrap: wrap;
@@ -608,6 +725,26 @@ const styles = `
   }
 
   @media (min-width: 960px) {
+    .feed-layout {
+      grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .feed-layout-single-column {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .team-menu {
+      display: none;
+    }
+
+    .team-rail {
+      display: grid;
+      gap: 12px;
+      margin-top: 28px;
+      position: sticky;
+      top: 24px;
+    }
+
     .design-section-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
@@ -619,10 +756,6 @@ const styles = `
 
     .design-token-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .feed-card-links {
-      justify-content: end;
     }
 
     .detail-layout {

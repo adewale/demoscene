@@ -4,19 +4,30 @@ import { createApp } from "./app";
 import { syncRepositories } from "./sync";
 
 const app = createApp();
+const DAILY_INCREMENTAL_CRON = "0 12 * * *";
+const WEEKLY_RECONCILE_CRON = "17 3 * * 0";
 
 export { app, syncRepositories };
 
 export default {
   fetch: app.fetch,
   scheduled(
-    _controller: ScheduledController,
+    controller: ScheduledController,
     env: AppEnv,
     ctx: ExecutionContext,
   ) {
+    const mode =
+      controller.cron === WEEKLY_RECONCILE_CRON
+        ? "reconcile"
+        : controller.cron === DAILY_INCREMENTAL_CRON
+          ? "incremental"
+          : "incremental";
+
     ctx.waitUntil(
-      syncRepositories(env).then((summary) => {
-        console.log(JSON.stringify({ event: "sync.summary", ...summary }));
+      syncRepositories(env, { mode }).then((summary) => {
+        console.log(
+          JSON.stringify({ event: "sync.summary", mode, ...summary }),
+        );
       }),
     );
   },

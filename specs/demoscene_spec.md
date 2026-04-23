@@ -58,7 +58,7 @@ Output:
 - cards within a day are ordered newest-first by repository creation time, using `repoCreatedAt` with stable fallbacks
 - each feed card shows icons that clearly signal which Cloudflare primitives and products are used
 - each feed card renders a bounded preview of the stored README as Markdown
-- each card links primarily to the GitHub repo, with optional supplementary actions such as video links
+- each card links primarily to the GitHub repo without extra supplementary action pills
 - provide `/` for the feed and `/projects/:owner/:repo.json` for machine-readable project data
 
 Visual cues:

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import type { ProjectWithProducts } from "../../src/domain";
 import { FeedPage } from "../../src/components/FeedPage";
+import type { TeamMemberOverview } from "../../src/components/TeamMemberDirectory";
 
 const project: ProjectWithProducts = {
   slug: "acme/demo-feed",
@@ -23,9 +24,23 @@ const project: ProjectWithProducts = {
   products: [{ key: "workers", label: "Workers" }],
 };
 
+const teamMembers: TeamMemberOverview[] = [
+  {
+    login: "adewale",
+    name: "Ade",
+  },
+];
+
 describe("FeedPage", () => {
   it("renders an empty state when no projects exist", () => {
-    render(<FeedPage page={1} projects={[]} totalPages={1} />);
+    render(
+      <FeedPage
+        page={1}
+        projects={[]}
+        teamMembers={teamMembers}
+        totalPages={1}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "No Cloudflare repos yet" }),
@@ -33,7 +48,14 @@ describe("FeedPage", () => {
   });
 
   it("renders cards when projects exist", () => {
-    render(<FeedPage page={1} projects={[project]} totalPages={1} />);
+    render(
+      <FeedPage
+        page={1}
+        projects={[project]}
+        teamMembers={teamMembers}
+        totalPages={1}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "demo-feed" }),
@@ -44,7 +66,14 @@ describe("FeedPage", () => {
   });
 
   it("renders pagination controls for multiple pages", () => {
-    render(<FeedPage page={2} projects={[project]} totalPages={4} />);
+    render(
+      <FeedPage
+        page={2}
+        projects={[project]}
+        teamMembers={teamMembers}
+        totalPages={4}
+      />,
+    );
 
     expect(
       screen.getByRole("navigation", { name: "Pagination" }),
@@ -74,6 +103,7 @@ describe("FeedPage", () => {
             repoCreatedAt: "2026-04-15T12:00:00.000Z",
           },
         ]}
+        teamMembers={teamMembers}
         totalPages={1}
       />,
     );

@@ -8,14 +8,15 @@ import { createDb } from "./db/client";
 import {
   countProjects,
   getProjectByOwnerRepo,
-  listProjects,
   listProjectsPage,
 } from "./db/queries";
 import { renderRssFeed } from "./lib/rss";
+import { FEED_PAGE_SIZE, RSS_ITEM_LIMIT } from "./lib/sync-policy";
 
 import { AppShell } from "./components/AppShell";
 import { DesignPage } from "./components/DesignPage";
 import { FeedPage } from "./components/FeedPage";
+import type { TeamMemberOverview } from "./components/TeamMemberDirectory";
 import { syncRepositories } from "./sync";
 
 type ProjectPathParts = {
@@ -23,7 +24,7 @@ type ProjectPathParts = {
   repo: string;
 };
 
-const HOME_PAGE_SIZE = 24;
+const HOME_PAGE_SIZE = FEED_PAGE_SIZE;
 
 function renderHtml(markup: ReactNode): string {
   return `<!DOCTYPE html>${renderToString(markup)}`;
@@ -69,6 +70,16 @@ function parsePositivePage(value: string | null): number {
   return Number.isFinite(page) && page > 0 ? page : 1;
 }
 
+function sortTeamMembersAlphabetically(members: typeof TEAM_MEMBERS) {
+  return [...members].sort((left, right) =>
+    left.name.localeCompare(right.name),
+  );
+}
+
+function loadTeamMemberOverview(): TeamMemberOverview[] {
+  return sortTeamMembersAlphabetically(TEAM_MEMBERS);
+}
+
 async function loadProjectFromRequest(
   c: Context<{ Bindings: AppEnv }>,
   pathParts: ProjectPathParts | null,
@@ -101,11 +112,17 @@ export function createApp() {
       HOME_PAGE_SIZE,
       (page - 1) * HOME_PAGE_SIZE,
     );
+    const teamMembers = loadTeamMemberOverview();
 
     return c.html(
       renderHtml(
         <AppShell title="demoscene">
-          <FeedPage page={page} projects={projects} totalPages={totalPages} />
+          <FeedPage
+            page={page}
+            projects={projects}
+            teamMembers={teamMembers}
+            totalPages={totalPages}
+          />
         </AppShell>,
       ),
     );
@@ -132,13 +149,24 @@ export function createApp() {
 
   app.get("/feed.json", async (c) => {
     const db = createDb(c.env.DB);
-    const items = await listProjects(db);
-    return c.json({ items });
+    const url = new URL(c.req.url);
+    const totalItems = await countProjects(db);
+    const totalPages = Math.max(1, Math.ceil(totalItems / FEED_PAGE_SIZE));
+    const page = Math.min(
+      parsePositivePage(url.searchParams.get("page")),
+      totalPages,
+    );
+    const items = await listProjectsPage(
+      db,
+      FEED_PAGE_SIZE,
+      (page - 1) * FEED_PAGE_SIZE,
+    );
+    return c.json({ items, page, totalItems, totalPages });
   });
 
   app.get("/rss.xml", async (c) => {
     const db = createDb(c.env.DB);
-    const items = await listProjects(db);
+    const items = await listProjectsPage(db, RSS_ITEM_LIMIT, 0);
     const origin = new URL(c.req.url).origin;
 
     return c.body(renderRssFeed({ items, origin }), {

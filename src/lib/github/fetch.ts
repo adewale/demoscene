@@ -16,6 +16,11 @@ export type GitHubRepositoryMetadata = ParsedRepositoryUrl & {
   repoCreationOrder: number;
 };
 
+type RateLimitedResult = {
+  kind: "rate_limited";
+  retryAfter: string | null;
+};
+
 type RawFileResult = {
   branch: string;
   fileName: string;
@@ -32,7 +37,8 @@ type RawFileLookupResult =
     }
   | {
       kind: "transient_error";
-    };
+    }
+  | RateLimitedResult;
 
 type RepositoryPageResult =
   | {
@@ -44,7 +50,8 @@ type RepositoryPageResult =
     }
   | {
       kind: "transient_error";
-    };
+    }
+  | RateLimitedResult;
 
 type PreviewImageResult =
   | {
@@ -78,21 +85,66 @@ type RepositoryMetadataResult =
     }
   | {
       kind: "transient_error";
-    };
+    }
+  | RateLimitedResult;
+
+export class GitHubRateLimitError extends Error {
+  retryAfter: string | null;
+
+  constructor(retryAfter: string | null) {
+    super("GitHub rate limit reached");
+    this.name = "GitHubRateLimitError";
+    this.retryAfter = retryAfter;
+  }
+}
 
 function isNotFoundStatus(status: number): boolean {
   return status === 404;
 }
 
 function isTransientStatus(status: number): boolean {
-  return (
-    status === 403 ||
-    status === 408 ||
-    status === 409 ||
-    status === 425 ||
-    status === 429 ||
-    status >= 500
-  );
+  return status === 408 || status === 409 || status === 425 || status >= 500;
+}
+
+function isRateLimitedStatus(status: number): boolean {
+  return status === 403 || status === 429;
+}
+
+function parseRetryAfterValue(value: string): string | null {
+  const seconds = Number.parseInt(value, 10);
+
+  if (Number.isFinite(seconds)) {
+    return new Date(Date.now() + seconds * 1000).toISOString();
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? null : date.toISOString();
+}
+
+export function getGitHubRetryAfter(headers: Headers): string | null {
+  const retryAfter = headers.get("retry-after");
+
+  if (retryAfter) {
+    const parsedRetryAfter = parseRetryAfterValue(retryAfter);
+
+    if (parsedRetryAfter) {
+      return parsedRetryAfter;
+    }
+  }
+
+  const rateLimitReset = headers.get("x-ratelimit-reset");
+
+  if (!rateLimitReset) {
+    return null;
+  }
+
+  const resetSeconds = Number.parseInt(rateLimitReset, 10);
+
+  if (!Number.isFinite(resetSeconds)) {
+    return null;
+  }
+
+  return new Date(resetSeconds * 1000).toISOString();
 }
 
 function isImageLikeContentType(contentType: string | null): boolean {
@@ -211,6 +263,13 @@ export async function fetchRepositoryPage(
       return { kind: "not_found" };
     }
 
+    if (isRateLimitedStatus(response.status)) {
+      return {
+        kind: "rate_limited",
+        retryAfter: getGitHubRetryAfter(response.headers),
+      };
+    }
+
     return { kind: "transient_error" };
   } catch {
     return { kind: "transient_error" };
@@ -251,6 +310,10 @@ export async function discoverRepositoriesForTeamMember(
 
     if (response.status === 404) {
       break;
+    }
+
+    if (isRateLimitedStatus(response.status)) {
+      throw new GitHubRateLimitError(getGitHubRetryAfter(response.headers));
     }
 
     if (!response.ok) {
@@ -314,6 +377,13 @@ export async function fetchRepositoryMetadata(
         return { kind: "not_found" };
       }
 
+      if (isRateLimitedStatus(response.status)) {
+        return {
+          kind: "rate_limited",
+          retryAfter: getGitHubRetryAfter(response.headers),
+        };
+      }
+
       return isTransientStatus(response.status)
         ? { kind: "transient_error" }
         : { kind: "not_found" };
@@ -353,6 +423,13 @@ export async function fetchFirstAvailableRawFile(
       const response = await fetchImpl(candidate.url);
 
       if (!response.ok) {
+        if (isRateLimitedStatus(response.status)) {
+          return {
+            kind: "rate_limited",
+            retryAfter: getGitHubRetryAfter(response.headers),
+          };
+        }
+
         if (
           !isNotFoundStatus(response.status) &&
           isTransientStatus(response.status)

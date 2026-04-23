@@ -1,5 +1,8 @@
 import type { CloudflareProduct } from "./lib/wrangler/parse";
 
+export type RepositoryScanStatus = "ignored" | "invalid_config";
+export type SyncMode = "incremental" | "reconcile";
+
 export type AppEnv = {
   DB: D1Database;
   APP_NAME: string;
@@ -10,12 +13,16 @@ export type AppEnv = {
 
 export type SyncSummary = {
   accountsScanned: number;
+  accountsFailed: number;
+  accountsSucceeded: number;
   reposAdded: number;
+  reposDeferredByRateLimit: number;
   reposDiscovered: number;
   reposInvalidConfig: number;
   reposRemoved: number;
   reposSkippedTransiently: number;
   reposUpdated: number;
+  rateLimitedUntil: string | null;
 };
 
 export type ProjectRecord = {
@@ -38,4 +45,13 @@ export type ProjectRecord = {
 
 export type ProjectWithProducts = ProjectRecord & {
   products: CloudflareProduct[];
+};
+
+export type RepositoryScanStateRecord = {
+  owner: string;
+  repo: string;
+  repoUrl: string;
+  status: RepositoryScanStatus;
+  lastCheckedAt: string;
+  nextCheckAt: string;
 };

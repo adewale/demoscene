@@ -73,14 +73,11 @@ describe("ProjectCard", () => {
     expect(
       screen.queryByRole("img", { name: "demo-scene preview" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Video" })).toHaveAttribute(
-      "href",
-      "https://www.loom.com/share/demo-scene",
-    );
     expect(screen.getByRole("link", { name: "demo-scene" })).toHaveAttribute(
       "href",
       "https://github.com/acme/demo-scene",
     );
+    expect(screen.queryByText("acme/demo-scene")).not.toBeInTheDocument();
     expect(screen.queryByText("14 Apr 2026")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "Live" }),
@@ -135,8 +132,5 @@ describe("ProjectCard", () => {
     expect(
       within(container).queryByRole("link", { name: "Live" }),
     ).not.toBeInTheDocument();
-    expect(
-      within(container).getByRole("link", { name: "Video" }),
-    ).toBeInTheDocument();
   });
 });

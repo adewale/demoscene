@@ -1,10 +1,16 @@
 import type { ProjectWithProducts } from "../domain";
 
 import { ProjectCard } from "./ProjectCard";
+import {
+  TeamMemberMenu,
+  TeamMemberRail,
+  type TeamMemberOverview,
+} from "./TeamMemberDirectory";
 
 type FeedPageProps = {
   page: number;
   projects: ProjectWithProducts[];
+  teamMembers: TeamMemberOverview[];
   totalPages: number;
 };
 
@@ -64,43 +70,55 @@ function Pagination({
   );
 }
 
-export function FeedPage({ page, projects, totalPages }: FeedPageProps) {
-  if (projects.length === 0) {
-    return (
-      <section className="empty-state">
-        <h2>No Cloudflare repos yet</h2>
-        <p>
-          Add public GitHub repositories to the source-controlled list and run
-          the daily sync.
-        </p>
-      </section>
-    );
-  }
-
+export function FeedPage({
+  page,
+  projects,
+  teamMembers,
+  totalPages,
+}: FeedPageProps) {
+  const showTeamDirectory = teamMembers.length > 0;
   let previousDayKey: string | null = null;
 
   return (
-    <div className="feed-shell">
-      <section aria-label="Project feed" className="feed-list">
-        {projects.map((project) => {
-          const timestamp = project.repoCreatedAt;
-          const currentDayKey = feedDayKey(timestamp);
-          const showDayMarker = currentDayKey !== previousDayKey;
-          previousDayKey = currentDayKey;
+    <div
+      className={`feed-layout${showTeamDirectory ? "" : " feed-layout-single-column"}`}
+    >
+      <div className="feed-main-column">
+        {showTeamDirectory ? <TeamMemberMenu members={teamMembers} /> : null}
+        {projects.length === 0 ? (
+          <section className="empty-state">
+            <h2>No Cloudflare repos yet</h2>
+            <p>
+              Add public GitHub repositories to the source-controlled list and
+              run the daily sync.
+            </p>
+          </section>
+        ) : (
+          <div className="feed-shell">
+            <section aria-label="Project feed" className="feed-list">
+              {projects.map((project) => {
+                const timestamp = project.repoCreatedAt;
+                const currentDayKey = feedDayKey(timestamp);
+                const showDayMarker = currentDayKey !== previousDayKey;
+                previousDayKey = currentDayKey;
 
-          return (
-            <div key={project.slug} className="feed-entry">
-              {showDayMarker ? (
-                <div className="feed-day-marker" role="separator">
-                  <span>{formatFeedDay(timestamp)}</span>
-                </div>
-              ) : null}
-              <ProjectCard project={project} />
-            </div>
-          );
-        })}
-      </section>
-      <Pagination page={page} totalPages={totalPages} />
+                return (
+                  <div key={project.slug} className="feed-entry">
+                    {showDayMarker ? (
+                      <div className="feed-day-marker" role="separator">
+                        <span>{formatFeedDay(timestamp)}</span>
+                      </div>
+                    ) : null}
+                    <ProjectCard project={project} />
+                  </div>
+                );
+              })}
+            </section>
+            <Pagination page={page} totalPages={totalPages} />
+          </div>
+        )}
+      </div>
+      {showTeamDirectory ? <TeamMemberRail members={teamMembers} /> : null}
     </div>
   );
 }

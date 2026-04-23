@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   primaryKey,
   sqliteTable,
@@ -44,5 +45,22 @@ export const projectProducts = sqliteTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.projectSlug, table.productKey] }),
+  }),
+);
+
+export const repositoryScanState = sqliteTable(
+  "repository_scan_state",
+  {
+    repoUrl: text("repo_url").primaryKey(),
+    owner: text("owner").notNull(),
+    repo: text("repo").notNull(),
+    status: text("status").notNull(),
+    lastCheckedAt: text("last_checked_at").notNull(),
+    nextCheckAt: text("next_check_at").notNull(),
+  },
+  (table) => ({
+    nextCheckIdx: index("repository_scan_state_next_check_idx").on(
+      table.nextCheckAt,
+    ),
   }),
 );

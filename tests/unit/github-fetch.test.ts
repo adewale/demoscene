@@ -6,6 +6,7 @@ import {
   fetchFirstAvailableRawFile,
   fetchRepositoryMetadata,
   fetchRepositoryPage,
+  getGitHubRetryAfter,
   validatePreviewImageUrl,
 } from "../../src/lib/github/fetch";
 import {
@@ -101,6 +102,21 @@ describe("discoverRepositoriesForTeamMember", () => {
         );
       }),
     );
+  });
+
+  it("surfaces GitHub rate limits during account discovery", async () => {
+    await expect(
+      discoverRepositoriesForTeamMember(
+        createMockFetch({
+          [buildUserRepositoriesApiUrl("adewale", 1)]: {
+            body: "rate limited",
+            headers: { "retry-after": "120" },
+            status: 429,
+          },
+        }) as typeof fetch,
+        { login: "adewale", name: "Ade" },
+      ),
+    ).rejects.toThrow("GitHub rate limit reached");
   });
 
   it("fails loudly when an explicit page cap is exceeded before discovery completes", async () => {
@@ -402,6 +418,26 @@ describe("fetchRepositoryMetadata", () => {
       ),
     ).resolves.toEqual({ kind: "transient_error" });
   });
+
+  it("reports rate-limited metadata lookups separately", async () => {
+    await expect(
+      fetchRepositoryMetadata(
+        createMockFetch({
+          [buildRepositoryApiUrl("acme", "demo")]: {
+            body: "rate limited",
+            headers: { "retry-after": "120" },
+            status: 429,
+          },
+        }) as typeof fetch,
+        repository,
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        kind: "rate_limited",
+        retryAfter: expect.any(String),
+      }),
+    );
+  });
 });
 
 describe("fetchFirstAvailableRawFile", () => {
@@ -489,5 +525,52 @@ describe("fetchFirstAvailableRawFile", () => {
         ["README.md"],
       ),
     ).resolves.toEqual({ kind: "transient_error" });
+  });
+
+  it("reports rate-limited raw file lookups separately", async () => {
+    await expect(
+      fetchFirstAvailableRawFile(
+        createMockFetch({
+          "https://raw.githubusercontent.com/acme/demo/main/README.md": {
+            body: "rate limited",
+            headers: { "x-ratelimit-reset": "1780000000" },
+            status: 403,
+          },
+        }) as typeof fetch,
+        repository,
+        ["README.md"],
+      ),
+    ).resolves.toEqual({
+      kind: "rate_limited",
+      retryAfter: new Date(1780000000 * 1000).toISOString(),
+    });
+  });
+});
+
+describe("getGitHubRetryAfter", () => {
+  it("parses retry windows from GitHub headers", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 3600 }), (seconds) => {
+        const retryAfter = getGitHubRetryAfter(
+          new Headers({ "retry-after": String(seconds) }),
+        );
+
+        expect(retryAfter).not.toBeNull();
+        expect(new Date(retryAfter ?? 0).valueOf()).toBeGreaterThan(Date.now());
+      }),
+    );
+
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1_700_000_000, max: 2_000_000_000 }),
+        (epoch) => {
+          expect(
+            getGitHubRetryAfter(
+              new Headers({ "x-ratelimit-reset": String(epoch) }),
+            ),
+          ).toBe(new Date(epoch * 1000).toISOString());
+        },
+      ),
+    );
   });
 });

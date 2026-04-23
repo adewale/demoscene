@@ -20,6 +20,7 @@
     "audit:duplicates": "jscpd --threshold 1 src tests --ignore \"**/migrations/**\"",
     "audit:secrets": "secretlint \"**/*\"",
     "corpus:refresh": "node scripts/refresh-corpus-cache.mjs",
+    "dev:fixture": "npm run e2e:prepare && wrangler dev --local --ip 127.0.0.1 --port 5050 --config wrangler.jsonc",
     "test:fast": "npm run format && npm run lint && npm run typecheck && npm run test:unit && npm run test:worker",
     "test:full": "npm run test:fast && npm run test:e2e && npm run coverage && npm run audit:deps && npm run audit:dead-code && npm run audit:duplicates && npm run audit:secrets",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc",

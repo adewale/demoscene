@@ -1,6 +1,10 @@
 import { and, count, desc, eq, inArray, notInArray } from "drizzle-orm";
 
-import type { ProjectRecord, ProjectWithProducts } from "../domain";
+import type {
+  ProjectRecord,
+  ProjectWithProducts,
+  RepositoryScanStateRecord,
+} from "../domain";
 import {
   CLOUDFLARE_PRODUCT_BY_KEY,
   isCloudflareProductKey,
@@ -10,7 +14,7 @@ import {
   type CloudflareProduct,
 } from "../lib/wrangler/parse";
 
-import { projectProducts, projects } from "./schema";
+import { projectProducts, projects, repositoryScanState } from "./schema";
 
 type Database = ReturnType<typeof import("./client").createDb>;
 const PRODUCT_LOOKUP_BATCH_SIZE = 90;
@@ -257,4 +261,62 @@ export async function deleteProjectsByOwnersNotIn(
   }
 
   return staleRows.length;
+}
+
+export async function upsertRepositoryScanState(
+  db: Database,
+  state: RepositoryScanStateRecord,
+): Promise<void> {
+  await db
+    .insert(repositoryScanState)
+    .values({
+      lastCheckedAt: state.lastCheckedAt,
+      nextCheckAt: state.nextCheckAt,
+      owner: state.owner,
+      repo: state.repo,
+      repoUrl: state.repoUrl,
+      status: state.status,
+    })
+    .onConflictDoUpdate({
+      target: repositoryScanState.repoUrl,
+      set: {
+        lastCheckedAt: state.lastCheckedAt,
+        nextCheckAt: state.nextCheckAt,
+        owner: state.owner,
+        repo: state.repo,
+        status: state.status,
+      },
+    });
+}
+
+export async function deleteRepositoryScanStateByRepoUrl(
+  db: Database,
+  repoUrl: string,
+): Promise<void> {
+  await db
+    .delete(repositoryScanState)
+    .where(eq(repositoryScanState.repoUrl, repoUrl));
+}
+
+export async function listRepositoryScanStateByOwners(
+  db: Database,
+  owners: string[],
+): Promise<RepositoryScanStateRecord[]> {
+  if (owners.length === 0) {
+    return [];
+  }
+
+  return db
+    .select({
+      lastCheckedAt: repositoryScanState.lastCheckedAt,
+      nextCheckAt: repositoryScanState.nextCheckAt,
+      owner: repositoryScanState.owner,
+      repo: repositoryScanState.repo,
+      repoUrl: repositoryScanState.repoUrl,
+      status: repositoryScanState.status,
+    })
+    .from(repositoryScanState)
+    .where(inArray(repositoryScanState.owner, owners)) as Promise<
+    RepositoryScanStateRecord[]
+  >;
 }

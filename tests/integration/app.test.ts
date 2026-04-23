@@ -7,6 +7,7 @@ import worker, { syncRepositories } from "../../src/index";
 import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
 import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creation_order.sql?raw";
 import MIGRATION_REPO_CREATED_AT_SQL from "../../migrations/0003_repo_created_at.sql?raw";
+import MIGRATION_REPOSITORY_SCAN_STATE_SQL from "../../migrations/0004_repository_scan_state.sql?raw";
 
 type MockResponse = {
   body: string;
@@ -133,6 +134,20 @@ function buildRateLimitedWranglerResponses(): Record<string, MockResponse> {
   return responses;
 }
 
+function buildRateLimitedResponse(retryAfterSeconds = 120): MockResponse {
+  return {
+    body: "rate limited",
+    headers: {
+      "retry-after": String(retryAfterSeconds),
+      "x-ratelimit-remaining": "0",
+      "x-ratelimit-reset": String(
+        Math.floor(Date.now() / 1000) + retryAfterSeconds,
+      ),
+    },
+    status: 429,
+  };
+}
+
 async function seedProjectRecord(values: {
   owner: string;
   repo: string;
@@ -244,10 +259,11 @@ function createMockFetch(responses: Record<string, MockResponse>) {
 }
 
 async function resetDatabase() {
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS repository_scan_state").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS project_products").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS projects").run();
 
-  for (const statement of `${MIGRATION_SQL};${MIGRATION_REPO_CREATION_ORDER_SQL};${MIGRATION_REPO_CREATED_AT_SQL}`
+  for (const statement of `${MIGRATION_SQL};${MIGRATION_REPO_CREATION_ORDER_SQL};${MIGRATION_REPO_CREATED_AT_SQL};${MIGRATION_REPOSITORY_SCAN_STATE_SQL}`
     .split(";")
     .map((value: string) => value.trim())
     .filter(Boolean)) {
@@ -534,6 +550,111 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
   });
 
+  it("reports account discovery failures without pretending every account succeeded", async () => {
+    const summary = await syncRepositories(testEnv, {
+      fetch: createMockFetch({
+        [buildUserRepositoriesApiUrl("adewale", 1)]:
+          buildUserRepositoriesApiResponse({
+            login: "adewale",
+            repositories: [{ repo: "demo", repoId: 98765 }],
+          }),
+        [buildUserRepositoriesApiUrl("zeke", 1)]: {
+          body: "boom",
+          status: 500,
+        },
+        "https://github.com/adewale/demo": {
+          body: buildRepositoryHomepageHtml("https://demo.example.com"),
+        },
+        "https://raw.githubusercontent.com/adewale/demo/main/wrangler.toml": {
+          body: `name = "demo"`,
+        },
+        "https://raw.githubusercontent.com/adewale/demo/main/README.md": {
+          body: "# Demo",
+        },
+      }) as typeof fetch,
+      teamMembers: [
+        { login: "adewale", name: "Ade" },
+        { login: "zeke", name: "Zeke" },
+      ],
+    });
+
+    expect(summary).toEqual(
+      expect.objectContaining({
+        accountsFailed: 1,
+        accountsScanned: 2,
+        accountsSucceeded: 1,
+        reposAdded: 1,
+      }),
+    );
+  });
+
+  it("does not reprocess ignored repos until their negative-cache revisit window expires", async () => {
+    const firstFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [{ repo: "plain-repo", repoId: 98765 }],
+        }),
+      [buildRepositoryApiUrl("adewale", "plain-repo")]:
+        buildRepositoryApiResponse({
+          owner: "adewale",
+          repo: "plain-repo",
+        }),
+      "https://github.com/adewale/plain-repo": {
+        body: buildRepositoryHomepageHtml("https://plain.example.com"),
+      },
+    });
+
+    await syncRepositories(testEnv, {
+      fetch: firstFetch as typeof fetch,
+      now: new Date("2026-04-14T12:00:00.000Z"),
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    const secondFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [{ repo: "plain-repo", repoId: 98765 }],
+        }),
+      [buildRepositoryApiUrl("adewale", "plain-repo")]:
+        buildRepositoryApiResponse({
+          owner: "adewale",
+          repo: "plain-repo",
+        }),
+      "https://github.com/adewale/plain-repo": {
+        body: buildRepositoryHomepageHtml("https://plain.example.com"),
+      },
+    });
+
+    await syncRepositories(testEnv, {
+      fetch: secondFetch as typeof fetch,
+      now: new Date("2026-04-15T12:00:00.000Z"),
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    const requestedUrls = secondFetch.mock.calls.map(([input]) =>
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+
+    expect(requestedUrls).toContain(buildUserRepositoriesApiUrl("adewale", 1));
+    expect(requestedUrls).not.toContain(
+      buildRepositoryApiUrl("adewale", "plain-repo"),
+    );
+    expect(requestedUrls).not.toContain(
+      "https://github.com/adewale/plain-repo",
+    );
+    expect(
+      requestedUrls.some((url) =>
+        url.startsWith("https://raw.githubusercontent.com/adewale/plain-repo/"),
+      ),
+    ).toBe(false);
+  });
+
   it("automatically picks up a newly listed repo without disturbing known repos", async () => {
     await seedProjectRecord({
       owner: "adewale",
@@ -776,6 +897,52 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(payload.items.some((item) => item.repo === "known-repo")).toBe(true);
   });
 
+  it("defers the remaining repository work once GitHub rate limits the run", async () => {
+    const mockFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [
+            { repo: "rate-limited", repoId: 300 },
+            { repo: "never-reached", repoId: 200 },
+          ],
+        }),
+      [buildRepositoryApiUrl("adewale", "rate-limited")]:
+        buildRepositoryApiResponse({ owner: "adewale", repo: "rate-limited" }),
+      [buildRepositoryApiUrl("adewale", "never-reached")]:
+        buildRepositoryApiResponse({ owner: "adewale", repo: "never-reached" }),
+      "https://raw.githubusercontent.com/adewale/rate-limited/main/wrangler.toml":
+        buildRateLimitedResponse(),
+      "https://raw.githubusercontent.com/adewale/rate-limited/master/wrangler.toml":
+        buildRateLimitedResponse(),
+      "https://raw.githubusercontent.com/adewale/rate-limited/main/wrangler.json":
+        buildRateLimitedResponse(),
+      "https://raw.githubusercontent.com/adewale/rate-limited/master/wrangler.json":
+        buildRateLimitedResponse(),
+      "https://raw.githubusercontent.com/adewale/rate-limited/main/wrangler.jsonc":
+        buildRateLimitedResponse(),
+      "https://raw.githubusercontent.com/adewale/rate-limited/master/wrangler.jsonc":
+        buildRateLimitedResponse(),
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    expect(summary).toEqual(
+      expect.objectContaining({
+        rateLimitedUntil: expect.any(String),
+        reposDeferredByRateLimit: 2,
+      }),
+    );
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: buildRepositoryApiUrl("adewale", "never-reached"),
+      }),
+    );
+  });
+
   it("can prune repos for owners removed from the tracked team list", async () => {
     await seedProjectRecord({
       owner: "someoneelse",
@@ -908,7 +1075,6 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(rssText).toContain("<category>Pages</category>");
     expect(rssText).toContain("GitHub");
     expect(rssText).toContain("https://demo.example.com");
-    expect(rssText).toContain("https://www.loom.com/share/demo");
     expect(rssText).toContain("Welcome to demo.");
     expect(rssText).not.toContain("deploy.workers.cloudflare.com/button");
     expect(rssText).not.toContain("&lt;div");
@@ -918,6 +1084,42 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(designText).toContain("Cloudflare chips");
     expect(designText).toContain("Workers AI");
     expect(designText).toContain("Sandbox");
+  });
+
+  it("caps feed.json and supports pagination metadata", async () => {
+    await seedProjectRange(26);
+
+    const firstPage = await SELF.fetch("https://example.com/feed.json");
+    const firstPayload = (await firstPage.json()) as {
+      items: Array<Record<string, unknown>>;
+      page: number;
+      totalItems: number;
+      totalPages: number;
+    };
+    const secondPage = await SELF.fetch("https://example.com/feed.json?page=2");
+    const secondPayload = (await secondPage.json()) as {
+      items: Array<Record<string, unknown>>;
+      page: number;
+      totalItems: number;
+      totalPages: number;
+    };
+
+    expect(firstPayload).toEqual(
+      expect.objectContaining({
+        page: 1,
+        totalItems: 26,
+        totalPages: 2,
+      }),
+    );
+    expect(firstPayload.items).toHaveLength(24);
+    expect(secondPayload).toEqual(
+      expect.objectContaining({
+        page: 2,
+        totalItems: 26,
+        totalPages: 2,
+      }),
+    );
+    expect(secondPayload.items).toHaveLength(2);
   });
 
   it("supports repos whose names end in .json", async () => {
@@ -986,6 +1188,51 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
   });
 
+  it("renders the team directory alphabetically with mobile and desktop navigation affordances", async () => {
+    await seedProjectRecord({
+      owner: "craigsdennis",
+      repo: "booth-duty",
+      repoUrl: "https://github.com/craigsdennis/booth-duty",
+      repoCreatedAt: "2026-04-18T07:06:50.000Z",
+      repoCreationOrder: 100,
+    });
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "demoscene",
+      repoUrl: "https://github.com/adewale/demoscene",
+      repoCreatedAt: "2026-04-21T15:48:24.000Z",
+      repoCreationOrder: 200,
+    });
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "edge-dashboard-kit",
+      repoUrl: "https://github.com/adewale/edge-dashboard-kit",
+      repoCreatedAt: "2026-04-20T18:12:00.000Z",
+      repoCreationOrder: 180,
+    });
+
+    const html = (
+      await (await SELF.fetch("https://example.com/")).text()
+    ).replaceAll("<!-- -->", "");
+
+    expect(html).toContain("|||</span><span>Team members</span>");
+    expect(html).not.toContain(
+      '>Directory</p><h2 class="team-directory-title">Team members</h2>',
+    );
+    expect(html).toContain(
+      '<section aria-label="Team members" class="card team-directory-panel">',
+    );
+    expect(html).not.toContain("2 projects");
+    expect(html).not.toContain("team-card-project-count");
+    expect(html).not.toContain("team-card-latest");
+    expect(html.indexOf('data-team-member-login="adewale"')).toBeLessThan(
+      html.indexOf('data-team-member-login="megaconfidence"'),
+    );
+    expect(
+      html.indexOf('data-team-member-login="megaconfidence"'),
+    ).toBeLessThan(html.indexOf('data-team-member-login="craigsdennis"'));
+  });
+
   it("breaks repo created date ties with repo creation order", async () => {
     await seedProjectRecord({
       owner: "acme",
@@ -1044,6 +1291,60 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
       expect.stringContaining('"event":"sync.summary"'),
     );
     consoleLog.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("uses incremental cron for daily runs and reconcile cron for weekly pruning", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "missing-repo",
+      repoUrl: "https://github.com/adewale/missing-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [],
+        }),
+    });
+
+    vi.stubGlobal("fetch", mockFetch as typeof fetch);
+
+    const waitUntil = vi.fn();
+
+    worker.scheduled?.(
+      {
+        cron: "0 12 * * *",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await waitUntil.mock.calls[0][0];
+    expect(await fetchFeedItems()).toHaveLength(1);
+
+    worker.scheduled?.(
+      {
+        cron: "17 3 * * 0",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await waitUntil.mock.calls[1][0];
+    expect(await fetchFeedItems()).toHaveLength(0);
+
     vi.unstubAllGlobals();
   });
 

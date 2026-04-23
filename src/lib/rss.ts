@@ -1,4 +1,5 @@
 import type { ProjectWithProducts } from "../domain";
+import { RSS_ITEM_LIMIT } from "./sync-policy";
 import { extractProjectPresence } from "./project-presence";
 
 function escapeXml(value: string): string {
@@ -88,13 +89,33 @@ function renderRssItem(project: ProjectWithProducts): string {
   ].join("");
 }
 
+export function getRssItems(
+  items: ProjectWithProducts[],
+): ProjectWithProducts[] {
+  return items.slice(0, RSS_ITEM_LIMIT);
+}
+
+export function getRssLastBuildDate(items: ProjectWithProducts[]): string {
+  const lastBuildDate = items.reduce<string | null>((latest, item) => {
+    const candidate = item.lastSeenAt ?? item.firstSeenAt;
+
+    if (!latest || new Date(candidate) > new Date(latest)) {
+      return candidate;
+    }
+
+    return latest;
+  }, null);
+
+  return (lastBuildDate ?? new Date().toISOString()).toString();
+}
+
 export function renderRssFeed(options: {
   items: ProjectWithProducts[];
   origin: string;
 }): string {
-  const { items, origin } = options;
-  const lastBuildDate =
-    items[0]?.lastSeenAt ?? items[0]?.firstSeenAt ?? new Date().toISOString();
+  const origin = options.origin;
+  const items = getRssItems(options.items);
+  const lastBuildDate = getRssLastBuildDate(items);
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',

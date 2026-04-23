@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { extractProjectPresence } from "../../src/lib/project-presence";
 
 describe("extractProjectPresence", () => {
-  it("prefers real live/demo/deploy/video presence over generic docs links", () => {
+  it("prefers real live/demo/deploy presence over generic docs links", () => {
     expect(
       extractProjectPresence({
         homepageUrl: "https://docs.github.com",
@@ -16,7 +16,6 @@ describe("extractProjectPresence", () => {
       }),
     ).toEqual([
       { href: "https://demo.example.com", kind: "live", label: "Live" },
-      { href: "https://www.loom.com/share/123", kind: "video", label: "Video" },
       { href: "https://github.com/acme/demo", kind: "github", label: "GitHub" },
     ]);
   });
@@ -33,7 +32,7 @@ describe("extractProjectPresence", () => {
     ]);
   });
 
-  it("detects video links from bare inline URLs", () => {
+  it("ignores bare inline video URLs for project presence", () => {
     expect(
       extractProjectPresence({
         homepageUrl: null,
@@ -41,11 +40,6 @@ describe("extractProjectPresence", () => {
         repoUrl: "https://github.com/acme/demo",
       }),
     ).toEqual([
-      {
-        href: "https://www.loom.com/share/inline-video",
-        kind: "video",
-        label: "Video",
-      },
       { href: "https://github.com/acme/demo", kind: "github", label: "GitHub" },
     ]);
   });

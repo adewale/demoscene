@@ -217,7 +217,7 @@ These heuristics are best-effort. They indicate what the repo configuration or d
 - README previews are normalized during ingestion so heading-heavy, badge-heavy, and HTML-heavy READMEs read like feed copy instead of raw markup.
 - Product detection is driven by committed heuristics over cached Wrangler configs and `package.json` files, including package-signaled products such as Agents, Sandboxes, Browser Run, Realtime, Stream, Voice, and AI Gateway.
 - The homepage is the product. Project titles link directly to GitHub.
-- Cards do not show a `Live` pill; only non-GitHub supplementary actions such as `Video` remain.
+- Cards do not show supplementary action pills; the card links primarily to GitHub and keeps the rest of the UI focused on the preview.
 
 ## Docs
 
