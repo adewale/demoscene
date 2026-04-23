@@ -32,3 +32,17 @@
 **What happened:** `fast-check` date arbitraries shrank to invalid dates during PBT, which caused false failures unrelated to the production behavior under test.
 **Resolution:** Constrained and filtered test date generators to valid dates before asserting time-based invariants.
 **Rule:** When writing PBT around time in this repo, constrain `fc.date()` to valid bounded ranges and filter out invalid dates.
+
+### 2026-04-23 — Intrinsic layout beats character-count heuristics for the rail
+
+**Context:** Tightening the desktop team rail so it fit the longest team label without wasting width.
+**What happened:** A `ch`-based width heuristic looked reasonable in code review but still produced a rail that was visually too wide and brittle against real browser rendering.
+**Resolution:** Replaced the character-count sizing helper with intrinsic `max-content` sizing plus a small fixed minimum, and kept a Playwright regression that fails when any desktop team row overflows.
+**Rule:** For text-driven UI sizing in this repo, prefer intrinsic browser layout with a browser-level overflow regression over `ch`-based width guesses.
+
+### 2026-04-23 — Align to the real panel border, not decorative corner chrome
+
+**Context:** Matching the top of the desktop rail to the first project card in the main column.
+**What happened:** The little corner square on the card extends above the true panel border, so visual alignment looked wrong when measured against the decoration instead of the card edge.
+**Resolution:** Measured the live DOM boxes and aligned the rail to the first card's actual top border line, not the protruding corner widget or the interior content line.
+**Rule:** When aligning panel edges in this UI, measure against the real border box rather than decorative corner elements.

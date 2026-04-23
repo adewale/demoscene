@@ -740,7 +740,7 @@ const styles = `
     .team-rail {
       display: grid;
       gap: 12px;
-      margin-top: 28px;
+      margin-top: 25px;
       position: sticky;
       top: 24px;
     }
