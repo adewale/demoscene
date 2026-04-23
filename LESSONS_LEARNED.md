@@ -46,3 +46,10 @@
 **What happened:** The little corner square on the card extends above the true panel border, so visual alignment looked wrong when measured against the decoration instead of the card edge.
 **Resolution:** Measured the live DOM boxes and aligned the rail to the first card's actual top border line, not the protruding corner widget or the interior content line.
 **Rule:** When aligning panel edges in this UI, measure against the real border box rather than decorative corner elements.
+
+### 2026-04-23 — Cloudflare cron strings should use named weekdays
+
+**Context:** Deploying the split daily/weekly scheduled sync.
+**What happened:** Cloudflare rejected the weekly cron expression `17 3 * * 0` even though it looked like a standard Sunday schedule.
+**Resolution:** Switched the weekly schedule to `17 3 * * SUN` in both Worker code and Wrangler config, then redeployed.
+**Rule:** In this repo, use named weekdays like `SUN` for Cloudflare weekly cron schedules instead of numeric day-of-week values.

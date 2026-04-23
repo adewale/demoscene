@@ -5,7 +5,7 @@ import { syncRepositories } from "./sync";
 
 const app = createApp();
 const DAILY_INCREMENTAL_CRON = "0 12 * * *";
-const WEEKLY_RECONCILE_CRON = "17 3 * * 0";
+const WEEKLY_RECONCILE_CRON = "17 3 * * SUN";
 
 export { app, syncRepositories };
 

@@ -1331,7 +1331,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
     worker.scheduled?.(
       {
-        cron: "17 3 * * 0",
+        cron: "17 3 * * SUN",
         scheduledTime: Date.now(),
         noRetry: () => {},
       } as ScheduledController,

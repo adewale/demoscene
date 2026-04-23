@@ -16,7 +16,7 @@
     },
   ],
   "triggers": {
-    "crons": ["0 12 * * *", "17 3 * * 0"],
+    "crons": ["0 12 * * *", "17 3 * * SUN"],
   },
   "vars": {
     "APP_NAME": "demoscene",
