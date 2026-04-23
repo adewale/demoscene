@@ -81,6 +81,25 @@ Voice-first event demo with prize flow.
     '2026-04-22T08:15:00.000Z'
   ),
   (
+    'fayazara/edge-observability-and-multi-tenant-feature-flag-workshop',
+    'fayazara',
+    'edge-observability-and-multi-tenant-feature-flag-workshop',
+    'https://github.com/fayazara/edge-observability-and-multi-tenant-feature-flag-workshop',
+    395,
+    '2026-04-18T06:00:00.000Z',
+    'https://edge-observability.example.com',
+    'main',
+    'wrangler.toml',
+    'toml',
+    '# Edge Observability And Multi Tenant Feature Flag Workshop
+
+    Long-name fixture repo for verifying project-title wrapping on realistic feed cards.',
+    'Long-name fixture repo for verifying project-title wrapping on realistic feed cards.',
+    NULL,
+    '2026-04-18T06:00:00.000Z',
+    '2026-04-22T08:12:00.000Z'
+  ),
+  (
     'craigsdennis/remote-mcp-starter',
     'craigsdennis',
     'remote-mcp-starter',
@@ -300,6 +319,9 @@ INSERT INTO project_products (project_slug, product_key, product_label) VALUES
   ('craigsdennis/booth-duty', 'd1', 'D1'),
   ('craigsdennis/booth-duty', 'voice', 'Voice'),
   ('craigsdennis/booth-duty', 'agents', 'Agents'),
+  ('fayazara/edge-observability-and-multi-tenant-feature-flag-workshop', 'workers', 'Workers'),
+  ('fayazara/edge-observability-and-multi-tenant-feature-flag-workshop', 'd1', 'D1'),
+  ('fayazara/edge-observability-and-multi-tenant-feature-flag-workshop', 'analytics-engine', 'Analytics Engine'),
   ('craigsdennis/remote-mcp-starter', 'workers', 'Workers'),
   ('craigsdennis/remote-mcp-starter', 'agents', 'Agents'),
   ('megaconfidence/web2kindle', 'workers', 'Workers'),

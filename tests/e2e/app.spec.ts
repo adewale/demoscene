@@ -39,3 +39,25 @@ test("keeps every desktop team row within the rail width", async ({ page }) => {
 
   expect(overflowingRows).toEqual([]);
 });
+
+test("keeps desktop project names on one line when the card has room", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1600 });
+  await page.goto("/");
+
+  const wrappedTitles = await page.evaluate(() => {
+    return [...document.querySelectorAll(".feed-card-title")]
+      .map((title) => {
+        const style = getComputedStyle(title);
+        return {
+          height: title.getBoundingClientRect().height,
+          lineHeight: parseFloat(style.lineHeight),
+          text: title.textContent?.trim() ?? "",
+        };
+      })
+      .filter((title) => title.height > title.lineHeight + 1);
+  });
+
+  expect(wrappedTitles).toEqual([]);
+});

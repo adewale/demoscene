@@ -584,11 +584,13 @@ const styles = `
   }
 
   .feed-card-title {
-    max-width: 16ch;
+    width: fit-content;
+    max-width: 100%;
     font-size: 1.04rem;
     line-height: 1.25;
     font-weight: 500;
     text-align: left;
+    white-space: nowrap;
   }
 
   .feed-title-link {
