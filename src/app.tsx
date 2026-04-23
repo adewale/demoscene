@@ -116,7 +116,7 @@ export function createApp() {
 
     return c.html(
       renderHtml(
-        <AppShell title="demoscene">
+        <AppShell title="demoscene" tagline="Watch us build.">
           <FeedPage
             page={page}
             projects={projects}

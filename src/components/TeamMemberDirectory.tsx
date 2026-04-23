@@ -35,13 +35,16 @@ function TeamMemberRow({ member }: { member: TeamMemberOverview }) {
 function TeamMemberCards({
   label,
   members,
+  title,
 }: {
   label: string;
   members: TeamMemberOverview[];
+  title?: string;
 }) {
   return (
     <section aria-label={label} className="card team-directory-panel">
       <div className="card-body team-directory-panel-body">
+        {title ? <p className="team-directory-heading">{title}</p> : null}
         <ul className="team-directory-list">
           {members.map((member) => (
             <TeamMemberRow key={member.login} member={member} />
@@ -55,7 +58,11 @@ function TeamMemberCards({
 export function TeamMemberRail({ members }: { members: TeamMemberOverview[] }) {
   return (
     <aside aria-label="Team directory" className="team-rail">
-      <TeamMemberCards label="Team members" members={members} />
+      <TeamMemberCards
+        label="Team members"
+        members={members}
+        title="Cloudflare DevRel"
+      />
     </aside>
   );
 }

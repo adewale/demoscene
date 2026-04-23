@@ -23,6 +23,42 @@ test("renders the feed as a card-oriented newsfeed", async ({ page }) => {
   });
 });
 
+test("renders the homepage tagline as a subdued label", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1200 });
+  await page.goto("/");
+
+  const tagline = page.locator(".site-tagline");
+  await expect(tagline).toHaveText("Watch us build.");
+
+  const computed = await page.evaluate(() => {
+    const tagline = document.querySelector(".site-tagline");
+    const heading = document.querySelector(".team-directory-heading");
+
+    if (
+      !(tagline instanceof HTMLElement) ||
+      !(heading instanceof HTMLElement)
+    ) {
+      throw new Error("Expected homepage tagline and team rail heading");
+    }
+
+    const taglineStyle = getComputedStyle(tagline);
+    const headingStyle = getComputedStyle(heading);
+
+    return {
+      headingFontSize: Number.parseFloat(headingStyle.fontSize),
+      headingLetterSpacing: Number.parseFloat(headingStyle.letterSpacing),
+      taglineFontSize: Number.parseFloat(taglineStyle.fontSize),
+      taglineLetterSpacing: Number.parseFloat(taglineStyle.letterSpacing),
+    };
+  });
+
+  expect(computed.taglineFontSize).toBeCloseTo(computed.headingFontSize, 2);
+  expect(computed.taglineLetterSpacing).toBeCloseTo(
+    computed.headingLetterSpacing,
+    2,
+  );
+});
+
 test("keeps every desktop team row within the rail width", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1200 });
   await page.goto("/");

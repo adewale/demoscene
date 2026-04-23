@@ -65,6 +65,14 @@ const styles = `
     font-size: 0.98rem;
   }
 
+  .site-header .site-tagline {
+    margin-top: 4px;
+    color: var(--subtle);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   .feed-shell {
     display: grid;
     gap: 20px;
@@ -125,6 +133,16 @@ const styles = `
 
   .team-directory-panel-body {
     padding: 0;
+  }
+
+  .team-directory-heading {
+    margin: 0;
+    padding: 10px 10px 9px;
+    border-bottom: 1px solid var(--border);
+    color: var(--subtle);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .team-directory-list {
@@ -773,11 +791,17 @@ const styles = `
 `;
 
 type AppShellProps = PropsWithChildren<{
+  tagline?: string;
   title: string;
   subtitle?: string;
 }>;
 
-export function AppShell({ children, subtitle, title }: AppShellProps) {
+export function AppShell({
+  children,
+  subtitle,
+  tagline,
+  title,
+}: AppShellProps) {
   return (
     <html lang="en">
       <head>
@@ -800,6 +824,7 @@ export function AppShell({ children, subtitle, title }: AppShellProps) {
                 {title}
               </a>
             </h1>
+            {tagline ? <p className="site-tagline">{tagline}</p> : null}
             {subtitle ? <p>{subtitle}</p> : null}
           </header>
           <main>{children}</main>

@@ -1048,6 +1048,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
       new Date("2026-04-20T12:00:00.000Z"),
     );
 
+    const home = await SELF.fetch("https://example.com/");
     const page = await SELF.fetch("https://example.com/projects/acme/demo");
     const robots = await SELF.fetch("https://example.com/robots.txt");
     const sitemap = await SELF.fetch("https://example.com/sitemap.xml");
@@ -1056,9 +1057,14 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     const rssText = await rss.text();
     const design = await SELF.fetch("https://example.com/design");
     const designText = await design.text();
+    const homeText = await home.text();
 
+    expect(home.status).toBe(200);
+    expect(homeText).toContain('<p class="site-tagline">Watch us build.</p>');
     expect(page.status).toBe(404);
     expect(design.status).toBe(200);
+    expect(designText).not.toContain("Watch us build.");
+    expect(designText).not.toContain('class="site-tagline"');
     expect(await robots.text()).toContain("Sitemap: /sitemap.xml");
     expect(sitemapText).toContain("/rss.xml");
     expect(sitemapText).not.toContain("/projects/acme/demo");
@@ -1068,7 +1074,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(rssText).toContain(
       `<lastBuildDate>${new Date("2026-04-20T12:00:00.000Z").toUTCString()}</lastBuildDate>`,
     );
-    expect(rssText).toContain("<title>acme/demo</title>");
+    expect(rssText).toContain("<title>Acme started building Demo</title>");
     expect(rssText).toContain("<link>https://github.com/acme/demo</link>");
     expect(rssText).toContain("<dc:creator>acme</dc:creator>");
     expect(rssText).toContain("<category>Workers</category>");
@@ -1076,6 +1082,8 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(rssText).toContain("GitHub");
     expect(rssText).toContain("https://demo.example.com");
     expect(rssText).toContain("Welcome to demo.");
+    expect(rssText).toContain("Built with Workers and Pages.");
+    expect(rssText).not.toContain("Cloudflare:");
     expect(rssText).not.toContain("deploy.workers.cloudflare.com/button");
     expect(rssText).not.toContain("&lt;div");
     expect(rssText).not.toContain("[](");
@@ -1221,6 +1229,9 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
     expect(html).toContain(
       '<section aria-label="Team members" class="card team-directory-panel">',
+    );
+    expect(html).toContain(
+      '<p class="team-directory-heading">Cloudflare DevRel</p>',
     );
     expect(html).not.toContain("2 projects");
     expect(html).not.toContain("team-card-project-count");

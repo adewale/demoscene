@@ -60,3 +60,10 @@
 **What happened:** The RSS item title, description HTML, and `content:encoded` were all rendered almost verbatim, so repeated repo-name headings, generic README section headings, and large preview images made entries look noisy.
 **Resolution:** Kept the repo title in RSS `<title>` only, removed preview images from RSS bodies, and filtered generic heading-only paragraphs before truncating the description.
 **Rule:** For RSS in this repo, treat description HTML like shipped UI: de-duplicate against the item title and keep the body text-first.
+
+### 2026-04-23 — Verify microtypography in the browser, not just from CSS declarations
+
+**Context:** Tuning the homepage tagline to be quieter and to match the `Cloudflare DevRel` rail heading.
+**What happened:** The declared `.site-tagline` font size looked smaller in code, but the actual rendered size stayed larger because the broader `.site-header p` rule had higher specificity and was overriding part of the intended styling.
+**Resolution:** Measured computed styles in Playwright, raised the tagline selector specificity, and added a browser-level regression that compares the tagline's rendered font size and letter spacing with the rail heading.
+**Rule:** When exact typography matters in this UI, verify computed styles in a browser test and watch for broad element selectors overriding component-specific classes.

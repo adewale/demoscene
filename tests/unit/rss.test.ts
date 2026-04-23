@@ -27,6 +27,23 @@ const repoWordArbitrary = fc.constantFrom(
   "stack",
 );
 
+const ownerWordArbitrary = fc.constantFrom(
+  "builder",
+  "edge",
+  "forge",
+  "maker",
+  "signal",
+  "studio",
+);
+
+function humanizeSlugForExpectation(value: string): string {
+  return value
+    .split(/[-_.]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ");
+}
+
 function buildProject(
   index: number,
   lastSeenAt: string,
@@ -118,12 +135,18 @@ describe("RSS helpers", () => {
     expect(xml).toContain("<lastBuildDate>");
   });
 
-  it("omits duplicate repo headings and preview images from RSS bodies", () => {
+  it("renders a story title and body for syndicated readers", () => {
     const xml = renderRssFeed({
       items: [
         buildProject(1, "2026-04-23T12:00:00.000Z", {
           owner: "acme",
           previewImageUrl: "https://images.example.com/preview.png",
+          products: [
+            { key: "workers", label: "Workers" },
+            { key: "d1", label: "D1" },
+          ],
+          readmeMarkdown:
+            "# Agentic Inbox\n\nA clearer summary for feed readers.",
           readmePreviewMarkdown:
             "Agentic Inbox\n\nA clearer summary for feed readers.",
           repo: "agentic-inbox",
@@ -134,39 +157,137 @@ describe("RSS helpers", () => {
       origin: "https://example.com",
     });
 
-    expect(xml).toContain("<title>acme/agentic-inbox</title>");
+    expect(xml).toContain("<title>Acme started building Agentic Inbox</title>");
     expect(xml).toContain("<p>A clearer summary for feed readers.</p>");
+    expect(xml).toContain("<p>Built with Workers and D1.</p>");
     expect(xml).not.toContain("<p>Agentic Inbox</p>");
     expect(xml).not.toContain("<p><strong>acme/agentic-inbox</strong></p>");
+    expect(xml).not.toContain("Cloudflare:");
     expect(xml).not.toContain("<img src=");
   });
 
-  it("renders Cloudflare categories and live links when they add reader value", () => {
+  it("uses a README heading as the project name in the story title", () => {
     const xml = renderRssFeed({
       items: [
         buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "craigsdennis",
           homepageUrl: "https://demo.example.com",
           products: [
             { key: "workers", label: "Workers" },
             { key: "d1", label: "D1" },
           ],
-          readmeMarkdown: "[Live site](https://demo.example.com)",
-          readmePreviewMarkdown: "Useful preview copy.",
+          readmeMarkdown:
+            "# Booth Duty\n\nVoice-first event demo with prize flow.\n\n[Live site](https://demo.example.com)",
+          readmePreviewMarkdown:
+            "Booth Duty\n\nVoice-first event demo with prize flow.",
+          repo: "booth-duty",
+          repoUrl: "https://github.com/craigsdennis/booth-duty",
+          slug: "craigsdennis/booth-duty",
         }),
       ],
       origin: "https://example.com",
     });
 
-    expect(xml).toContain("<p><strong>Cloudflare:</strong> Workers, D1</p>");
+    expect(xml).toContain("<title>Craig started building Booth Duty</title>");
+    expect(xml).toContain("<p>Voice-first event demo with prize flow.</p>");
+    expect(xml).toContain("<p>Built with Workers and D1.</p>");
     expect(xml).toContain("<category>Workers</category>");
     expect(xml).toContain("<category>D1</category>");
     expect(xml).toContain('<a href="https://demo.example.com">Live</a>');
+  });
+
+  it("uses an HTML heading as the project name when README markup already has one", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "acme",
+          readmeMarkdown:
+            "<h1>Edge Mail</h1>\n<p>Email triage for the edge.</p>",
+          readmePreviewMarkdown: "Email triage for the edge.",
+          repo: "edge-mail",
+          repoUrl: "https://github.com/acme/edge-mail",
+          slug: "acme/edge-mail",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain("<title>Acme started building Edge Mail</title>");
+  });
+
+  it("uses a setext heading as the project name when present", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "acme",
+          readmeMarkdown:
+            "Remote Edge Starter\n===================\n\nReference worker for remote edge endpoints.",
+          readmePreviewMarkdown: "Reference worker for remote edge endpoints.",
+          repo: "remote-edge-starter",
+          repoUrl: "https://github.com/acme/remote-edge-starter",
+          slug: "acme/remote-edge-starter",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain(
+      "<title>Acme started building Remote Edge Starter</title>",
+    );
+  });
+
+  it("prefers configured team-member names over login-shaped owner slugs", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "adewale",
+          readmeMarkdown:
+            "# Demoscene\n\nCard-oriented feed for Cloudflare projects.",
+          readmePreviewMarkdown: "Card-oriented feed for Cloudflare projects.",
+          repo: "demoscene",
+          repoUrl: "https://github.com/adewale/demoscene",
+          slug: "adewale/demoscene",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain("<title>Ade started building Demoscene</title>");
+    expect(xml).not.toContain(
+      "<title>Adewale started building Demoscene</title>",
+    );
+  });
+
+  it("humanizes a slug-like README heading before using it in the story title", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "adewale",
+          readmeMarkdown:
+            "# demoscene\n\nCard-oriented feed for Cloudflare projects.",
+          readmePreviewMarkdown:
+            "demoscene\n\nCard-oriented feed for Cloudflare projects.",
+          repo: "demoscene",
+          repoUrl: "https://github.com/adewale/demoscene",
+          slug: "adewale/demoscene",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain("<title>Ade started building Demoscene</title>");
+    expect(xml).not.toContain("<title>Ade started building demoscene</title>");
   });
 
   it("drops low-signal heading-only paragraphs from RSS bodies", () => {
     const xml = renderRssFeed({
       items: [
         buildProject(1, "2026-04-23T12:00:00.000Z", {
+          products: [
+            { key: "workers", label: "Workers" },
+            { key: "d1", label: "D1" },
+            { key: "queues", label: "Queues" },
+          ],
           readmePreviewMarkdown:
             "How it works\n\nA sharper summary for feed readers.\n\nStack\n\nWorkers, D1, and Queues.",
         }),
@@ -175,9 +296,76 @@ describe("RSS helpers", () => {
     });
 
     expect(xml).toContain("<p>A sharper summary for feed readers.</p>");
-    expect(xml).toContain("<p>Workers, D1, and Queues.</p>");
+    expect(xml).toContain("<p>Built with Workers, D1, and Queues.</p>");
     expect(xml).not.toContain("<p>How it works</p>");
     expect(xml).not.toContain("<p>Stack</p>");
+  });
+
+  it("omits the built-with sentence when there are no detected products", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "acme",
+          readmeMarkdown: "# Quiet Project\n\nA small edge utility.",
+          readmePreviewMarkdown: "A small edge utility.",
+          repo: "quiet-project",
+          repoUrl: "https://github.com/acme/quiet-project",
+          slug: "acme/quiet-project",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).not.toContain("Built with");
+  });
+
+  it("renders a natural built-with sentence for a single product", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "acme",
+          products: [{ key: "workers", label: "Workers" }],
+          readmeMarkdown: "# Edge Ping\n\nHealth checks from the edge.",
+          readmePreviewMarkdown: "Health checks from the edge.",
+          repo: "edge-ping",
+          repoUrl: "https://github.com/acme/edge-ping",
+          slug: "acme/edge-ping",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain("<p>Built with Workers.</p>");
+  });
+
+  it("property: falls back to a humanized owner and repo in story titles", () => {
+    fc.assert(
+      fc.property(
+        fc.array(ownerWordArbitrary, { minLength: 1, maxLength: 3 }),
+        fc.array(repoWordArbitrary, { minLength: 1, maxLength: 4 }),
+        (ownerParts, repoParts) => {
+          const owner = ownerParts.join("-");
+          const repo = repoParts.join("-");
+          const xml = renderRssFeed({
+            items: [
+              buildProject(1, "2026-04-23T12:00:00.000Z", {
+                owner,
+                readmeMarkdown: "A practical demo for the edge.",
+                readmePreviewMarkdown: "A practical demo for the edge.",
+                repo,
+                repoUrl: `https://github.com/${owner}/${repo}`,
+                slug: `${owner}/${repo}`,
+              }),
+            ],
+            origin: "https://example.com",
+          });
+
+          expect(xml).toContain(
+            `<title>${humanizeSlugForExpectation(owner)} started building ${humanizeSlugForExpectation(repo)}</title>`,
+          );
+        },
+      ),
+    );
   });
 
   it("property: drops a leading repo-name paragraph even when separators differ", () => {

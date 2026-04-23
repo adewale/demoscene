@@ -1,8 +1,12 @@
+import { TEAM_MEMBERS } from "../config/repositories";
 import type { ProjectWithProducts } from "../domain";
 import { extractProjectPresence } from "./project-presence";
 import { RSS_ITEM_LIMIT } from "./sync-policy";
 
-const RSS_DESCRIPTION_PARAGRAPH_LIMIT = 3;
+const RSS_SUMMARY_PARAGRAPH_LIMIT = 1;
+const TEAM_MEMBER_NAME_BY_LOGIN = new Map(
+  TEAM_MEMBERS.map((member) => [member.login, member.name]),
+);
 
 function escapeXml(value: string): string {
   return value
@@ -31,6 +35,91 @@ const LOW_SIGNAL_RSS_HEADINGS = new Set(
     "what you ll build",
   ].map(normalizeComparableText),
 );
+
+function humanizeSlug(value: string): string {
+  return value
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ");
+}
+
+function extractReadmeHeading(markdown: string): string | null {
+  const htmlHeadingMatch = markdown.match(/<h[1-6]\b[^>]*>([^]*?)<\/h[1-6]>/i);
+
+  if (htmlHeadingMatch?.[1]) {
+    const heading = stripMarkdown(htmlHeadingMatch[1]).trim();
+
+    if (heading) {
+      return heading;
+    }
+  }
+
+  const atxHeadingMatch = markdown.match(/^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/m);
+
+  if (atxHeadingMatch?.[1]) {
+    return stripMarkdown(atxHeadingMatch[1]).trim() || null;
+  }
+
+  const setextHeadingMatch = markdown.match(/^([^\n]+)\n([=-])\2+\s*$/m);
+
+  if (setextHeadingMatch?.[1]) {
+    return stripMarkdown(setextHeadingMatch[1]).trim() || null;
+  }
+
+  return null;
+}
+
+function joinNaturalList(values: string[]): string {
+  if (values.length === 0) {
+    return "";
+  }
+
+  if (values.length === 1) {
+    return values[0] ?? "";
+  }
+
+  if (values.length === 2) {
+    return `${values[0]} and ${values[1]}`;
+  }
+
+  return `${values.slice(0, -1).join(", ")}, and ${values.at(-1)}`;
+}
+
+function getOwnerDisplayName(project: ProjectWithProducts): string {
+  return (
+    TEAM_MEMBER_NAME_BY_LOGIN.get(project.owner) ?? humanizeSlug(project.owner)
+  );
+}
+
+function getProjectDisplayName(project: ProjectWithProducts): string {
+  const repoDisplayName = humanizeSlug(project.repo);
+  const heading =
+    extractReadmeHeading(project.readmeMarkdown) ??
+    extractReadmeHeading(project.readmePreviewMarkdown);
+
+  if (!heading) {
+    return repoDisplayName;
+  }
+
+  if (
+    normalizeComparableText(heading) === normalizeComparableText(project.repo)
+  ) {
+    return repoDisplayName;
+  }
+
+  return heading;
+}
+
+function renderBuiltWithSentence(project: ProjectWithProducts): string | null {
+  const labels = project.products.map((product) => product.label);
+
+  if (labels.length === 0) {
+    return null;
+  }
+
+  return `Built with ${joinNaturalList(labels)}.`;
+}
 
 function stripMarkdown(markdown: string): string {
   return markdown
@@ -61,12 +150,13 @@ function isDuplicateTitleParagraph(
   project: ProjectWithProducts,
 ): boolean {
   const normalizedParagraph = normalizeComparableText(paragraph);
+  const projectDisplayName = getProjectDisplayName(project);
 
   if (!normalizedParagraph) {
     return false;
   }
 
-  return [project.repo, project.slug, `${project.owner}/${project.repo}`].some(
+  return [projectDisplayName, project.repo, project.slug].some(
     (candidate) => normalizeComparableText(candidate) === normalizedParagraph,
   );
 }
@@ -81,16 +171,16 @@ function renderRssDescription(project: ProjectWithProducts): string {
     readmeMarkdown: project.readmeMarkdown,
     repoUrl: project.repoUrl,
   }).filter((item) => item.kind !== "github");
-  const paragraphs = paragraphize(stripMarkdown(project.readmePreviewMarkdown))
+  const summaryParagraphs = paragraphize(
+    stripMarkdown(project.readmePreviewMarkdown),
+  )
     .filter(
       (paragraph, index) =>
         !(index === 0 && isDuplicateTitleParagraph(paragraph, project)),
     )
     .filter((paragraph) => !isLowSignalHeadingParagraph(paragraph))
-    .slice(0, RSS_DESCRIPTION_PARAGRAPH_LIMIT);
-  const productLabels = project.products
-    .map((product) => product.label)
-    .join(", ");
+    .slice(0, RSS_SUMMARY_PARAGRAPH_LIMIT);
+  const builtWithSentence = renderBuiltWithSentence(project);
   const actionLinks = [
     `<a href="${escapeXml(project.repoUrl)}">GitHub</a>`,
     ...presence.map(
@@ -100,10 +190,8 @@ function renderRssDescription(project: ProjectWithProducts): string {
   ].join(" &middot; ");
 
   return [
-    productLabels
-      ? `<p><strong>Cloudflare:</strong> ${escapeXml(productLabels)}</p>`
-      : null,
-    ...paragraphs.map((paragraph) => `<p>${escapeXml(paragraph)}</p>`),
+    ...summaryParagraphs.map((paragraph) => `<p>${escapeXml(paragraph)}</p>`),
+    builtWithSentence ? `<p>${escapeXml(builtWithSentence)}</p>` : null,
     `<p>${actionLinks}</p>`,
   ]
     .filter(Boolean)
@@ -113,10 +201,12 @@ function renderRssDescription(project: ProjectWithProducts): string {
 function renderRssItem(project: ProjectWithProducts): string {
   const description = renderRssDescription(project);
   const publishedAt = project.repoCreatedAt;
+  const ownerDisplayName = getOwnerDisplayName(project);
+  const projectDisplayName = getProjectDisplayName(project);
 
   return [
     "<item>",
-    `<title>${escapeXml(`${project.owner}/${project.repo}`)}</title>`,
+    `<title>${escapeXml(`${ownerDisplayName} started building ${projectDisplayName}`)}</title>`,
     `<link>${escapeXml(project.repoUrl)}</link>`,
     `<guid isPermaLink="true">${escapeXml(project.repoUrl)}</guid>`,
     `<pubDate>${new Date(publishedAt).toUTCString()}</pubDate>`,
