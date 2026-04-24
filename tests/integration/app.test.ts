@@ -801,6 +801,75 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(await fetchFeedItems()).toHaveLength(1);
   });
 
+  it("incremental sync removes tracked repos missing from the listing when the repo now 404s", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "missing-repo",
+      repoUrl: "https://github.com/adewale/missing-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [],
+        }),
+      [buildRepositoryApiUrl("adewale", "missing-repo")]: {
+        body: "missing",
+        status: 404,
+      },
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      mode: "incremental",
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    expect(summary.reposRemoved).toBe(1);
+    expect(await fetchFeedItems()).toHaveLength(0);
+  });
+
+  it("incremental sync keeps tracked repos that are missing from the listing but still resolve", async () => {
+    await seedProjectRecord({
+      owner: "adewale",
+      repo: "known-repo",
+      repoUrl: "https://github.com/adewale/known-repo",
+    });
+
+    const mockFetch = createMockFetch({
+      [buildUserRepositoriesApiUrl("adewale", 1)]:
+        buildUserRepositoriesApiResponse({
+          login: "adewale",
+          repositories: [],
+        }),
+      [buildRepositoryApiUrl("adewale", "known-repo")]:
+        buildRepositoryApiResponse({
+          owner: "adewale",
+          repo: "known-repo",
+        }),
+      "https://github.com/adewale/known-repo": {
+        body: buildRepositoryHomepageHtml("https://known.example.com"),
+      },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/wrangler.toml":
+        {
+          body: 'name = "known-repo"',
+        },
+      "https://raw.githubusercontent.com/adewale/known-repo/main/README.md": {
+        body: "# Known Repo",
+      },
+    });
+
+    const summary = await syncRepositories(testEnv, {
+      fetch: mockFetch as typeof fetch,
+      mode: "incremental",
+      teamMembers: [{ login: "adewale", name: "Ade" }],
+    });
+
+    expect(summary.reposRemoved).toBe(0);
+    expect(await fetchFeedItems()).toHaveLength(1);
+  });
+
   it("continues syncing later repos when one configured repo is invalid", async () => {
     await syncRepositories(testEnv, {
       fetch: createMockFetch(buildDemoRepositoryResponses()) as typeof fetch,
@@ -1305,7 +1374,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     vi.unstubAllGlobals();
   });
 
-  it("uses incremental cron for daily runs and reconcile cron for weekly pruning", async () => {
+  it("uses daily incremental verification for missing repos before weekly reconcile pruning", async () => {
     await seedProjectRecord({
       owner: "adewale",
       repo: "missing-repo",
@@ -1318,6 +1387,10 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
           login: "adewale",
           repositories: [],
         }),
+      [buildRepositoryApiUrl("adewale", "missing-repo")]: {
+        body: "missing",
+        status: 404,
+      },
     });
 
     vi.stubGlobal("fetch", mockFetch as typeof fetch);
@@ -1338,7 +1411,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
 
     await waitUntil.mock.calls[0][0];
-    expect(await fetchFeedItems()).toHaveLength(1);
+    expect(await fetchFeedItems()).toHaveLength(0);
 
     worker.scheduled?.(
       {

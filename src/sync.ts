@@ -33,6 +33,7 @@ import {
 } from "./lib/github/fetch";
 import { extractRepositoryPageMetadata } from "./lib/github/html";
 import { deriveMarkdownPreview } from "./lib/markdown/preview";
+import { resolveMissingRepositories } from "./lib/missing-repositories";
 import {
   getRepositoryScanNextCheckAt,
   shouldProcessDiscoveredRepository,
@@ -79,7 +80,7 @@ type DiscoveryResult = {
   accountsSucceeded: number;
   missingProjectSlugs: string[];
   rateLimitedUntil: string | null;
-  repositoriesToProcess: GitHubRepositoryMetadata[];
+  repositoriesToProcess: SyncTarget[];
   reposDiscovered: number;
 };
 
@@ -289,7 +290,7 @@ async function resolveTrackedRepositories(
   let accountsScanned = 0;
   let accountsSucceeded = 0;
   const discoveredRepositories = new Map<string, GitHubRepositoryMetadata>();
-  const repositoriesToProcess = new Map<string, GitHubRepositoryMetadata>();
+  const repositoriesToProcess = new Map<string, SyncTarget>();
   const missingProjectSlugs = new Set<string>();
   const repositoryScanStateByUrl = new Map<string, RepositoryScanStateRecord>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
@@ -349,11 +350,19 @@ async function resolveTrackedRepositories(
         }
       }
 
-      if (mode === "reconcile") {
-        for (const [repositoryUrl, existingProject] of knownProjects) {
-          if (!discoveredUrls.has(repositoryUrl)) {
-            missingProjectSlugs.add(existingProject.slug);
-          }
+      const missingRepositories = resolveMissingRepositories({
+        discoveredUrls,
+        knownProjects,
+        mode,
+      });
+
+      for (const slug of missingRepositories.missingProjectSlugs) {
+        missingProjectSlugs.add(slug);
+      }
+
+      for (const repository of missingRepositories.repositoriesToVerify) {
+        if (!repositoriesToProcess.has(repository.url)) {
+          repositoriesToProcess.set(repository.url, repository);
         }
       }
     } catch (error) {

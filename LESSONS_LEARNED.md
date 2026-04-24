@@ -67,3 +67,10 @@
 **What happened:** The declared `.site-tagline` font size looked smaller in code, but the actual rendered size stayed larger because the broader `.site-header p` rule had higher specificity and was overriding part of the intended styling.
 **Resolution:** Measured computed styles in Playwright, raised the tagline selector specificity, and added a browser-level regression that compares the tagline's rendered font size and letter spacing with the rail heading.
 **Rule:** When exact typography matters in this UI, verify computed styles in a browser test and watch for broad element selectors overriding component-specific classes.
+
+### 2026-04-24 — Deleted repos must fall out of the feed before weekly reconcile
+
+**Context:** Investigating why `zeke/colorize` still appeared in a downstream aggregator even though the GitHub repo now returns 404.
+**What happened:** Planet-style aggregators can keep items they already ingested even after the source feed drops them, so waiting for the weekly reconcile job to prune a repo that vanished from a team member's listing leaves a long enough window for stale items to become permanent downstream.
+**Resolution:** Kept weekly reconcile for broad pruning, but made daily incremental sync explicitly re-check tracked repos that disappeared from the GitHub listing and remove them immediately if their repo API now returns 404.
+**Rule:** In this repo, treat "missing from the GitHub listing" as a repo to verify immediately during incremental sync, not something to defer entirely to the weekly reconcile.
