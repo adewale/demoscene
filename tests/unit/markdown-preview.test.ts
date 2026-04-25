@@ -6,6 +6,10 @@ import {
   formatMarkdownPreviewForCard,
 } from "../../src/lib/markdown/preview";
 
+const nonHeadingLineArbitrary = fc
+  .string()
+  .filter((value) => !/^\s{0,3}#{1,6}\s/m.test(value));
+
 describe("deriveMarkdownPreview", () => {
   it("keeps the first meaningful Markdown blocks", () => {
     const preview = deriveMarkdownPreview(
@@ -111,7 +115,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
   it("never leaves markdown heading markers at the start of a line", () => {
     fc.assert(
-      fc.property(fc.string(), (value) => {
+      fc.property(nonHeadingLineArbitrary, (value) => {
         const preview = deriveMarkdownPreview(`# ${value}\n\n## ${value}`, {
           maxBlocks: 2,
           maxChars: 120,

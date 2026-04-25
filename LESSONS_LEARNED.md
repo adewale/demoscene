@@ -74,3 +74,10 @@
 **What happened:** Planet-style aggregators can keep items they already ingested even after the source feed drops them, so waiting for the weekly reconcile job to prune a repo that vanished from a team member's listing leaves a long enough window for stale items to become permanent downstream.
 **Resolution:** Kept weekly reconcile for broad pruning, but made daily incremental sync explicitly re-check tracked repos that disappeared from the GitHub listing and remove them immediately if their repo API now returns 404.
 **Rule:** In this repo, treat "missing from the GitHub listing" as a repo to verify immediately during incremental sync, not something to defer entirely to the weekly reconcile.
+
+### 2026-04-25 — README title lines can leak into RSS summaries
+
+**Context:** Continuing the RSS cleanup after switching item titles to story-style phrasing.
+**What happened:** Some README previews flattened a repeated project heading and its summary into a single paragraph, so downstream readers still rendered `Agentic Inbox`-style title duplication even though standalone heading paragraphs were already filtered out.
+**Resolution:** Strip a duplicate project-title line from the start of the first RSS summary paragraph before paragraph-level filtering, and keep a unit regression for the same-paragraph case.
+**Rule:** For RSS summaries in this repo, clean duplicate project-title lines inside the first paragraph, not just whole heading paragraphs.

@@ -301,6 +301,35 @@ describe("RSS helpers", () => {
     expect(xml).not.toContain("<p>Stack</p>");
   });
 
+  it("drops a repeated title line when the summary shares the same paragraph", () => {
+    const xml = renderRssFeed({
+      items: [
+        buildProject(1, "2026-04-23T12:00:00.000Z", {
+          owner: "harshil1712",
+          products: [
+            { key: "workers", label: "Workers" },
+            { key: "agents", label: "Agents" },
+          ],
+          readmeMarkdown:
+            "# Agentic Inbox\n\nA self-hosted email client with an AI agent, running entirely on Cloudflare Workers.",
+          readmePreviewMarkdown:
+            "Agentic Inbox\n  A self-hosted email client with an AI agent, running entirely on Cloudflare Workers.",
+          repo: "agentic-inbox",
+          repoUrl: "https://github.com/harshil1712/agentic-inbox",
+          slug: "harshil1712/agentic-inbox",
+        }),
+      ],
+      origin: "https://example.com",
+    });
+
+    expect(xml).toContain(
+      "<p>A self-hosted email client with an AI agent, running entirely on Cloudflare Workers.</p>",
+    );
+    expect(xml).not.toContain(
+      "<p>Agentic Inbox A self-hosted email client with an AI agent, running entirely on Cloudflare Workers.</p>",
+    );
+  });
+
   it("omits the built-with sentence when there are no detected products", () => {
     const xml = renderRssFeed({
       items: [

@@ -165,6 +165,28 @@ function isLowSignalHeadingParagraph(paragraph: string): boolean {
   return LOW_SIGNAL_RSS_HEADINGS.has(normalizeComparableText(paragraph));
 }
 
+function stripLeadingTitleLine(
+  paragraph: string,
+  project: ProjectWithProducts,
+): string {
+  const lines = paragraph
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    return paragraph;
+  }
+
+  const [firstLine, ...rest] = lines;
+
+  if (!firstLine || !isDuplicateTitleParagraph(firstLine, project)) {
+    return paragraph;
+  }
+
+  return rest.join(" ");
+}
+
 function renderRssDescription(project: ProjectWithProducts): string {
   const presence = extractProjectPresence({
     homepageUrl: project.homepageUrl,
@@ -174,6 +196,10 @@ function renderRssDescription(project: ProjectWithProducts): string {
   const summaryParagraphs = paragraphize(
     stripMarkdown(project.readmePreviewMarkdown),
   )
+    .map((paragraph, index) =>
+      index === 0 ? stripLeadingTitleLine(paragraph, project) : paragraph,
+    )
+    .filter(Boolean)
     .filter(
       (paragraph, index) =>
         !(index === 0 && isDuplicateTitleParagraph(paragraph, project)),
