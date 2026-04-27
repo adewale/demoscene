@@ -221,7 +221,8 @@ async function fetchCachedGitHubApiPayload(options: {
   const cachedResponse = options.cache
     ? await options.cache.get(options.url)
     : null;
-  const response = await options.fetchImpl(
+  const fetchImpl = options.fetchImpl;
+  const response = await fetchImpl(
     new Request(options.url, {
       headers: applyConditionalRequestHeaders(
         createGitHubApiHeaders(options.token),

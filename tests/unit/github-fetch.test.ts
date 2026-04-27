@@ -164,6 +164,44 @@ describe("discoverRepositoriesForTeamMember", () => {
     ).resolves.toMatchObject([{ repo: "cached-demo" }]);
   });
 
+  it("does not call a provided fetch implementation as an object method", async () => {
+    const cache = createInMemoryGitHubApiCache();
+
+    const fetchWithThisGuard = vi.fn(function (this: unknown) {
+      if (this !== undefined) {
+        throw new TypeError("fetch called with wrong this");
+      }
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify([
+            {
+              created_at: "2026-04-27T12:00:00.000Z",
+              default_branch: "main",
+              html_url: "https://github.com/adewale/this-guard-demo",
+              id: 99,
+              name: "this-guard-demo",
+              owner: { login: "adewale" },
+            },
+          ]),
+          {
+            headers: { "content-type": "application/json" },
+          },
+        ),
+      );
+    });
+
+    await expect(
+      discoverRepositoriesForTeamMember(
+        fetchWithThisGuard as unknown as typeof fetch,
+        { login: "adewale", name: "Ade" },
+        undefined,
+        Number.MAX_SAFE_INTEGER,
+        cache,
+      ),
+    ).resolves.toMatchObject([{ repo: "this-guard-demo" }]);
+  });
+
   it("fails loudly when an explicit page cap is exceeded before discovery completes", async () => {
     await expect(
       discoverRepositoriesForTeamMember(
