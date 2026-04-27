@@ -8,6 +8,7 @@ import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
 import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creation_order.sql?raw";
 import MIGRATION_REPO_CREATED_AT_SQL from "../../migrations/0003_repo_created_at.sql?raw";
 import MIGRATION_REPOSITORY_SCAN_STATE_SQL from "../../migrations/0004_repository_scan_state.sql?raw";
+import MIGRATION_SYNC_RUNS_SQL from "../../migrations/0005_sync_runs.sql?raw";
 
 type MockResponse = {
   body: string;
@@ -259,16 +260,34 @@ function createMockFetch(responses: Record<string, MockResponse>) {
 }
 
 async function resetDatabase() {
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_runs").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS repository_scan_state").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS project_products").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS projects").run();
 
-  for (const statement of `${MIGRATION_SQL};${MIGRATION_REPO_CREATION_ORDER_SQL};${MIGRATION_REPO_CREATED_AT_SQL};${MIGRATION_REPOSITORY_SCAN_STATE_SQL}`
+  for (const statement of `${MIGRATION_SQL};${MIGRATION_REPO_CREATION_ORDER_SQL};${MIGRATION_REPO_CREATED_AT_SQL};${MIGRATION_REPOSITORY_SCAN_STATE_SQL};${MIGRATION_SYNC_RUNS_SQL}`
     .split(";")
     .map((value: string) => value.trim())
     .filter(Boolean)) {
     await testEnv.DB.prepare(statement).run();
   }
+}
+
+async function fetchLatestSyncRun() {
+  return (await testEnv.DB.prepare(
+    `SELECT cron, error_message, finished_at, mode, started_at, status, summary_json
+     FROM sync_runs
+     ORDER BY id DESC
+     LIMIT 1`,
+  ).first()) as {
+    cron: string;
+    error_message: string | null;
+    finished_at: string;
+    mode: string;
+    started_at: string;
+    status: string;
+    summary_json: string | null;
+  } | null;
 }
 
 describe("Worker app", () => {
@@ -1374,6 +1393,88 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     vi.unstubAllGlobals();
   });
 
+  it("persists successful scheduled sync runs", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch(
+        buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
+      ) as typeof fetch,
+    );
+
+    const waitUntil = vi.fn();
+
+    worker.scheduled?.(
+      {
+        cron: "0 12 * * *",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await waitUntil.mock.calls[0][0];
+
+    const syncRun = await fetchLatestSyncRun();
+
+    expect(syncRun).toEqual(
+      expect.objectContaining({
+        cron: "0 12 * * *",
+        error_message: null,
+        mode: "incremental",
+        status: "succeeded",
+      }),
+    );
+    expect(syncRun?.finished_at).toBeTruthy();
+    expect(syncRun?.started_at).toBeTruthy();
+    expect(JSON.parse(syncRun?.summary_json ?? "{}")).toEqual(
+      expect.objectContaining({ accountsScanned: expect.any(Number) }),
+    );
+
+    vi.unstubAllGlobals();
+  });
+
+  it("persists failed scheduled sync runs with the captured error", async () => {
+    await testEnv.DB.prepare("DROP TABLE repository_scan_state").run();
+    vi.stubGlobal("fetch", createMockFetch({}) as typeof fetch);
+
+    const waitUntil = vi.fn();
+
+    worker.scheduled?.(
+      {
+        cron: "0 12 * * *",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await expect(waitUntil.mock.calls[0][0]).rejects.toThrow(
+      /repository_scan_state/i,
+    );
+
+    const syncRun = await fetchLatestSyncRun();
+
+    expect(syncRun).toEqual(
+      expect.objectContaining({
+        cron: "0 12 * * *",
+        mode: "incremental",
+        status: "failed",
+      }),
+    );
+    expect(syncRun?.summary_json).toBeNull();
+    expect(syncRun?.error_message).toMatch(/repository_scan_state/i);
+
+    vi.unstubAllGlobals();
+  });
+
   it("uses daily incremental verification for missing repos before weekly reconcile pruning", async () => {
     await seedProjectRecord({
       owner: "adewale",
@@ -1513,6 +1614,47 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
       expect.objectContaining({
         accountsScanned: expect.any(Number),
         reposDiscovered: expect.any(Number),
+      }),
+    );
+
+    vi.unstubAllGlobals();
+  });
+
+  it("can run the scheduled sync path through the local debug route", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createMockFetch(
+        buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
+      ) as typeof fetch,
+    );
+    const waitUntil = vi.fn();
+
+    const response = await app.fetch(
+      new Request("http://127.0.0.1/debug/sync?scheduled=true&cron=0+12+*+*+*"),
+      { ...testEnv, ENABLE_DEBUG_ROUTES: "false" },
+      {
+        waitUntil,
+        passThroughOnException: () => undefined,
+      } as unknown as ExecutionContext,
+    );
+
+    expect(waitUntil).toHaveBeenCalledTimes(1);
+    await waitUntil.mock.calls[0][0];
+
+    const payload = (await response.json()) as {
+      accepted: boolean;
+      cron: string;
+    };
+    const syncRun = await fetchLatestSyncRun();
+
+    expect(response.status).toBe(202);
+    expect(payload).toEqual({ accepted: true, cron: "0 12 * * *" });
+    expect(syncRun).toEqual(
+      expect.objectContaining({
+        cron: "0 12 * * *",
+        error_message: null,
+        mode: "incremental",
+        status: "succeeded",
       }),
     );
 

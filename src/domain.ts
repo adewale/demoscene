@@ -25,6 +25,16 @@ export type SyncSummary = {
   rateLimitedUntil: string | null;
 };
 
+export type SyncRunRecord = {
+  cron: string;
+  errorMessage: string | null;
+  finishedAt: string;
+  mode: SyncMode;
+  startedAt: string;
+  status: "failed" | "succeeded";
+  summaryJson: string | null;
+};
+
 export type ProjectRecord = {
   slug: string;
   owner: string;

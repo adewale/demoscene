@@ -24,8 +24,11 @@
     "test:fast": "npm run format && npm run lint && npm run typecheck && npm run test:unit && npm run test:worker",
     "test:full": "npm run test:fast && npm run test:e2e && npm run coverage && npm run audit:deps && npm run audit:dead-code && npm run audit:duplicates && npm run audit:secrets",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote --config wrangler.jsonc",
+    "db:check:remote": "node scripts/check-remote-migrations.mjs",
     "db:seed:e2e": "wrangler d1 execute DB --local --file tests/e2e/seed.sql --config wrangler.jsonc",
-    "e2e:prepare": "npm run db:migrate:local && npm run db:seed:e2e"
+    "e2e:prepare": "npm run db:migrate:local && npm run db:seed:e2e",
+    "deploy": "npm run db:migrate:remote && npm run db:check:remote && wrangler deploy --config wrangler.jsonc"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

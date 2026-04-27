@@ -64,3 +64,20 @@ export const repositoryScanState = sqliteTable(
     ),
   }),
 );
+
+export const syncRuns = sqliteTable(
+  "sync_runs",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    cron: text("cron").notNull(),
+    mode: text("mode").notNull(),
+    status: text("status").notNull(),
+    startedAt: text("started_at").notNull(),
+    finishedAt: text("finished_at").notNull(),
+    summaryJson: text("summary_json"),
+    errorMessage: text("error_message"),
+  },
+  (table) => ({
+    startedAtIdx: index("sync_runs_started_at_idx").on(table.startedAt),
+  }),
+);

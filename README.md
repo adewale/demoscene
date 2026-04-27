@@ -130,7 +130,7 @@ npx wrangler d1 migrations apply DB --remote --config wrangler.jsonc
 ### 5. Deploy your fork
 
 ```bash
-npx wrangler deploy
+npm run deploy
 ```
 
 ### 6. Populate the feed

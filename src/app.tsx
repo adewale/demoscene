@@ -12,6 +12,7 @@ import {
 } from "./db/queries";
 import { renderRssFeed } from "./lib/rss";
 import { FEED_PAGE_SIZE, RSS_ITEM_LIMIT } from "./lib/sync-policy";
+import { runScheduledSync } from "./scheduled";
 
 import { AppShell } from "./components/AppShell";
 import { DesignPage } from "./components/DesignPage";
@@ -182,6 +183,7 @@ export function createApp() {
     }
 
     const searchParams = new URL(c.req.url).searchParams;
+    const scheduledRunRequested = searchParams.get("scheduled") === "true";
     const requestedRepos = searchParams.getAll("repo");
     const requestedMembers = searchParams.getAll("member");
     const teamMembers =
@@ -190,6 +192,20 @@ export function createApp() {
             requestedMembers.includes(member.login),
           )
         : undefined;
+
+    if (scheduledRunRequested) {
+      c.executionCtx.waitUntil(
+        runScheduledSync({
+          cron: searchParams.get("cron") ?? "0 12 * * *",
+          env: c.env,
+        }),
+      );
+
+      return c.json(
+        { accepted: true, cron: searchParams.get("cron") ?? "0 12 * * *" },
+        202,
+      );
+    }
 
     return c.json(
       await syncRepositories(c.env, {

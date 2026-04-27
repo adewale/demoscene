@@ -81,3 +81,10 @@
 **What happened:** Some README previews flattened a repeated project heading and its summary into a single paragraph, so downstream readers still rendered `Agentic Inbox`-style title duplication even though standalone heading paragraphs were already filtered out.
 **Resolution:** Strip a duplicate project-title line from the start of the first RSS summary paragraph before paragraph-level filtering, and keep a unit regression for the same-paragraph case.
 **Rule:** For RSS summaries in this repo, clean duplicate project-title lines inside the first paragraph, not just whole heading paragraphs.
+
+### 2026-04-26 — Scheduled syncs need durable run records and deploy-time remote migrations
+
+**Context:** Investigating why the live cron stopped updating Demoscene after the repository scan-state rollout.
+**What happened:** The Worker code started requiring a new D1 table, but the deployment flow only documented remote migrations instead of enforcing them. The cron then failed against the stale remote schema, and because scheduled runs only wrote transient console logs there was no durable last-run/error record to inspect from the app data.
+**Resolution:** Added a remote migration step to the deploy script, a remote migration drift check, and a `sync_runs` table that records every scheduled success/failure with summary or error details.
+**Rule:** In this repo, every deploy must apply and verify remote D1 migrations first, and scheduled syncs must persist their outcome in D1 instead of relying on logs alone.

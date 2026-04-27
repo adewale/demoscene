@@ -4,6 +4,7 @@ import type {
   ProjectRecord,
   ProjectWithProducts,
   RepositoryScanStateRecord,
+  SyncRunRecord,
 } from "../domain";
 import {
   CLOUDFLARE_PRODUCT_BY_KEY,
@@ -14,7 +15,12 @@ import {
   type CloudflareProduct,
 } from "../lib/wrangler/parse";
 
-import { projectProducts, projects, repositoryScanState } from "./schema";
+import {
+  projectProducts,
+  projects,
+  repositoryScanState,
+  syncRuns,
+} from "./schema";
 
 type Database = ReturnType<typeof import("./client").createDb>;
 const PRODUCT_LOOKUP_BATCH_SIZE = 90;
@@ -308,4 +314,19 @@ export async function listRepositoryScanStateByOwners(
     .where(inArray(repositoryScanState.owner, owners)) as Promise<
     RepositoryScanStateRecord[]
   >;
+}
+
+export async function insertSyncRun(
+  db: Database,
+  syncRun: SyncRunRecord,
+): Promise<void> {
+  await db.insert(syncRuns).values({
+    cron: syncRun.cron,
+    errorMessage: syncRun.errorMessage,
+    finishedAt: syncRun.finishedAt,
+    mode: syncRun.mode,
+    startedAt: syncRun.startedAt,
+    status: syncRun.status,
+    summaryJson: syncRun.summaryJson,
+  });
 }
