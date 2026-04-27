@@ -15,11 +15,14 @@ It discovers repositories with the GitHub API, detects top-level Wrangler config
 - daily scheduled sync at `12:00 UTC`
 - London schedule: `13:00` during BST and `12:00` during GMT
 - GitHub API discovery with stable pagination handling
+- resumable fair sync scheduling with rotating owner order and persisted partial-run checkpoints
 - GitHub-first feed cards ordered by real repository creation time
 - top-level Wrangler detection for `wrangler.toml`, `wrangler.json`, and `wrangler.jsonc`
 - inferred Cloudflare product metadata on each card from Wrangler config and package heuristics
+- conditional GitHub REST requests for cached repo discovery and metadata fetches
 - cleaned README preview generation for feed cards, including heading, badge, and icon-strip cleanup
 - machine-readable project JSON and RSS output
+- durable scheduled run history plus protected operator debug tooling for latest, failed, and rate-limited runs
 - committed offline corpus cache for future analysis
 
 ## Requirements
@@ -138,6 +141,54 @@ npm run deploy
 The scheduled sync will populate the feed automatically at `12:00 UTC`.
 
 If you want to trigger an immediate sync after deploy, temporarily enable the debug route, call `/debug/sync` with the correct `x-debug-sync-token`, then disable it again.
+
+## Operations
+
+### Durable run history
+
+Scheduled runs are recorded in D1 with:
+
+- status
+- duration
+- planned vs processed owner/repo counts
+- last checkpoint
+- rate-limit snapshot
+
+Protected debug endpoints expose the latest operator views:
+
+- `/debug/sync-runs/latest`
+- `/debug/sync-runs/latest-failed`
+- `/debug/sync-runs/latest-rate-limited`
+
+Manual owner-scoped syncs use the existing protected route:
+
+- `/debug/sync?member=<login>`
+
+### Cloudflare-native inspection
+
+Use Cloudflare's built-in tools first when you need to inspect cron behavior:
+
+1. Cron Events in the Workers dashboard for recent scheduled invocations.
+2. Workers Logs in the dashboard for structured `sync.summary` and `sync.error` events.
+3. `npm run ops:tail` for live log streaming with Wrangler.
+
+### Rate-limit posture
+
+The scheduler now reduces GitHub API cost and improves fairness by:
+
+- rotating the starting owner for each full run
+- resuming deferred repositories before fresh discovery work
+- interleaving repository processing across owners instead of walking one owner at a time
+- sending conditional GitHub REST requests when cached validators are available
+
+## Scale-Up Path
+
+If the repo set grows enough that sequential cron runs regularly defer work, the next architecture step is to fan out with Cloudflare Queues or Workflows:
+
+- Queues are a good fit for per-repository fan-out and retry isolation.
+- Workflows are a good fit for long-running, resumable orchestration with explicit checkpoints.
+
+The current scheduler keeps a single-run design for simplicity, but the run history, checkpoints, and fairness logic are intended to make that transition straightforward if sustained GitHub rate limiting becomes normal.
 
 ## Deploy Button
 

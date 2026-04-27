@@ -88,3 +88,10 @@
 **What happened:** The Worker code started requiring a new D1 table, but the deployment flow only documented remote migrations instead of enforcing them. The cron then failed against the stale remote schema, and because scheduled runs only wrote transient console logs there was no durable last-run/error record to inspect from the app data.
 **Resolution:** Added a remote migration step to the deploy script, a remote migration drift check, and a `sync_runs` table that records every scheduled success/failure with summary or error details.
 **Rule:** In this repo, every deploy must apply and verify remote D1 migrations first, and scheduled syncs must persist their outcome in D1 instead of relying on logs alone.
+
+### 2026-04-27 — Static owner order starves later accounts under rate limits
+
+**Context:** Auditing why several newer publishable repos were missing from the live site even after scheduler health improved.
+**What happened:** Discovery walked team members in a fixed order and stopped on GitHub rate limit, so the same early accounts made progress while later accounts repeatedly missed fresh scans.
+**Resolution:** Rotated the starting owner, persisted resume state for partial runs, and interleaved repo processing across owners so partial runs make fairer progress.
+**Rule:** When scheduled work can stop early in this repo, preserve a resume cursor and avoid fixed account ordering that starves the tail of the queue.

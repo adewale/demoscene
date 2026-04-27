@@ -7,6 +7,9 @@ import { TEAM_MEMBERS } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
   countProjects,
+  getLatestFailedSyncRun,
+  getLatestRateLimitedSyncRun,
+  getLatestSyncRun,
   getProjectByOwnerRepo,
   listProjectsPage,
 } from "./db/queries";
@@ -79,6 +82,23 @@ function sortTeamMembersAlphabetically(members: typeof TEAM_MEMBERS) {
 
 function loadTeamMemberOverview(): TeamMemberOverview[] {
   return sortTeamMembersAlphabetically(TEAM_MEMBERS);
+}
+
+async function loadSyncRunForRequest(
+  c: Context<{ Bindings: AppEnv }>,
+  kind: "failed" | "latest" | "rate_limited",
+) {
+  const db = createDb(c.env.DB);
+
+  if (kind === "failed") {
+    return getLatestFailedSyncRun(db);
+  }
+
+  if (kind === "rate_limited") {
+    return getLatestRateLimitedSyncRun(db);
+  }
+
+  return getLatestSyncRun(db);
 }
 
 async function loadProjectFromRequest(
@@ -213,6 +233,48 @@ export function createApp() {
         teamMembers,
       }),
     );
+  });
+
+  app.get("/debug/sync-runs/latest", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const syncRun = await loadSyncRunForRequest(c, "latest");
+
+    if (!syncRun) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(syncRun);
+  });
+
+  app.get("/debug/sync-runs/latest-failed", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const syncRun = await loadSyncRunForRequest(c, "failed");
+
+    if (!syncRun) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(syncRun);
+  });
+
+  app.get("/debug/sync-runs/latest-rate-limited", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const syncRun = await loadSyncRunForRequest(c, "rate_limited");
+
+    if (!syncRun) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(syncRun);
   });
 
   app.get("/projects/*", async (c) => {

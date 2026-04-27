@@ -1,4 +1,5 @@
 import type { TeamMember } from "../../config/repositories";
+import type { GitHubResponseCacheRecord } from "../../domain";
 import type { ParsedRepositoryUrl } from "./repositories";
 import {
   buildRepositoryApiUrl,
@@ -8,6 +9,11 @@ import {
 } from "./repositories";
 
 export type FetchLike = typeof fetch;
+
+export type GitHubApiCache = {
+  get: (requestUrl: string) => Promise<GitHubResponseCacheRecord | null>;
+  put: (entry: GitHubResponseCacheRecord) => Promise<void>;
+};
 
 export type GitHubRepositoryMetadata = ParsedRepositoryUrl & {
   defaultBranch: string;
@@ -169,6 +175,115 @@ function createGitHubApiHeaders(token?: string): Headers {
   return headers;
 }
 
+function applyConditionalRequestHeaders(
+  headers: Headers,
+  cachedResponse: GitHubResponseCacheRecord | null,
+): Headers {
+  if (!cachedResponse) {
+    return headers;
+  }
+
+  if (cachedResponse.etag) {
+    headers.set("If-None-Match", cachedResponse.etag);
+  }
+
+  if (cachedResponse.lastModified) {
+    headers.set("If-Modified-Since", cachedResponse.lastModified);
+  }
+
+  return headers;
+}
+
+type CachedGitHubApiResponse = {
+  linkHeader: string | null;
+  payload: unknown;
+};
+
+async function fetchCachedGitHubApiPayload(options: {
+  cache?: GitHubApiCache;
+  fetchImpl: FetchLike;
+  token?: string;
+  url: string;
+}): Promise<
+  | {
+      kind: "found";
+      response: CachedGitHubApiResponse;
+    }
+  | {
+      kind: "rate_limited";
+      retryAfter: string | null;
+    }
+  | {
+      kind: "response";
+      response: Response;
+    }
+> {
+  const cachedResponse = options.cache
+    ? await options.cache.get(options.url)
+    : null;
+  const response = await options.fetchImpl(
+    new Request(options.url, {
+      headers: applyConditionalRequestHeaders(
+        createGitHubApiHeaders(options.token),
+        cachedResponse,
+      ),
+    }),
+  );
+
+  if (response.status === 304 && cachedResponse) {
+    return {
+      kind: "found",
+      response: {
+        linkHeader: cachedResponse.linkHeader,
+        payload: JSON.parse(cachedResponse.responseBody),
+      },
+    };
+  }
+
+  if (isRateLimitedStatus(response.status)) {
+    return {
+      kind: "rate_limited",
+      retryAfter: getGitHubRetryAfter(response.headers),
+    };
+  }
+
+  if (response.ok && options.cache) {
+    const responseBody = await response.text();
+
+    await options.cache.put({
+      etag: response.headers.get("etag"),
+      fetchedAt: new Date().toISOString(),
+      lastModified: response.headers.get("last-modified"),
+      linkHeader: response.headers.get("link"),
+      requestUrl: options.url,
+      responseBody,
+    });
+
+    return {
+      kind: "found",
+      response: {
+        linkHeader: response.headers.get("link"),
+        payload: JSON.parse(responseBody),
+      },
+    };
+  }
+
+  return { kind: "response", response };
+}
+
+export function createInMemoryGitHubApiCache(): GitHubApiCache {
+  const cacheEntries = new Map<string, GitHubResponseCacheRecord>();
+
+  return {
+    async get(requestUrl) {
+      return cacheEntries.get(requestUrl) ?? null;
+    },
+    async put(entry) {
+      cacheEntries.set(entry.requestUrl, entry);
+    },
+  };
+}
+
 function parseGitHubRepositoryMetadata(
   value: unknown,
 ): GitHubRepositoryMetadata | null {
@@ -298,22 +413,55 @@ export async function discoverRepositoriesForTeamMember(
   teamMember: TeamMember,
   token?: string,
   maxPages = Number.MAX_SAFE_INTEGER,
+  cache?: GitHubApiCache,
 ): Promise<GitHubRepositoryMetadata[]> {
   const repositories: GitHubRepositoryMetadata[] = [];
 
   for (let page = 1; page <= maxPages; page += 1) {
-    const response = await fetchImpl(
-      new Request(buildUserRepositoriesApiUrl(teamMember.login, page), {
-        headers: createGitHubApiHeaders(token),
-      }),
-    );
+    const requestUrl = buildUserRepositoriesApiUrl(teamMember.login, page);
+    const cachedResponse = await fetchCachedGitHubApiPayload({
+      cache,
+      fetchImpl,
+      token,
+      url: requestUrl,
+    });
+
+    if (cachedResponse.kind === "found") {
+      const payload = cachedResponse.response.payload;
+
+      if (!Array.isArray(payload)) {
+        throw new Error(
+          `Invalid repository payload for ${teamMember.login} on page ${page}`,
+        );
+      }
+
+      repositories.push(
+        ...payload
+          .map((item) => parseGitHubRepositoryMetadata(item))
+          .filter((item): item is GitHubRepositoryMetadata => item !== null),
+      );
+
+      if (!hasNextPageLink(cachedResponse.response.linkHeader)) {
+        break;
+      }
+
+      if (page >= maxPages) {
+        throw new Error(
+          `Repository discovery for ${teamMember.login} exceeded page limit ${maxPages}`,
+        );
+      }
+
+      continue;
+    }
+
+    if (cachedResponse.kind === "rate_limited") {
+      throw new GitHubRateLimitError(cachedResponse.retryAfter);
+    }
+
+    const { response } = cachedResponse;
 
     if (response.status === 404) {
       break;
-    }
-
-    if (isRateLimitedStatus(response.status)) {
-      throw new GitHubRateLimitError(getGitHubRetryAfter(response.headers));
     }
 
     if (!response.ok) {
@@ -364,24 +512,44 @@ export async function fetchRepositoryMetadata(
   fetchImpl: FetchLike,
   repository: ParsedRepositoryUrl,
   token?: string,
+  cache?: GitHubApiCache,
 ): Promise<RepositoryMetadataResult> {
   try {
-    const response = await fetchImpl(
-      new Request(buildRepositoryApiUrl(repository.owner, repository.repo), {
-        headers: createGitHubApiHeaders(token),
-      }),
-    );
+    const requestUrl = buildRepositoryApiUrl(repository.owner, repository.repo);
+    const cachedResponse = await fetchCachedGitHubApiPayload({
+      cache,
+      fetchImpl,
+      token,
+      url: requestUrl,
+    });
+
+    if (cachedResponse.kind === "found") {
+      const metadata = parseGitHubRepositoryMetadata(
+        cachedResponse.response.payload,
+      );
+
+      if (!metadata) {
+        return { kind: "transient_error" };
+      }
+
+      return {
+        kind: "found",
+        metadata,
+      };
+    }
+
+    if (cachedResponse.kind === "rate_limited") {
+      return {
+        kind: "rate_limited",
+        retryAfter: cachedResponse.retryAfter,
+      };
+    }
+
+    const { response } = cachedResponse;
 
     if (!response.ok) {
       if (isNotFoundStatus(response.status)) {
         return { kind: "not_found" };
-      }
-
-      if (isRateLimitedStatus(response.status)) {
-        return {
-          kind: "rate_limited",
-          retryAfter: getGitHubRetryAfter(response.headers),
-        };
       }
 
       return isTransientStatus(response.status)

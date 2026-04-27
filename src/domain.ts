@@ -3,6 +3,15 @@ import type { CloudflareProduct } from "./lib/wrangler/parse";
 export type RepositoryScanStatus = "ignored" | "invalid_config";
 export type SyncMode = "incremental" | "reconcile";
 
+export type GitHubResponseCacheRecord = {
+  etag: string | null;
+  fetchedAt: string;
+  lastModified: string | null;
+  linkHeader: string | null;
+  requestUrl: string;
+  responseBody: string;
+};
+
 export type AppEnv = {
   DB: D1Database;
   APP_NAME: string;
@@ -27,12 +36,29 @@ export type SyncSummary = {
 
 export type SyncRunRecord = {
   cron: string;
+  durationMs: number;
   errorMessage: string | null;
   finishedAt: string;
+  lastCheckpointJson: string | null;
   mode: SyncMode;
+  plannedOwnerCount: number;
+  plannedRepoCount: number;
+  processedOwnerCount: number;
+  processedRepoCount: number;
+  rateLimitSnapshotJson: string | null;
+  rateLimitedUntil: string | null;
+  reposDeferredByRateLimit: number;
   startedAt: string;
   status: "failed" | "succeeded";
   summaryJson: string | null;
+};
+
+export type SyncStateRecord = {
+  checkpointJson: string | null;
+  mode: SyncMode;
+  nextOwnerCursor: number;
+  pendingRepositoryUrlsJson: string;
+  updatedAt: string;
 };
 
 export type ProjectRecord = {

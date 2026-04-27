@@ -1,10 +1,22 @@
-import { and, count, desc, eq, inArray, notInArray } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  notInArray,
+  or,
+} from "drizzle-orm";
 
 import type {
+  GitHubResponseCacheRecord,
   ProjectRecord,
   ProjectWithProducts,
   RepositoryScanStateRecord,
   SyncRunRecord,
+  SyncStateRecord,
 } from "../domain";
 import {
   CLOUDFLARE_PRODUCT_BY_KEY,
@@ -18,8 +30,10 @@ import {
 import {
   projectProducts,
   projects,
+  githubResponseCache,
   repositoryScanState,
   syncRuns,
+  syncState,
 } from "./schema";
 
 type Database = ReturnType<typeof import("./client").createDb>;
@@ -322,11 +336,162 @@ export async function insertSyncRun(
 ): Promise<void> {
   await db.insert(syncRuns).values({
     cron: syncRun.cron,
+    durationMs: syncRun.durationMs,
     errorMessage: syncRun.errorMessage,
     finishedAt: syncRun.finishedAt,
+    lastCheckpointJson: syncRun.lastCheckpointJson,
     mode: syncRun.mode,
+    plannedOwnerCount: syncRun.plannedOwnerCount,
+    plannedRepoCount: syncRun.plannedRepoCount,
+    processedOwnerCount: syncRun.processedOwnerCount,
+    processedRepoCount: syncRun.processedRepoCount,
+    rateLimitSnapshotJson: syncRun.rateLimitSnapshotJson,
+    rateLimitedUntil: syncRun.rateLimitedUntil,
+    reposDeferredByRateLimit: syncRun.reposDeferredByRateLimit,
     startedAt: syncRun.startedAt,
     status: syncRun.status,
     summaryJson: syncRun.summaryJson,
   });
+}
+
+type SyncRunRow = typeof syncRuns.$inferSelect;
+
+export async function getLatestSyncRun(
+  db: Database,
+): Promise<SyncRunRow | null> {
+  return (
+    (await db.select().from(syncRuns).orderBy(desc(syncRuns.id)).limit(1))[0] ??
+    null
+  );
+}
+
+export async function getLatestFailedSyncRun(
+  db: Database,
+): Promise<SyncRunRow | null> {
+  return (
+    (
+      await db
+        .select()
+        .from(syncRuns)
+        .where(eq(syncRuns.status, "failed"))
+        .orderBy(desc(syncRuns.id))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function getLatestRateLimitedSyncRun(
+  db: Database,
+): Promise<SyncRunRow | null> {
+  return (
+    (
+      await db
+        .select()
+        .from(syncRuns)
+        .where(
+          or(
+            gt(syncRuns.reposDeferredByRateLimit, 0),
+            isNotNull(syncRuns.rateLimitedUntil),
+          ),
+        )
+        .orderBy(desc(syncRuns.id))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function getSyncState(
+  db: Database,
+  mode: SyncStateRecord["mode"],
+): Promise<SyncStateRecord | null> {
+  const row = await db
+    .select({
+      checkpointJson: syncState.checkpointJson,
+      mode: syncState.mode,
+      nextOwnerCursor: syncState.nextOwnerCursor,
+      pendingRepositoryUrlsJson: syncState.pendingRepositoryUrlsJson,
+      updatedAt: syncState.updatedAt,
+    })
+    .from(syncState)
+    .where(eq(syncState.mode, mode))
+    .limit(1);
+
+  if (!row[0]) {
+    return null;
+  }
+
+  return {
+    ...row[0],
+    mode,
+  };
+}
+
+export async function upsertSyncState(
+  db: Database,
+  state: SyncStateRecord,
+): Promise<void> {
+  await db
+    .insert(syncState)
+    .values({
+      checkpointJson: state.checkpointJson,
+      mode: state.mode,
+      nextOwnerCursor: state.nextOwnerCursor,
+      pendingRepositoryUrlsJson: state.pendingRepositoryUrlsJson,
+      updatedAt: state.updatedAt,
+    })
+    .onConflictDoUpdate({
+      target: syncState.mode,
+      set: {
+        checkpointJson: state.checkpointJson,
+        nextOwnerCursor: state.nextOwnerCursor,
+        pendingRepositoryUrlsJson: state.pendingRepositoryUrlsJson,
+        updatedAt: state.updatedAt,
+      },
+    });
+}
+
+export async function getGitHubResponseCache(
+  db: Database,
+  requestUrl: string,
+): Promise<GitHubResponseCacheRecord | null> {
+  const rows = await db
+    .select({
+      etag: githubResponseCache.etag,
+      fetchedAt: githubResponseCache.fetchedAt,
+      lastModified: githubResponseCache.lastModified,
+      linkHeader: githubResponseCache.linkHeader,
+      requestUrl: githubResponseCache.requestUrl,
+      responseBody: githubResponseCache.responseBody,
+    })
+    .from(githubResponseCache)
+    .where(eq(githubResponseCache.requestUrl, requestUrl))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+export async function upsertGitHubResponseCache(
+  db: Database,
+  cacheEntry: GitHubResponseCacheRecord,
+): Promise<void> {
+  await db
+    .insert(githubResponseCache)
+    .values({
+      etag: cacheEntry.etag,
+      fetchedAt: cacheEntry.fetchedAt,
+      lastModified: cacheEntry.lastModified,
+      linkHeader: cacheEntry.linkHeader,
+      requestUrl: cacheEntry.requestUrl,
+      responseBody: cacheEntry.responseBody,
+    })
+    .onConflictDoUpdate({
+      target: githubResponseCache.requestUrl,
+      set: {
+        etag: cacheEntry.etag,
+        fetchedAt: cacheEntry.fetchedAt,
+        lastModified: cacheEntry.lastModified,
+        linkHeader: cacheEntry.linkHeader,
+        responseBody: cacheEntry.responseBody,
+      },
+    });
 }

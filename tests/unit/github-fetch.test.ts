@@ -2,6 +2,7 @@ import fc from "fast-check";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  createInMemoryGitHubApiCache,
   discoverRepositoriesForTeamMember,
   fetchFirstAvailableRawFile,
   fetchRepositoryMetadata,
@@ -117,6 +118,50 @@ describe("discoverRepositoriesForTeamMember", () => {
         { login: "adewale", name: "Ade" },
       ),
     ).rejects.toThrow("GitHub rate limit reached");
+  });
+
+  it("reuses cached discovery payloads on a 304 response", async () => {
+    const cache = createInMemoryGitHubApiCache();
+    const discoveryUrl = buildUserRepositoriesApiUrl("adewale", 1);
+
+    await cache.put({
+      etag: '"etag-1"',
+      fetchedAt: "2026-04-27T00:00:00.000Z",
+      lastModified: null,
+      linkHeader: null,
+      requestUrl: discoveryUrl,
+      responseBody: JSON.stringify([
+        {
+          created_at: "2026-04-27T12:00:00.000Z",
+          default_branch: "main",
+          html_url: "https://github.com/adewale/cached-demo",
+          id: 42,
+          name: "cached-demo",
+          owner: { login: "adewale" },
+        },
+      ]),
+    });
+
+    const mockFetch = vi.fn(async (input: string | URL | Request) => {
+      const request = input as Request;
+
+      expect(request.headers.get("if-none-match")).toBe('"etag-1"');
+
+      return new Response(null, {
+        headers: { etag: '"etag-1"' },
+        status: 304,
+      });
+    });
+
+    await expect(
+      discoverRepositoriesForTeamMember(
+        mockFetch as typeof fetch,
+        { login: "adewale", name: "Ade" },
+        undefined,
+        Number.MAX_SAFE_INTEGER,
+        cache,
+      ),
+    ).resolves.toMatchObject([{ repo: "cached-demo" }]);
   });
 
   it("fails loudly when an explicit page cap is exceeded before discovery completes", async () => {
@@ -328,6 +373,42 @@ describe("validatePreviewImageUrl", () => {
 
 describe("fetchRepositoryMetadata", () => {
   const repository = parseRepositoryUrl("https://github.com/acme/demo");
+
+  it("stores validators after a successful metadata response", async () => {
+    const cache = createInMemoryGitHubApiCache();
+
+    await fetchRepositoryMetadata(
+      createMockFetch({
+        [buildRepositoryApiUrl("acme", "demo")]: {
+          body: JSON.stringify({
+            created_at: "2026-04-14T12:00:00.000Z",
+            default_branch: "main",
+            homepage: "https://demo.example.com",
+            html_url: "https://github.com/acme/demo",
+            id: 12345,
+            name: "demo",
+            owner: { login: "acme" },
+          }),
+          headers: {
+            etag: '"etag-2"',
+            "last-modified": "Sun, 27 Apr 2026 12:00:00 GMT",
+          },
+        },
+      }) as typeof fetch,
+      repository,
+      undefined,
+      cache,
+    );
+
+    await expect(
+      cache.get(buildRepositoryApiUrl("acme", "demo")),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        etag: '"etag-2"',
+        lastModified: "Sun, 27 Apr 2026 12:00:00 GMT",
+      }),
+    );
+  });
 
   it("parses GitHub repository metadata", async () => {
     await expect(

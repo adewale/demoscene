@@ -70,10 +70,19 @@ export const syncRuns = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     cron: text("cron").notNull(),
+    durationMs: integer("duration_ms").notNull(),
     mode: text("mode").notNull(),
     status: text("status").notNull(),
     startedAt: text("started_at").notNull(),
     finishedAt: text("finished_at").notNull(),
+    plannedOwnerCount: integer("planned_owner_count").notNull(),
+    processedOwnerCount: integer("processed_owner_count").notNull(),
+    plannedRepoCount: integer("planned_repo_count").notNull(),
+    processedRepoCount: integer("processed_repo_count").notNull(),
+    lastCheckpointJson: text("last_checkpoint_json"),
+    rateLimitSnapshotJson: text("rate_limit_snapshot_json"),
+    reposDeferredByRateLimit: integer("repos_deferred_by_rate_limit").notNull(),
+    rateLimitedUntil: text("rate_limited_until"),
     summaryJson: text("summary_json"),
     errorMessage: text("error_message"),
   },
@@ -81,3 +90,20 @@ export const syncRuns = sqliteTable(
     startedAtIdx: index("sync_runs_started_at_idx").on(table.startedAt),
   }),
 );
+
+export const syncState = sqliteTable("sync_state", {
+  mode: text("mode").primaryKey(),
+  nextOwnerCursor: integer("next_owner_cursor").notNull(),
+  pendingRepositoryUrlsJson: text("pending_repository_urls_json").notNull(),
+  checkpointJson: text("checkpoint_json"),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const githubResponseCache = sqliteTable("github_response_cache", {
+  requestUrl: text("request_url").primaryKey(),
+  etag: text("etag"),
+  lastModified: text("last_modified"),
+  linkHeader: text("link_header"),
+  responseBody: text("response_body").notNull(),
+  fetchedAt: text("fetched_at").notNull(),
+});

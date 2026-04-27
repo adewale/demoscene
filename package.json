@@ -28,7 +28,8 @@
     "db:check:remote": "node scripts/check-remote-migrations.mjs",
     "db:seed:e2e": "wrangler d1 execute DB --local --file tests/e2e/seed.sql --config wrangler.jsonc",
     "e2e:prepare": "npm run db:migrate:local && npm run db:seed:e2e",
-    "deploy": "npm run db:migrate:remote && npm run db:check:remote && wrangler deploy --config wrangler.jsonc"
+    "deploy": "npm run db:migrate:remote && npm run db:check:remote && wrangler deploy --config wrangler.jsonc",
+    "ops:tail": "wrangler tail demoscene --config wrangler.jsonc"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
