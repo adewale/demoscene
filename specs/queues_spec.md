@@ -168,6 +168,7 @@ Suggested payload:
 
 ```json
 {
+  "schemaVersion": 1,
   "kind": "scan-owner",
   "runId": "sync-run-id",
   "mode": "incremental",
@@ -189,6 +190,7 @@ Suggested payload:
 
 ```json
 {
+  "schemaVersion": 1,
   "kind": "sync-repo",
   "runId": "sync-run-id",
   "mode": "incremental",
@@ -211,6 +213,7 @@ Suggested payload:
 
 ```json
 {
+  "schemaVersion": 1,
   "kind": "verify-missing-repo",
   "runId": "sync-run-id",
   "mode": "incremental",
@@ -223,15 +226,21 @@ Suggested payload:
 
 ## Queue Topology
 
-Initial version:
+Initial version uses separate queues from day one:
 
-- one queue for owner scans
-- one queue for repo work
+- `OWNER_QUEUE` for `scan-owner` jobs
+- `REPO_QUEUE` for `sync-repo` and `verify-missing-repo` jobs
+- one dead-letter queue per primary queue from day one
 
 Initial retry posture:
 
 - owner scan queue: low concurrency, low batch size, explicit DLQ
 - repo work queue: higher concurrency, small-to-medium batch size, explicit DLQ
+
+Rationale:
+
+- owner discovery and repo ingestion have different throughput, fan-out, and retry characteristics
+- separating them makes backpressure and failure localization clearer from the first rollout
 
 This keeps the rollout simple while still isolating the most expensive work.
 
@@ -266,11 +275,12 @@ Suggested fields:
 - `id`
 - `run_id`
 - `correlation_id`
+- `schema_version`
 - `kind`
 - `owner`
 - `repo`
 - `repo_url`
-- `status` (`queued`, `processing`, `succeeded`, `failed`, `deferred`)
+- `status` (`queued`, `processing`, `succeeded`, `failed`, `deferred`, `cancelled`)
 - `attempt_count`
 - `first_attempt_at`
 - `last_error`
@@ -319,6 +329,8 @@ Suggested fields:
 - `verify-missing-repo` must be safe to retry without double-deleting
 - top-level run counters should be derived from durable job rows or updated atomically from consumer completions
 - planner re-entry must be safe: if the same cron fires twice or an operator repeats a run, duplicate planning must not produce inconsistent job state
+- duplicate queue messages should be resolved to the same durable D1 job row and treated as harmless duplicates rather than as a separate failure mode
+- D1 job rows are the durable source of truth for job state; queue delivery is only the transport layer
 
 ## Checkpointing Strategy
 
@@ -329,12 +341,15 @@ Checkpointing should become more explicit than the current single-row resume cur
 - store the planner phase and the last fully enqueued owner cursor
 - store the set or range of owner jobs successfully enqueued
 - store whether reconcile-specific cleanup jobs were emitted
+- planner runs should acquire a planner lock so only one planning pass is active at a time
+- before enqueueing fresh work, the planner should first re-enqueue due deferred jobs and only then plan new owner and repo work
 
 ### Consumer checkpoints
 
 - each job row is its own checkpoint
 - a job is resumable if it can be retried from the start safely
 - if a job contains multiple substeps, record the last completed substep in the job row
+- rate-limited jobs should be marked `deferred`, persisted durably, and then ACKed so the queue does not hot-retry them before the planner decides they are due again
 
 ### Minimal checkpoint rule
 
@@ -345,6 +360,7 @@ The system must be able to answer, for any run:
 - which repos were enqueued
 - which repos were processed successfully
 - which items are still deferred or failed
+- which deferred items are due to be re-enqueued on the next planner pass
 
 ## Fairness Model
 
@@ -382,7 +398,8 @@ Additional queue-specific guidance:
 - mark the job `deferred`
 - record `rate_limited_until`
 - do not fail unrelated jobs
-- optionally re-enqueue after the reset window or let the next planner run re-queue it
+- ACK the queue message after the deferred state is persisted in D1
+- let the next planner run re-enqueue due deferred jobs before planning fresh work
 - preserve the queue job and planner correlation IDs so operators can trace which run was interrupted
 
 ### Permanent failures
@@ -393,7 +410,7 @@ Additional queue-specific guidance:
 
 ### Dead-letter handling
 
-- jobs that exceed retry policy should go to a DLQ, following `planet_cf`'s model
+- jobs should go to a DLQ from day one, following `planet_cf`'s model
 - a DLQ record should preserve:
   - original message payload
   - run ID
@@ -468,6 +485,7 @@ Queue migration should add:
 - per-phase run status so operators can see exactly where a run failed
 - per-job failing stage and retry count
 - DLQ views and replay controls
+- planner-lock and overlap state for the current or most recent run
 
 ### Correlation model
 
@@ -497,6 +515,21 @@ An operator should be able to answer all of these without code spelunking:
 - which jobs are still deferred?
 - which jobs exhausted retries and landed in the DLQ?
 
+### Run outcome rules
+
+Terminal job states are:
+
+- `succeeded`
+- `failed`
+- `deferred`
+- `cancelled`
+
+Top-level run status should be derived from terminal job state plus phase state:
+
+- `succeeded` when all terminal jobs are `succeeded` or `cancelled`
+- `partial` when any terminal job is `failed` or `deferred`
+- `failed` when planning itself fails before the run can reach a coherent partial result
+
 ## Public Behavior Contract
 
 The queue migration must not change:
@@ -519,12 +552,15 @@ The queue migration must not change:
 - owner jobs still call existing repo-sync logic directly
 - validate fairness and owner-level observability first
 - add `sync_run_jobs`, `sync_run_phases`, and DLQ handling before queueing repo work
+- add planner locking before queueing any production work
+- add deferred-job re-enqueue before fresh planning
 
 ### Phase 2: Repo queue
 
 - owner scan enqueues `sync-repo` and `verify-missing-repo`
 - repo work moves fully into queue consumers
 - add per-job failing-stage and retry metadata
+- deduplicate deliveries against durable D1 job rows
 
 ### Phase 3: Operator expansion
 
@@ -585,10 +621,20 @@ Integration tests:
 - a run failure clearly reports whether it failed in planning, owner scanning, repo syncing, or finalization
 - DLQ replay succeeds after a transiently failing dependency is restored
 
-## Open Questions
+## Resolved Initial Decisions
 
-- Should deferred jobs be re-enqueued immediately after `rate_limited_until`, or only by the next planner run?
-- Do we want a dead-letter queue from day one, or only after job telemetry proves it is needed?
-- Should owner scans and repo syncs share one queue initially for simplicity, or be separated immediately for better isolation?
+- Use separate `OWNER_QUEUE` and `REPO_QUEUE` from day one.
+- Add DLQs from day one.
+- Add `schemaVersion` to all messages.
+- Use D1 job rows as the durable source of truth.
+- ACK rate-limited queue messages after marking jobs `deferred`.
+- Let the next planner first re-enqueue due deferred jobs, then plan new work.
+- Use a planner lock to avoid overlapping planning.
+- Treat duplicate queue messages as harmless by resolving them to the same job row.
+- Define terminal job states as `succeeded`, `failed`, `deferred`, and `cancelled`.
+- Mark a run `partial` when any terminal job is `failed` or `deferred`.
+
+## Remaining Open Questions
+
 - At what backlog size or cron-overlap rate do we declare the single-run model retired?
 - Should Phase 1 follow `bobbin`'s approach and queue only the slowest/highest-volume part first, or should we move owner scans and repo syncs to queues together?
