@@ -546,28 +546,53 @@ The queue migration must not change:
 - no behavior changes
 - define schema and queue contracts
 
-### Phase 1: Planner + owner + repo queues
+### Phase 1: Planner + owner queue
 
-- scheduled run enqueues `scan-owner` jobs
-- owner scan jobs enqueue `sync-repo` and `verify-missing-repo`
-- repo work moves into queue consumers from the first implementation phase
-- validate fairness, owner-level observability, and repo-level failure isolation together
-- add `sync_run_jobs`, `sync_run_phases`, and DLQ handling before queueing production work
-- add planner locking before queueing any production work
-- add deferred-job re-enqueue before fresh planning
+- cron still creates one logical `sync_run`
+- scheduled runs enqueue `scan-owner` jobs through `OWNER_QUEUE`
+- owner scan work moves to queue consumers first
+- repo syncs and missing-repo verification still run through the single-run executor path
+- add `sync_run_jobs`, `sync_run_phases`, DLQ handling, planner locking, and deferred-job re-enqueue before queueing production owner work
+- validate fairness, owner-level observability, and planner checkpoint behavior first
+
+### Phase 2: Repo queue + single-run fallback
+
+- owner scan jobs enqueue `sync-repo` and `verify-missing-repo` work to `REPO_QUEUE`
+- repo work moves into queue consumers
+- the single-run orchestration path remains available as an emergency or manual fallback
 - add per-job failing-stage and retry metadata
 - deduplicate deliveries against durable D1 job rows
 
-### Phase 2: Operator expansion
+### Phase 3: Queue-backed default
 
+- queue-backed ingestion becomes the default path for all scheduled syncs
+- operator tooling must make it obvious when scheduled runs used the queue path versus the fallback path
 - add queue/job debug routes and dashboards
 - tighten retry/dead-letter policy
 - add replay support for deferred and dead-letter jobs
 
-### Phase 3: Cleanup
+### Phase 4: Remove single-run executor
 
-- remove no-longer-needed single-run checkpoint logic if the queue model fully supersedes it
-- keep only the state still needed for planning and read-side operations
+- delete the single-run executor only after the retirement gate is satisfied
+- keep only shared primitives:
+  - `scanOwner()`
+  - `syncRepo()`
+  - `verifyMissingRepo()`
+  - `finalizeRun()`
+- keep only the state still needed for planning, queue execution, and read-side operations
+
+### Single-run executor retirement gate
+
+Do not retire the current single-run executor until all of the following are true:
+
+- planner locking exists and prevents overlapping planning passes
+- duplicate queue deliveries are harmless because they resolve to the same durable D1 job row
+- run finalization is explicit and recorded as a distinct phase
+- deferred jobs have a defined re-enqueue policy and that policy is implemented
+- DLQ replay exists for exhausted jobs
+- operator views expose job counts by status and kind for a run
+- public feed output is proven unchanged under queue-backed execution
+- queue-backed runs have completed successfully across multiple real cron cycles
 
 ## Testing Strategy
 
@@ -632,4 +657,4 @@ Integration tests:
 
 ## Remaining Open Questions
 
-- At what backlog size or cron-overlap rate do we declare the single-run model retired?
+- At what backlog size or cron-overlap rate do we stop prioritizing the single-run executor as an operational fallback, even if it still exists in code?
