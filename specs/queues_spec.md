@@ -28,6 +28,10 @@ This spec is intentionally additive. It describes the target architecture and ro
 - The current sync is already fairer and resumable than before, but it still runs inside one scheduled execution path.
 - GitHub discovery and repo processing still share one runtime budget and one upstream rate-limit envelope per run.
 
+## Implementation Companion
+
+Baseline capture, fixture corpus design, rollout gates, operator evidence, and migration sign-off rules live in `specs/queue_migration_checklist.md`.
+
 ## Proposed Architecture
 
 Use a two-stage pipeline:
@@ -539,6 +543,8 @@ The queue migration must not change:
 - README immutability after first discovery
 - public route paths and payload shapes
 
+Detailed public-behavior comparison artifacts and acceptance criteria live in `specs/queue_migration_checklist.md`.
+
 ## Rollout Plan
 
 ### Phase 0: Spec only
@@ -594,6 +600,8 @@ Do not retire the current single-run executor until all of the following are tru
 - public feed output is proven unchanged under queue-backed execution
 - queue-backed runs have completed successfully across multiple real cron cycles
 
+Detailed phase gates, evidence requirements, and acceptance commands live in `specs/queue_migration_checklist.md`.
+
 ## Testing Strategy
 
 ### Testability principles
@@ -641,6 +649,8 @@ Integration tests:
 - read APIs remain unchanged while queue-backed ingestion updates data
 - a run failure clearly reports whether it failed in planning, owner scanning, repo syncing, or finalization
 - DLQ replay succeeds after a transiently failing dependency is restored
+
+Detailed fixture corpus, verification matrix, idempotency-key policy, rate-limit classification, and operator verification questions live in `specs/queue_migration_checklist.md`.
 
 ## Resolved Initial Decisions
 
