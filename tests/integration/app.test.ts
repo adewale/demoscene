@@ -755,6 +755,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
   it("automatically picks up a newly listed repo without disturbing known repos", async () => {
     await seedProjectRecord({
+      firstSeenAt: "2026-04-19T12:00:00.000Z",
       owner: "adewale",
       repo: "known-repo",
       repoUrl: "https://github.com/adewale/known-repo",
@@ -794,6 +795,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
     const summary = await syncRepositories(testEnv, {
       fetch: mockFetch as typeof fetch,
+      now: new Date("2026-04-20T12:00:00.000Z"),
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
 
@@ -856,6 +858,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
     const summary = await syncRepositories(testEnv, {
       fetch: mockFetch as typeof fetch,
+      now: new Date("2026-04-20T12:00:00.000Z"),
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
     const payload = await fetchFeedPayload();
@@ -872,6 +875,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
   it("removes tracked repos missing from the GitHub API listing", async () => {
     await seedProjectRecord({
+      firstSeenAt: "2026-04-19T12:00:00.000Z",
       owner: "adewale",
       repo: "known-repo",
       repoUrl: "https://github.com/adewale/known-repo",

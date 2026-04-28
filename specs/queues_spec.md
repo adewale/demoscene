@@ -546,29 +546,25 @@ The queue migration must not change:
 - no behavior changes
 - define schema and queue contracts
 
-### Phase 1: Planner + owner queue
+### Phase 1: Planner + owner + repo queues
 
 - scheduled run enqueues `scan-owner` jobs
-- owner jobs still call existing repo-sync logic directly
-- validate fairness and owner-level observability first
-- add `sync_run_jobs`, `sync_run_phases`, and DLQ handling before queueing repo work
+- owner scan jobs enqueue `sync-repo` and `verify-missing-repo`
+- repo work moves into queue consumers from the first implementation phase
+- validate fairness, owner-level observability, and repo-level failure isolation together
+- add `sync_run_jobs`, `sync_run_phases`, and DLQ handling before queueing production work
 - add planner locking before queueing any production work
 - add deferred-job re-enqueue before fresh planning
-
-### Phase 2: Repo queue
-
-- owner scan enqueues `sync-repo` and `verify-missing-repo`
-- repo work moves fully into queue consumers
 - add per-job failing-stage and retry metadata
 - deduplicate deliveries against durable D1 job rows
 
-### Phase 3: Operator expansion
+### Phase 2: Operator expansion
 
 - add queue/job debug routes and dashboards
 - tighten retry/dead-letter policy
 - add replay support for deferred and dead-letter jobs
 
-### Phase 4: Cleanup
+### Phase 3: Cleanup
 
 - remove no-longer-needed single-run checkpoint logic if the queue model fully supersedes it
 - keep only the state still needed for planning and read-side operations
@@ -637,4 +633,3 @@ Integration tests:
 ## Remaining Open Questions
 
 - At what backlog size or cron-overlap rate do we declare the single-run model retired?
-- Should Phase 1 follow `bobbin`'s approach and queue only the slowest/highest-volume part first, or should we move owner scans and repo syncs to queues together?
