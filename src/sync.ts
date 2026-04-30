@@ -96,6 +96,7 @@ type DiscoveryResult = {
   processedOwnerCount: number;
   rateLimitedUntil: string | null;
   repositoriesToProcess: SyncTarget[];
+  repositoriesToVerifyMissing: ParsedRepositoryUrl[];
   reposDiscovered: number;
 };
 
@@ -119,6 +120,19 @@ type SyncTelemetry = {
     rateLimitedUntil: string | null;
     reposDeferredByRateLimit: number;
   } | null;
+};
+
+type QueuedRepositoryTarget = {
+  owner: string;
+  repo: string;
+  repoUrl: string;
+};
+
+type QueueOwnerScanResult = {
+  rateLimitedUntil: string | null;
+  repositoriesToSync: QueuedRepositoryTarget[];
+  repositoriesToVerifyMissing: QueuedRepositoryTarget[];
+  summary: SyncSummary;
 };
 
 function createDatabaseGitHubApiCache(
@@ -378,7 +392,10 @@ export async function syncRepositoriesWithTelemetry(
     ? requestedRepositories
     : mergeRepositoriesToProcess(
         pendingRepositories,
-        interleaveRepositoriesByOwner(discovery?.repositoriesToProcess ?? []),
+        interleaveRepositoriesByOwner([
+          ...(discovery?.repositoriesToProcess ?? []),
+          ...(discovery?.repositoriesToVerifyMissing ?? []),
+        ]),
       );
   let processedRepoCount = 0;
   let lastCheckpoint =
@@ -469,6 +486,87 @@ export async function syncRepositoriesWithTelemetry(
   };
 }
 
+function toQueuedRepositoryTarget(
+  repository: SyncTarget,
+): QueuedRepositoryTarget {
+  return {
+    owner: repository.owner,
+    repo: repository.repo,
+    repoUrl: repository.url,
+  };
+}
+
+export async function scanOwnerForQueue(
+  env: AppEnv,
+  options: {
+    fetch?: FetchLike;
+    mode: SyncMode;
+    now?: Date;
+    owner: string;
+  },
+): Promise<QueueOwnerScanResult> {
+  const teamMember = TEAM_MEMBERS.find(
+    (candidate) => candidate.login === options.owner,
+  );
+
+  if (!teamMember) {
+    throw new Error(`Unknown queue owner: ${options.owner}`);
+  }
+
+  const db = createDb(env.DB);
+  const currentTime = options.now ?? new Date();
+  const discovery = await resolveTrackedRepositories(
+    db,
+    options.fetch ?? fetch,
+    currentTime,
+    options.mode,
+    [teamMember],
+    env.GITHUB_TOKEN,
+    createDatabaseGitHubApiCache(db),
+  );
+  const summary = createEmptySummary(
+    discovery.accountsScanned,
+    discovery.accountsSucceeded,
+    discovery.accountsFailed,
+    discovery.reposDiscovered,
+  );
+
+  updateRateLimit(summary, discovery.rateLimitedUntil);
+
+  for (const slug of discovery.missingProjectSlugs) {
+    await deleteProjectBySlug(db, slug);
+    summary.reposRemoved += 1;
+  }
+
+  return {
+    rateLimitedUntil: discovery.rateLimitedUntil,
+    repositoriesToSync: discovery.repositoriesToProcess.map(
+      toQueuedRepositoryTarget,
+    ),
+    repositoriesToVerifyMissing: discovery.repositoriesToVerifyMissing.map(
+      toQueuedRepositoryTarget,
+    ),
+    summary,
+  };
+}
+
+export async function syncQueuedRepository(
+  env: AppEnv,
+  options: {
+    fetch?: FetchLike;
+    now?: Date;
+    repoUrl: string;
+  },
+): Promise<SyncResult> {
+  return syncRepository(
+    createDb(env.DB),
+    options.fetch ?? fetch,
+    parseRepositoryUrl(options.repoUrl),
+    options.now ?? new Date(),
+    env.GITHUB_TOKEN,
+  );
+}
+
 async function resolveTrackedRepositories(
   db: ReturnType<typeof createDb>,
   fetchImpl: FetchLike,
@@ -484,6 +582,7 @@ async function resolveTrackedRepositories(
   let accountsSucceeded = 0;
   const discoveredRepositories = new Map<string, GitHubRepositoryMetadata>();
   const repositoriesToProcess = new Map<string, SyncTarget>();
+  const repositoriesToVerifyMissing = new Map<string, ParsedRepositoryUrl>();
   const missingProjectSlugs = new Set<string>();
   const repositoryScanStateByUrl = new Map<string, RepositoryScanStateRecord>();
   const teamLogins = new Set(teamMembers.map((teamMember) => teamMember.login));
@@ -556,9 +655,7 @@ async function resolveTrackedRepositories(
       }
 
       for (const repository of missingRepositories.repositoriesToVerify) {
-        if (!repositoriesToProcess.has(repository.url)) {
-          repositoriesToProcess.set(repository.url, repository);
-        }
+        repositoriesToVerifyMissing.set(repository.url, repository);
       }
     } catch (error) {
       accountsFailed += 1;
@@ -588,6 +685,9 @@ async function resolveTrackedRepositories(
           processedOwnerCount: accountsSucceeded,
           rateLimitedUntil: error.retryAfter,
           repositoriesToProcess: [...repositoriesToProcess.values()],
+          repositoriesToVerifyMissing: [
+            ...repositoriesToVerifyMissing.values(),
+          ],
           reposDiscovered: discoveredRepositories.size,
         };
       }
@@ -630,6 +730,7 @@ async function resolveTrackedRepositories(
     processedOwnerCount: accountsSucceeded,
     rateLimitedUntil: null,
     repositoriesToProcess: [...repositoriesToProcess.values()],
+    repositoriesToVerifyMissing: [...repositoriesToVerifyMissing.values()],
     reposDiscovered: discoveredRepositories.size,
   };
 }

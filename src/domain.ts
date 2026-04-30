@@ -18,6 +18,9 @@ export type AppEnv = {
   DEBUG_SYNC_TOKEN?: string;
   ENABLE_DEBUG_ROUTES?: string;
   GITHUB_TOKEN?: string;
+  OWNER_QUEUE?: Queue<unknown>;
+  QUEUE_SYNC_ENABLED?: string;
+  REPO_QUEUE?: Queue<unknown>;
 };
 
 export type SyncSummary = {
@@ -49,7 +52,9 @@ export type SyncRunRecord = {
   rateLimitedUntil: string | null;
   reposDeferredByRateLimit: number;
   startedAt: string;
-  status: "failed" | "succeeded";
+  executionPath?: "queue" | "single-run";
+  planningKey?: string | null;
+  status: "failed" | "partial" | "processing" | "queued" | "succeeded";
   summaryJson: string | null;
 };
 

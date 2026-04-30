@@ -6,6 +6,7 @@ import {
   gt,
   inArray,
   isNotNull,
+  lte,
   notInArray,
   or,
 } from "drizzle-orm";
@@ -18,6 +19,12 @@ import type {
   SyncRunRecord,
   SyncStateRecord,
 } from "../domain";
+import {
+  buildQueueJobId,
+  buildQueueSemanticKey,
+  type QueueJobStatus,
+  type QueueMessageBody,
+} from "../lib/queue/messages";
 import {
   CLOUDFLARE_PRODUCT_BY_KEY,
   isCloudflareProductKey,
@@ -32,12 +39,20 @@ import {
   projects,
   githubResponseCache,
   repositoryScanState,
+  syncPlannerLocks,
+  syncRunJobs,
+  syncRunPhases,
   syncRuns,
   syncState,
 } from "./schema";
 
 type Database = ReturnType<typeof import("./client").createDb>;
 const PRODUCT_LOOKUP_BATCH_SIZE = 90;
+const ACTIVE_QUEUE_JOB_STATUSES: QueueJobStatus[] = [
+  "queued",
+  "processing",
+  "deferred",
+];
 
 function requireProjectChronology(
   row: typeof projects.$inferSelect,
@@ -333,28 +348,40 @@ export async function listRepositoryScanStateByOwners(
 export async function insertSyncRun(
   db: Database,
   syncRun: SyncRunRecord,
-): Promise<void> {
-  await db.insert(syncRuns).values({
-    cron: syncRun.cron,
-    durationMs: syncRun.durationMs,
-    errorMessage: syncRun.errorMessage,
-    finishedAt: syncRun.finishedAt,
-    lastCheckpointJson: syncRun.lastCheckpointJson,
-    mode: syncRun.mode,
-    plannedOwnerCount: syncRun.plannedOwnerCount,
-    plannedRepoCount: syncRun.plannedRepoCount,
-    processedOwnerCount: syncRun.processedOwnerCount,
-    processedRepoCount: syncRun.processedRepoCount,
-    rateLimitSnapshotJson: syncRun.rateLimitSnapshotJson,
-    rateLimitedUntil: syncRun.rateLimitedUntil,
-    reposDeferredByRateLimit: syncRun.reposDeferredByRateLimit,
-    startedAt: syncRun.startedAt,
-    status: syncRun.status,
-    summaryJson: syncRun.summaryJson,
-  });
+): Promise<number> {
+  const [row] = await db
+    .insert(syncRuns)
+    .values({
+      cron: syncRun.cron,
+      durationMs: syncRun.durationMs,
+      errorMessage: syncRun.errorMessage,
+      executionPath: syncRun.executionPath ?? "single-run",
+      finishedAt: syncRun.finishedAt,
+      lastCheckpointJson: syncRun.lastCheckpointJson,
+      mode: syncRun.mode,
+      planningKey: syncRun.planningKey ?? null,
+      plannedOwnerCount: syncRun.plannedOwnerCount,
+      plannedRepoCount: syncRun.plannedRepoCount,
+      processedOwnerCount: syncRun.processedOwnerCount,
+      processedRepoCount: syncRun.processedRepoCount,
+      rateLimitSnapshotJson: syncRun.rateLimitSnapshotJson,
+      rateLimitedUntil: syncRun.rateLimitedUntil,
+      reposDeferredByRateLimit: syncRun.reposDeferredByRateLimit,
+      startedAt: syncRun.startedAt,
+      status: syncRun.status,
+      summaryJson: syncRun.summaryJson,
+    })
+    .returning({ id: syncRuns.id });
+
+  if (!row) {
+    throw new Error("Failed to insert sync run");
+  }
+
+  return row.id;
 }
 
 type SyncRunRow = typeof syncRuns.$inferSelect;
+type SyncRunJobRow = typeof syncRunJobs.$inferSelect;
 
 export async function getLatestSyncRun(
   db: Database,
@@ -363,6 +390,378 @@ export async function getLatestSyncRun(
     (await db.select().from(syncRuns).orderBy(desc(syncRuns.id)).limit(1))[0] ??
     null
   );
+}
+
+export async function getSyncRunByPlanningKey(
+  db: Database,
+  planningKey: string,
+): Promise<SyncRunRow | null> {
+  return (
+    (
+      await db
+        .select()
+        .from(syncRuns)
+        .where(eq(syncRuns.planningKey, planningKey))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function acquireSyncPlannerLock(
+  db: Database,
+  options: {
+    acquiredAt: string;
+    correlationId: string;
+    expiresAt: string;
+    name: string;
+    runId: string;
+  },
+): Promise<boolean> {
+  const existingLock = (
+    await db
+      .select()
+      .from(syncPlannerLocks)
+      .where(eq(syncPlannerLocks.name, options.name))
+      .limit(1)
+  )[0];
+
+  if (existingLock && existingLock.expiresAt > options.acquiredAt) {
+    return false;
+  }
+
+  if (existingLock) {
+    await db
+      .delete(syncPlannerLocks)
+      .where(eq(syncPlannerLocks.name, options.name));
+  }
+
+  try {
+    await db.insert(syncPlannerLocks).values(options);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function releaseSyncPlannerLock(
+  db: Database,
+  name: string,
+): Promise<void> {
+  await db.delete(syncPlannerLocks).where(eq(syncPlannerLocks.name, name));
+}
+
+export async function insertSyncRunPhase(
+  db: Database,
+  phase: {
+    errorCount?: number;
+    finishedAt?: string | null;
+    phase: string;
+    runId: string;
+    startedAt?: string | null;
+    status: string;
+    summaryJson?: string | null;
+  },
+): Promise<void> {
+  await db.insert(syncRunPhases).values({
+    errorCount: phase.errorCount ?? 0,
+    finishedAt: phase.finishedAt ?? null,
+    phase: phase.phase,
+    runId: phase.runId,
+    startedAt: phase.startedAt ?? null,
+    status: phase.status,
+    summaryJson: phase.summaryJson ?? null,
+  });
+}
+
+export async function upsertSyncRunJob(
+  db: Database,
+  options: {
+    message: QueueMessageBody;
+    queuedAt: string;
+    replayOfJobId?: string | null;
+  },
+): Promise<{ created: boolean; job: SyncRunJobRow }> {
+  const id = buildQueueJobId(options.message);
+  const semanticKey = buildQueueSemanticKey(options.message);
+  const existingActiveJob = (
+    await db
+      .select()
+      .from(syncRunJobs)
+      .where(
+        and(
+          eq(syncRunJobs.semanticKey, semanticKey),
+          inArray(syncRunJobs.status, ACTIVE_QUEUE_JOB_STATUSES),
+        ),
+      )
+      .limit(1)
+  )[0];
+
+  if (existingActiveJob) {
+    return { created: false, job: existingActiveJob };
+  }
+
+  const existingJob = (
+    await db.select().from(syncRunJobs).where(eq(syncRunJobs.id, id)).limit(1)
+  )[0];
+
+  if (existingJob) {
+    return { created: false, job: existingJob };
+  }
+
+  await db.insert(syncRunJobs).values({
+    correlationId: options.message.correlationId,
+    id,
+    kind: options.message.kind,
+    mode: options.message.mode,
+    owner: options.message.owner,
+    payloadJson: JSON.stringify(options.message),
+    queuedAt: options.queuedAt,
+    repo: "repo" in options.message ? options.message.repo : null,
+    repoUrl: "repoUrl" in options.message ? options.message.repoUrl : null,
+    replayOfJobId: options.replayOfJobId ?? null,
+    runId: options.message.runId,
+    schemaVersion: options.message.schemaVersion,
+    semanticKey,
+    status: "queued",
+    updatedAt: options.queuedAt,
+  });
+
+  const createdJob = (
+    await db.select().from(syncRunJobs).where(eq(syncRunJobs.id, id)).limit(1)
+  )[0];
+
+  if (!createdJob) {
+    throw new Error(`Failed to insert queue job ${id}`);
+  }
+
+  return { created: true, job: createdJob };
+}
+
+async function getSyncRunJobById(
+  db: Database,
+  id: string,
+): Promise<SyncRunJobRow | null> {
+  return (
+    (
+      await db.select().from(syncRunJobs).where(eq(syncRunJobs.id, id)).limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function markSyncRunJobProcessing(
+  db: Database,
+  id: string,
+  startedAt: string,
+): Promise<void> {
+  const job = await getSyncRunJobById(db, id);
+
+  await db
+    .update(syncRunJobs)
+    .set({
+      attemptCount: (job?.attemptCount ?? 0) + 1,
+      firstAttemptAt: job?.firstAttemptAt ?? startedAt,
+      startedAt,
+      status: "processing",
+      updatedAt: startedAt,
+    })
+    .where(eq(syncRunJobs.id, id));
+}
+
+export async function markSyncRunJobSucceeded(
+  db: Database,
+  id: string,
+  finishedAt: string,
+): Promise<void> {
+  await db
+    .update(syncRunJobs)
+    .set({
+      finishedAt,
+      lastError: null,
+      lastErrorKind: null,
+      lastErrorStage: null,
+      status: "succeeded",
+      updatedAt: finishedAt,
+    })
+    .where(eq(syncRunJobs.id, id));
+}
+
+export async function markSyncRunJobDeferred(
+  db: Database,
+  options: { finishedAt: string; id: string; rateLimitedUntil: string | null },
+): Promise<void> {
+  await db
+    .update(syncRunJobs)
+    .set({
+      finishedAt: options.finishedAt,
+      rateLimitedUntil: options.rateLimitedUntil,
+      status: "deferred",
+      updatedAt: options.finishedAt,
+    })
+    .where(eq(syncRunJobs.id, options.id));
+}
+
+export async function markSyncRunJobFailed(
+  db: Database,
+  options: {
+    errorKind: string;
+    errorMessage: string;
+    errorStage: string;
+    finishedAt: string;
+    id: string;
+  },
+): Promise<void> {
+  await db
+    .update(syncRunJobs)
+    .set({
+      finishedAt: options.finishedAt,
+      lastError: options.errorMessage,
+      lastErrorKind: options.errorKind,
+      lastErrorStage: options.errorStage,
+      status: "failed",
+      updatedAt: options.finishedAt,
+    })
+    .where(eq(syncRunJobs.id, options.id));
+}
+
+export async function getSyncRunJob(
+  db: Database,
+  id: string,
+): Promise<SyncRunJobRow | null> {
+  return getSyncRunJobById(db, id);
+}
+
+export async function getLatestSyncRunJobByStatus(
+  db: Database,
+  status: QueueJobStatus,
+): Promise<SyncRunJobRow | null> {
+  return (
+    (
+      await db
+        .select()
+        .from(syncRunJobs)
+        .where(eq(syncRunJobs.status, status))
+        .orderBy(desc(syncRunJobs.updatedAt))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function listSyncRunJobCounts(
+  db: Database,
+  runId: string,
+): Promise<Array<{ count: number; kind: string; status: string }>> {
+  return db
+    .select({
+      count: count(),
+      kind: syncRunJobs.kind,
+      status: syncRunJobs.status,
+    })
+    .from(syncRunJobs)
+    .where(eq(syncRunJobs.runId, runId))
+    .groupBy(syncRunJobs.kind, syncRunJobs.status)
+    .orderBy(syncRunJobs.kind, syncRunJobs.status);
+}
+
+export async function finalizeSyncRunFromJobs(
+  db: Database,
+  options: { finishedAt: string; runId: string },
+): Promise<{
+  counts: Array<{ count: number; kind: string; status: string }>;
+  status: "partial" | "processing" | "succeeded";
+}> {
+  const counts = await listSyncRunJobCounts(db, options.runId);
+  const activeCount = counts
+    .filter((row) => row.status === "processing" || row.status === "queued")
+    .reduce((total, row) => total + row.count, 0);
+  const problemCount = counts
+    .filter((row) => row.status === "deferred" || row.status === "failed")
+    .reduce((total, row) => total + row.count, 0);
+  const status =
+    activeCount > 0 ? "processing" : problemCount > 0 ? "partial" : "succeeded";
+  const processedOwnerCount = counts
+    .filter(
+      (row) =>
+        row.kind === "scan-owner" &&
+        ["cancelled", "deferred", "failed", "succeeded"].includes(row.status),
+    )
+    .reduce((total, row) => total + row.count, 0);
+  const processedRepoCount = counts
+    .filter(
+      (row) =>
+        row.kind !== "scan-owner" &&
+        ["cancelled", "deferred", "failed", "succeeded"].includes(row.status),
+    )
+    .reduce((total, row) => total + row.count, 0);
+  const reposDeferredByRateLimit = counts
+    .filter((row) => row.kind !== "scan-owner" && row.status === "deferred")
+    .reduce((total, row) => total + row.count, 0);
+
+  await db
+    .update(syncRuns)
+    .set({
+      finishedAt: options.finishedAt,
+      processedOwnerCount,
+      processedRepoCount,
+      reposDeferredByRateLimit,
+      status,
+      summaryJson: JSON.stringify({ jobCounts: counts }),
+    })
+    .where(eq(syncRuns.id, Number.parseInt(options.runId, 10)));
+
+  return { counts, status };
+}
+
+export async function reactivateSyncRunJobForReplay(
+  db: Database,
+  options: { id: string; replayedAt: string },
+): Promise<void> {
+  await db
+    .update(syncRunJobs)
+    .set({
+      finishedAt: null,
+      lastError: null,
+      lastErrorKind: null,
+      lastErrorStage: null,
+      rateLimitedUntil: null,
+      replayOfJobId: options.id,
+      startedAt: null,
+      status: "queued",
+      updatedAt: options.replayedAt,
+    })
+    .where(eq(syncRunJobs.id, options.id));
+}
+
+export async function listDueDeferredSyncRunJobs(
+  db: Database,
+  now: string,
+): Promise<SyncRunJobRow[]> {
+  return db
+    .select()
+    .from(syncRunJobs)
+    .where(
+      and(
+        eq(syncRunJobs.status, "deferred"),
+        isNotNull(syncRunJobs.rateLimitedUntil),
+        lte(syncRunJobs.rateLimitedUntil, now),
+      ),
+    )
+    .orderBy(syncRunJobs.rateLimitedUntil, syncRunJobs.id);
+}
+
+export async function requeueSyncRunJob(
+  db: Database,
+  options: { id: string; queuedAt: string },
+): Promise<void> {
+  await db
+    .update(syncRunJobs)
+    .set({
+      finishedAt: null,
+      rateLimitedUntil: null,
+      startedAt: null,
+      status: "queued",
+      updatedAt: options.queuedAt,
+    })
+    .where(eq(syncRunJobs.id, options.id));
 }
 
 export async function getLatestFailedSyncRun(

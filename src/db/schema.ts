@@ -85,11 +85,83 @@ export const syncRuns = sqliteTable(
     rateLimitedUntil: text("rate_limited_until"),
     summaryJson: text("summary_json"),
     errorMessage: text("error_message"),
+    executionPath: text("execution_path").notNull().default("single-run"),
+    planningKey: text("planning_key"),
   },
   (table) => ({
+    planningKeyUnique: uniqueIndex("sync_runs_planning_key_unique").on(
+      table.planningKey,
+    ),
     startedAtIdx: index("sync_runs_started_at_idx").on(table.startedAt),
   }),
 );
+
+export const syncRunJobs = sqliteTable(
+  "sync_run_jobs",
+  {
+    id: text("id").primaryKey(),
+    runId: text("run_id").notNull(),
+    correlationId: text("correlation_id").notNull(),
+    semanticKey: text("semantic_key").notNull(),
+    schemaVersion: integer("schema_version").notNull(),
+    kind: text("kind").notNull(),
+    mode: text("mode").notNull(),
+    owner: text("owner").notNull(),
+    repo: text("repo"),
+    repoUrl: text("repo_url"),
+    status: text("status").notNull(),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    firstAttemptAt: text("first_attempt_at"),
+    lastError: text("last_error"),
+    lastErrorStage: text("last_error_stage"),
+    lastErrorKind: text("last_error_kind"),
+    payloadJson: text("payload_json").notNull(),
+    queuedAt: text("queued_at").notNull(),
+    replayOfJobId: text("replay_of_job_id"),
+    startedAt: text("started_at"),
+    finishedAt: text("finished_at"),
+    rateLimitedUntil: text("rate_limited_until"),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (table) => ({
+    runStatusIdx: index("sync_run_jobs_run_status_idx").on(
+      table.runId,
+      table.status,
+    ),
+    semanticStatusIdx: index("sync_run_jobs_semantic_status_idx").on(
+      table.semanticKey,
+      table.status,
+    ),
+  }),
+);
+
+export const syncRunPhases = sqliteTable(
+  "sync_run_phases",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    runId: text("run_id").notNull(),
+    phase: text("phase").notNull(),
+    status: text("status").notNull(),
+    startedAt: text("started_at"),
+    finishedAt: text("finished_at"),
+    errorCount: integer("error_count").notNull().default(0),
+    summaryJson: text("summary_json"),
+  },
+  (table) => ({
+    runPhaseIdx: index("sync_run_phases_run_phase_idx").on(
+      table.runId,
+      table.phase,
+    ),
+  }),
+);
+
+export const syncPlannerLocks = sqliteTable("sync_planner_locks", {
+  name: text("name").primaryKey(),
+  runId: text("run_id").notNull(),
+  correlationId: text("correlation_id").notNull(),
+  acquiredAt: text("acquired_at").notNull(),
+  expiresAt: text("expires_at").notNull(),
+});
 
 export const syncState = sqliteTable("sync_state", {
   mode: text("mode").primaryKey(),

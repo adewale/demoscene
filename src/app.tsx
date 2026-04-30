@@ -7,12 +7,18 @@ import { TEAM_MEMBERS } from "./config/repositories";
 import { createDb } from "./db/client";
 import {
   countProjects,
+  finalizeSyncRunFromJobs,
+  getLatestSyncRunJobByStatus,
   getLatestFailedSyncRun,
   getLatestRateLimitedSyncRun,
   getLatestSyncRun,
   getProjectByOwnerRepo,
+  getSyncRunJob,
+  listSyncRunJobCounts,
   listProjectsPage,
+  reactivateSyncRunJobForReplay,
 } from "./db/queries";
+import { parseQueueMessage } from "./lib/queue/messages";
 import { renderRssFeed } from "./lib/rss";
 import { FEED_PAGE_SIZE, RSS_ITEM_LIMIT } from "./lib/sync-policy";
 import { runScheduledSync } from "./scheduled";
@@ -114,6 +120,18 @@ async function loadProjectFromRequest(
   }
 
   return getProjectByOwnerRepo(db, owner, repo);
+}
+
+function getQueueForJob(c: Context<{ Bindings: AppEnv }>, kind: string) {
+  if (kind === "scan-owner") {
+    return c.env.OWNER_QUEUE ?? null;
+  }
+
+  if (kind === "sync-repo" || kind === "verify-missing-repo") {
+    return c.env.REPO_QUEUE ?? null;
+  }
+
+  return null;
 }
 
 export function createApp() {
@@ -275,6 +293,97 @@ export function createApp() {
     }
 
     return c.json(syncRun);
+  });
+
+  app.get("/debug/queue/jobs/latest-failed", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const job = await getLatestSyncRunJobByStatus(createDb(c.env.DB), "failed");
+
+    if (!job) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(job);
+  });
+
+  app.get("/debug/queue/jobs/latest-deferred", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const job = await getLatestSyncRunJobByStatus(
+      createDb(c.env.DB),
+      "deferred",
+    );
+
+    if (!job) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    return c.json(job);
+  });
+
+  app.get("/debug/queue/sync-runs/:runId/job-counts", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const runId = c.req.param("runId");
+
+    return c.json({
+      counts: await listSyncRunJobCounts(createDb(c.env.DB), runId),
+      runId,
+    });
+  });
+
+  app.post("/debug/queue/sync-runs/:runId/finalize", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const runId = c.req.param("runId");
+    const result = await finalizeSyncRunFromJobs(createDb(c.env.DB), {
+      finishedAt: new Date().toISOString(),
+      runId,
+    });
+
+    return c.json({ runId, ...result });
+  });
+
+  app.post("/debug/queue/dlq/:jobId/replay", async (c) => {
+    if (!areDebugRoutesEnabled(c)) {
+      return c.notFound();
+    }
+
+    const db = createDb(c.env.DB);
+    const jobId = c.req.param("jobId");
+    const job = await getSyncRunJob(db, jobId);
+
+    if (!job) {
+      return c.json({ error: "Not found" }, 404);
+    }
+
+    const queue = getQueueForJob(c, job.kind);
+
+    if (!queue) {
+      return c.json(
+        { error: `No queue binding for job kind ${job.kind}` },
+        503,
+      );
+    }
+
+    const message = parseQueueMessage(JSON.parse(job.payloadJson) as unknown);
+
+    await reactivateSyncRunJobForReplay(db, {
+      id: job.id,
+      replayedAt: new Date().toISOString(),
+    });
+    await queue.send(message);
+
+    return c.json({ accepted: true, jobId }, 202);
   });
 
   app.get("/projects/*", async (c) => {

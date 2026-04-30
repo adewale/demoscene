@@ -1,6 +1,10 @@
 import type { AppEnv, SyncMode, SyncSummary } from "./domain";
 import { createDb } from "./db/client";
 import { insertSyncRun } from "./db/queries";
+import {
+  planScheduledQueueSync,
+  shouldUseQueueBackedSync,
+} from "./queue/planner";
 import { syncRepositoriesWithTelemetry } from "./sync";
 
 const WEEKLY_RECONCILE_CRON = "17 3 * * SUN";
@@ -63,9 +67,19 @@ async function recordSyncRun(options: {
 export async function runScheduledSync(options: {
   cron: string;
   env: AppEnv;
+  scheduledAt?: number;
 }): Promise<SyncSummary> {
   const mode = getScheduledSyncMode(options.cron);
   const startedAt = new Date().toISOString();
+
+  if (shouldUseQueueBackedSync(options.env)) {
+    return planScheduledQueueSync({
+      cron: options.cron,
+      env: options.env,
+      mode,
+      scheduledAt: options.scheduledAt,
+    });
+  }
 
   try {
     const { summary, telemetry } = await syncRepositoriesWithTelemetry(

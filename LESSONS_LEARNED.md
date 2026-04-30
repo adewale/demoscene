@@ -95,3 +95,10 @@
 **What happened:** Discovery walked team members in a fixed order and stopped on GitHub rate limit, so the same early accounts made progress while later accounts repeatedly missed fresh scans.
 **Resolution:** Rotated the starting owner, persisted resume state for partial runs, and interleaved repo processing across owners so partial runs make fairer progress.
 **Rule:** When scheduled work can stop early in this repo, preserve a resume cursor and avoid fixed account ordering that starves the tail of the queue.
+
+### 2026-04-29 — Queue test helpers must stay below duplicate thresholds
+
+**Context:** Implementing the first queue-backed sync planner and owner-consumer tests.
+**What happened:** The new queue fixtures initially passed behavior tests but dropped branch coverage below the threshold, then duplicated enough batch/fetch setup to trip `jscpd`.
+**Resolution:** Added explicit branch tests for every queue message variant and factored repeated owner-message/listing setup into test helpers.
+**Rule:** When adding queue migration tests, cover all message variants directly and centralize repeated queue/fetch fixture setup before running the full gate.

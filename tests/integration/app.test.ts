@@ -9,6 +9,8 @@ import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creati
 import MIGRATION_REPO_CREATED_AT_SQL from "../../migrations/0003_repo_created_at.sql?raw";
 import MIGRATION_REPOSITORY_SCAN_STATE_SQL from "../../migrations/0004_repository_scan_state.sql?raw";
 import MIGRATION_SYNC_RUNS_SQL from "../../migrations/0005_sync_runs.sql?raw";
+import MIGRATION_SYNC_OPERATIONS_SQL from "../../migrations/0006_sync_operations.sql?raw";
+import MIGRATION_QUEUE_COORDINATION_SQL from "../../migrations/0007_queue_coordination.sql?raw";
 import { TEAM_MEMBERS } from "../../src/config/repositories";
 
 type MockResponse = {
@@ -17,7 +19,10 @@ type MockResponse = {
   status?: number;
 };
 
-const testEnv = env as unknown as AppEnv;
+const testEnv = {
+  ...(env as unknown as AppEnv),
+  QUEUE_SYNC_ENABLED: "false",
+} satisfies AppEnv;
 const DEMO_REPOSITORY_URL = "https://github.com/acme/demo";
 
 function buildRepositoryApiUrl(owner: string, repo: string): string {
@@ -261,6 +266,9 @@ function createMockFetch(responses: Record<string, MockResponse>) {
 }
 
 async function resetDatabase() {
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_planner_locks").run();
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_phases").run();
+  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_jobs").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_runs").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_state").run();
   await testEnv.DB.prepare("DROP TABLE IF EXISTS github_response_cache").run();
@@ -274,6 +282,8 @@ async function resetDatabase() {
     MIGRATION_REPO_CREATED_AT_SQL,
     MIGRATION_REPOSITORY_SCAN_STATE_SQL,
     MIGRATION_SYNC_RUNS_SQL,
+    MIGRATION_SYNC_OPERATIONS_SQL,
+    MIGRATION_QUEUE_COORDINATION_SQL,
   ]) {
     for (const statement of migrationSql
       .split(";")
@@ -281,48 +291,6 @@ async function resetDatabase() {
       .filter(Boolean)) {
       await testEnv.DB.prepare(statement).run();
     }
-  }
-
-  await testEnv.DB.prepare("DROP TABLE sync_runs").run();
-
-  for (const statement of [
-    `CREATE TABLE sync_runs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      cron TEXT NOT NULL,
-      mode TEXT NOT NULL,
-      status TEXT NOT NULL,
-      started_at TEXT NOT NULL,
-      finished_at TEXT NOT NULL,
-      duration_ms INTEGER NOT NULL DEFAULT 0,
-      planned_owner_count INTEGER NOT NULL DEFAULT 0,
-      processed_owner_count INTEGER NOT NULL DEFAULT 0,
-      planned_repo_count INTEGER NOT NULL DEFAULT 0,
-      processed_repo_count INTEGER NOT NULL DEFAULT 0,
-      last_checkpoint_json TEXT,
-      rate_limit_snapshot_json TEXT,
-      repos_deferred_by_rate_limit INTEGER NOT NULL DEFAULT 0,
-      rate_limited_until TEXT,
-      summary_json TEXT,
-      error_message TEXT
-    )`,
-    `CREATE INDEX sync_runs_started_at_idx ON sync_runs(started_at)`,
-    `CREATE TABLE sync_state (
-      mode TEXT PRIMARY KEY NOT NULL,
-      next_owner_cursor INTEGER NOT NULL,
-      pending_repository_urls_json TEXT NOT NULL,
-      checkpoint_json TEXT,
-      updated_at TEXT NOT NULL
-    )`,
-    `CREATE TABLE github_response_cache (
-      request_url TEXT PRIMARY KEY NOT NULL,
-      etag TEXT,
-      last_modified TEXT,
-      link_header TEXT,
-      response_body TEXT NOT NULL,
-      fetched_at TEXT NOT NULL
-    )`,
-  ]) {
-    await testEnv.DB.prepare(statement).run();
   }
 }
 

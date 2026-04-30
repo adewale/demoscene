@@ -15,10 +15,37 @@
       "migrations_dir": "migrations",
     },
   ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "OWNER_QUEUE",
+        "queue": "demoscene-owner-sync",
+      },
+      {
+        "binding": "REPO_QUEUE",
+        "queue": "demoscene-repo-sync",
+      },
+    ],
+    "consumers": [
+      {
+        "queue": "demoscene-owner-sync",
+        "max_batch_size": 5,
+        "max_batch_timeout": 30,
+        "dead_letter_queue": "demoscene-owner-sync-dlq",
+      },
+      {
+        "queue": "demoscene-repo-sync",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+        "dead_letter_queue": "demoscene-repo-sync-dlq",
+      },
+    ],
+  },
   "triggers": {
     "crons": ["0 12 * * *", "17 3 * * SUN"],
   },
   "vars": {
     "APP_NAME": "demoscene",
+    "QUEUE_SYNC_ENABLED": "true",
   },
 }
