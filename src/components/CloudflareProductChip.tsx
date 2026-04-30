@@ -38,7 +38,7 @@ type CloudflareProductChipProps = {
   product: CloudflareProduct;
 };
 
-const PRODUCT_ICONS: Record<
+export const PRODUCT_ICONS: Record<
   (typeof CLOUDFLARE_PRODUCT_BY_KEY)[CloudflareProductKey]["icon"],
   LucideIcon
 > = {

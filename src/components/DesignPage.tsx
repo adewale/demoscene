@@ -1,7 +1,10 @@
+import type { CSSProperties } from "react";
+
 import type { ProjectWithProducts } from "../domain";
 import { listCloudflareProductDefinitions } from "../lib/cloudflare-products";
 import { formatMarkdownPreviewForCard } from "../lib/markdown/preview";
 
+import { PRODUCT_ICONS } from "./CloudflareProductChip";
 import { FeedPage } from "./FeedPage";
 import { MarkdownPreview } from "./MarkdownContent";
 import { ProductIconStrip } from "./ProductIconStrip";
@@ -55,6 +58,7 @@ function DesignActionRow({ actions }: { actions: DesignAction[] }) {
 
 export function DesignPage({ featuredProject, projects }: DesignPageProps) {
   const productCatalog = allProducts();
+  const iconMapping = listCloudflareProductDefinitions();
   const featuredPreview = featuredProject
     ? formatMarkdownPreviewForCard(
         featuredProject.readmePreviewMarkdown,
@@ -177,6 +181,48 @@ export function DesignPage({ featuredProject, projects }: DesignPageProps) {
             </p>
           </div>
           <ProductIconStrip products={productCatalog} />
+        </div>
+      </section>
+
+      <section className="card design-section">
+        <div className="card-body design-section-body">
+          <div className="design-heading-block">
+            <p className="feed-card-kicker">Icon mapping</p>
+            <h3 className="project-title design-subtitle">
+              Lucide icons by product
+            </h3>
+            <p className="design-copy">
+              Each Cloudflare product is paired with a single Lucide icon. The
+              icon name doubles as the lookup key in{" "}
+              <code>PRODUCT_ICONS</code> and the value stored on each entry in{" "}
+              <code>CLOUDFLARE_PRODUCT_DEFINITIONS</code>.
+            </p>
+          </div>
+          <ul className="design-icon-map-grid">
+            {iconMapping.map((product) => {
+              const Icon = PRODUCT_ICONS[product.icon];
+              return (
+                <li className="design-icon-map-card" key={product.key}>
+                  <span
+                    aria-hidden="true"
+                    className="design-icon-map-icon"
+                    style={
+                      { "--product-rgb": product.tone } as CSSProperties
+                    }
+                  >
+                    <Icon strokeWidth={1.8} />
+                  </span>
+                  <span className="design-icon-map-meta">
+                    <strong>{product.label}</strong>
+                    <code className="design-icon-map-name">
+                      {product.icon}
+                    </code>
+                    <span className="design-icon-map-key">{product.key}</span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </section>
 
