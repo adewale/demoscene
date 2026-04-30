@@ -102,3 +102,10 @@
 **What happened:** The new queue fixtures initially passed behavior tests but dropped branch coverage below the threshold, then duplicated enough batch/fetch setup to trip `jscpd`.
 **Resolution:** Added explicit branch tests for every queue message variant and factored repeated owner-message/listing setup into test helpers.
 **Rule:** When adding queue migration tests, cover all message variants directly and centralize repeated queue/fetch fixture setup before running the full gate.
+
+### 2026-04-30 — Queue runs must finalize themselves
+
+**Context:** Enabling the queue-backed production sync pipeline.
+**What happened:** Queue workers drained successfully, but the top-level `sync_runs` rows stayed `queued` because finalization only existed as an operator action and was not invoked by consumers after job completion.
+**Resolution:** Backfilled the completed production runs from durable `sync_run_jobs`, then updated queue consumers to finalize the parent run after every job transition, with a regression that proves the last active job moves the run to `succeeded`.
+**Rule:** Every async fan-out pipeline in this repo needs an automatic finalization path driven by durable job state; operator routes may repair state, but must not be required for normal run completion.
