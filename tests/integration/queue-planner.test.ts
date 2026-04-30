@@ -524,6 +524,39 @@ describe("queue-backed scheduled planner", () => {
     });
   });
 
+  it("automatically finalizes a queue run when the last active job completes", async () => {
+    const queued = await planQueuedSync();
+    const queueMessage = createSentOwnerQueueMessage(queued, "adewale");
+
+    await testEnv.DB.prepare(
+      `UPDATE sync_run_jobs
+       SET status = 'succeeded', finished_at = '2026-04-28T12:01:00.000Z'
+       WHERE kind = 'scan-owner' AND owner != 'adewale'`,
+    ).run();
+
+    await processQueueBatch(createMessageBatch([queueMessage]), queued.env, {
+      fetch: createMockFetch({
+        [buildUserRepositoriesApiUrl("adewale", 1)]:
+          buildEmptyRepositoryListing(),
+      }) as typeof fetch,
+      now: new Date("2026-04-28T12:02:00.000Z"),
+    });
+
+    const run = await testEnv.DB.prepare(
+      `SELECT planned_repo_count, processed_owner_count, processed_repo_count, status
+       FROM sync_runs
+       WHERE id = 1`,
+    ).first();
+
+    expect(queueMessage.ack).toHaveBeenCalledTimes(1);
+    expect(run).toEqual({
+      planned_repo_count: 0,
+      processed_owner_count: TEAM_MEMBERS.length,
+      processed_repo_count: 0,
+      status: "succeeded",
+    });
+  });
+
   it("processes one owner queue message by enqueueing repo work without syncing inline", async () => {
     const queued = await planQueuedSync();
     const queueMessage = createSentOwnerQueueMessage(queued, "adewale");

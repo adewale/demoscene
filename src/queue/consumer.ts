@@ -1,6 +1,7 @@
 import type { AppEnv } from "../domain";
 import { createDb } from "../db/client";
 import {
+  finalizeSyncRunFromJobs,
   markSyncRunJobDeferred,
   markSyncRunJobFailed,
   markSyncRunJobProcessing,
@@ -72,6 +73,17 @@ function createRepoMessage(options: {
     runId: options.runId,
     schemaVersion: 1,
   };
+}
+
+async function finalizeRunAfterJob(options: {
+  db: ReturnType<typeof createDb>;
+  finishedAt: string;
+  message: QueueMessageBody;
+}): Promise<void> {
+  await finalizeSyncRunFromJobs(options.db, {
+    finishedAt: options.finishedAt,
+    runId: options.message.runId,
+  });
 }
 
 async function enqueueRepoMessages(options: {
@@ -172,6 +184,7 @@ export async function processQueueBatch(
           await markSyncRunJobSucceeded(db, jobId, finishedAt);
         }
 
+        await finalizeRunAfterJob({ db, finishedAt, message });
         queueMessage.ack();
         continue;
       }
@@ -193,6 +206,7 @@ export async function processQueueBatch(
         await markSyncRunJobSucceeded(db, jobId, finishedAt);
       }
 
+      await finalizeRunAfterJob({ db, finishedAt, message });
       queueMessage.ack();
     } catch (error) {
       const finishedAt = new Date().toISOString();
@@ -205,6 +219,10 @@ export async function processQueueBatch(
           finishedAt,
           id: jobId,
         });
+      }
+
+      if (message) {
+        await finalizeRunAfterJob({ db, finishedAt, message });
       }
 
       console.error(

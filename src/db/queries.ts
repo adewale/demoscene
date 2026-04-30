@@ -695,11 +695,15 @@ export async function finalizeSyncRunFromJobs(
   const reposDeferredByRateLimit = counts
     .filter((row) => row.kind !== "scan-owner" && row.status === "deferred")
     .reduce((total, row) => total + row.count, 0);
+  const plannedRepoCount = counts
+    .filter((row) => row.kind !== "scan-owner")
+    .reduce((total, row) => total + row.count, 0);
 
   await db
     .update(syncRuns)
     .set({
       finishedAt: options.finishedAt,
+      plannedRepoCount,
       processedOwnerCount,
       processedRepoCount,
       reposDeferredByRateLimit,
