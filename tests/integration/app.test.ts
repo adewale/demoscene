@@ -337,6 +337,88 @@ async function fetchSyncState(mode = "incremental") {
   } | null;
 }
 
+async function seedQueueRun(values: {
+  finishedAt?: string;
+  id: number;
+  plannedOwnerCount?: number;
+  plannedRepoCount?: number;
+  processedOwnerCount?: number;
+  processedRepoCount?: number;
+  startedAt?: string;
+  status: string;
+}) {
+  const startedAt = values.startedAt ?? "2026-04-30T12:00:00.000Z";
+  const finishedAt = values.finishedAt ?? startedAt;
+
+  await testEnv.DB.prepare(
+    `INSERT INTO sync_runs (
+      id, cron, mode, status, started_at, finished_at, duration_ms,
+      planned_owner_count, processed_owner_count, planned_repo_count, processed_repo_count,
+      repos_deferred_by_rate_limit, execution_path, summary_json
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      values.id,
+      "0 12 * * *",
+      "incremental",
+      values.status,
+      startedAt,
+      finishedAt,
+      0,
+      values.plannedOwnerCount ?? 11,
+      values.processedOwnerCount ?? 11,
+      values.plannedRepoCount ?? 0,
+      values.processedRepoCount ?? 0,
+      0,
+      "queue",
+      "{}",
+    )
+    .run();
+}
+
+async function seedQueueJob(values: {
+  finishedAt?: string | null;
+  kind: string;
+  owner: string;
+  repo?: string | null;
+  runId: string;
+  startedAt?: string | null;
+  status: string;
+}) {
+  const repo = values.repo ?? null;
+  const subject = repo ? `${values.owner}/${repo}` : values.owner;
+  const id = `${values.runId}:${values.kind}:incremental:${subject}`;
+  const updatedAt =
+    values.finishedAt ?? values.startedAt ?? "2026-04-30T12:02:00.000Z";
+
+  await testEnv.DB.prepare(
+    `INSERT INTO sync_run_jobs (
+      id, run_id, correlation_id, semantic_key, schema_version, kind, mode, owner, repo, repo_url,
+      status, attempt_count, payload_json, queued_at, started_at, finished_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      id,
+      values.runId,
+      `corr-${values.runId}`,
+      `${values.kind}:${subject}`,
+      1,
+      values.kind,
+      "incremental",
+      values.owner,
+      repo,
+      repo ? `https://github.com/${values.owner}/${repo}` : null,
+      values.status,
+      1,
+      "{}",
+      "2026-04-30T12:00:00.000Z",
+      values.startedAt ?? null,
+      values.finishedAt ?? null,
+      updatedAt,
+    )
+    .run();
+}
+
 describe("Worker app", () => {
   beforeEach(async () => {
     await resetDatabase();
@@ -864,6 +946,7 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
 
     const summary = await syncRepositories(testEnv, {
       fetch: mockFetch as typeof fetch,
+      now: new Date("2026-04-20T12:00:00.000Z"),
       teamMembers: [{ login: "adewale", name: "Ade" }],
     });
 
@@ -1231,6 +1314,82 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(designText).toContain("Cloudflare chips");
     expect(designText).toContain("Workers AI");
     expect(designText).toContain("Sandbox");
+  });
+
+  it("renders an unlinked dashboard with reassuring pipeline health", async () => {
+    await seedProjectRecord({
+      owner: "acme",
+      repo: "demo",
+      repoUrl: DEMO_REPOSITORY_URL,
+      firstSeenAt: "2026-04-30T12:03:00.000Z",
+      repoCreatedAt: "2026-04-30T11:59:00.000Z",
+      repoCreationOrder: 42,
+    });
+    await seedQueueRun({
+      finishedAt: "2026-04-30T12:02:00.000Z",
+      id: 1,
+      plannedOwnerCount: 11,
+      plannedRepoCount: 1,
+      processedOwnerCount: 11,
+      processedRepoCount: 1,
+      status: "succeeded",
+    });
+    await seedQueueJob({
+      finishedAt: "2026-04-30T12:01:00.000Z",
+      kind: "scan-owner",
+      owner: "acme",
+      runId: "1",
+      status: "succeeded",
+    });
+    await seedQueueJob({
+      finishedAt: "2026-04-30T12:02:00.000Z",
+      kind: "sync-repo",
+      owner: "acme",
+      repo: "demo",
+      runId: "1",
+      status: "succeeded",
+    });
+
+    const response = await SELF.fetch("https://example.com/dashboard");
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(text).toContain("All quiet");
+    expect(text).toContain("Last run finished");
+    expect(text).toContain("0 active, 0 failed, 0 deferred");
+    expect(text).toContain("No queued, processing, failed, or deferred jobs");
+    expect(text).toContain("acme/demo");
+    expect(text).not.toContain("Watch us build.");
+  });
+
+  it("surfaces dashboard problem jobs without enabling debug routes", async () => {
+    await seedQueueRun({
+      id: 1,
+      plannedOwnerCount: 11,
+      plannedRepoCount: 1,
+      processedOwnerCount: 10,
+      processedRepoCount: 0,
+      status: "processing",
+    });
+    await seedQueueJob({
+      kind: "sync-repo",
+      owner: "acme",
+      repo: "stuck-demo",
+      runId: "1",
+      startedAt: "2026-04-30T12:02:00.000Z",
+      status: "processing",
+    });
+
+    const response = await SELF.fetch("https://example.com/dashboard");
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(text).toContain("Working");
+    expect(text).toContain("1 queue job is still moving through the pipeline");
+    expect(text).toContain("acme/stuck-demo");
+    expect(text).toContain("sync-repo");
+    expect(text).toContain("processing");
+    expect(text).toContain("attempt");
   });
 
   it("caps feed.json and supports pagination metadata", async () => {

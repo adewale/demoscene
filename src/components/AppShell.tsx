@@ -734,6 +734,195 @@ const styles = `
     background: rgba(255, 255, 255, 0.45);
   }
 
+  .dashboard-shell {
+    display: grid;
+    gap: 22px;
+  }
+
+  .dashboard-hero {
+    display: grid;
+    gap: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(circle at top right, rgba(255, 72, 1, 0.12), transparent 36%),
+      var(--surface-strong);
+  }
+
+  .dashboard-hero h2 {
+    margin: 0;
+    font-size: clamp(1.55rem, 4vw, 2.2rem);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+
+  .dashboard-hero p {
+    margin: 0;
+    max-width: 64ch;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .dashboard-hero-calm {
+    background:
+      radial-gradient(circle at top right, rgba(86, 140, 73, 0.14), transparent 36%),
+      var(--surface-strong);
+  }
+
+  .dashboard-hero-watching {
+    background:
+      radial-gradient(circle at top right, rgba(244, 129, 32, 0.16), transparent 36%),
+      var(--surface-strong);
+  }
+
+  .dashboard-hero-attention {
+    background:
+      radial-gradient(circle at top right, rgba(196, 68, 38, 0.16), transparent 36%),
+      var(--surface-strong);
+  }
+
+  .dashboard-hero dl {
+    display: grid;
+    gap: 10px;
+    margin: 6px 0 0;
+  }
+
+  .dashboard-hero dl div {
+    display: grid;
+    gap: 2px;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border);
+  }
+
+  .dashboard-hero dt {
+    color: var(--subtle);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .dashboard-hero dd {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  .dashboard-metrics {
+    display: grid;
+    gap: 10px;
+  }
+
+  .dashboard-metric {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.42);
+  }
+
+  .dashboard-metric span,
+  .dashboard-count-list span,
+  .dashboard-table th {
+    color: var(--subtle);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .dashboard-metric strong {
+    font-size: 1.35rem;
+    line-height: 1.05;
+    font-weight: 500;
+  }
+
+  .dashboard-metric small,
+  .dashboard-count-list small,
+  .dashboard-job-list small,
+  .dashboard-project-list span {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .dashboard-panel-body {
+    display: grid;
+    gap: 16px;
+  }
+
+  .dashboard-table-wrap {
+    overflow-x: auto;
+  }
+
+  .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .dashboard-table td {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  .dashboard-count-list,
+  .dashboard-job-list,
+  .dashboard-project-list {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-count-list li,
+  .dashboard-job-list li,
+  .dashboard-project-list li {
+    display: grid;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dashboard-count-list strong,
+  .dashboard-job-list strong,
+  .dashboard-project-list a {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .dashboard-job-list div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .dashboard-job-list span {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .dashboard-empty-copy {
+    margin: 0;
+    padding: 16px;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.42);
+  }
+
   .detail-layout {
     display: grid;
     gap: 24px;
@@ -775,6 +964,12 @@ const styles = `
     }
 
     .design-token-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-hero dl,
+    .dashboard-metrics,
+    .dashboard-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 

@@ -392,6 +392,13 @@ export async function getLatestSyncRun(
   );
 }
 
+export async function listLatestSyncRuns(
+  db: Database,
+  limit: number,
+): Promise<SyncRunRow[]> {
+  return db.select().from(syncRuns).orderBy(desc(syncRuns.id)).limit(limit);
+}
+
 export async function getSyncRunByPlanningKey(
   db: Database,
   planningKey: string,
@@ -660,6 +667,52 @@ export async function listSyncRunJobCounts(
     .where(eq(syncRunJobs.runId, runId))
     .groupBy(syncRunJobs.kind, syncRunJobs.status)
     .orderBy(syncRunJobs.kind, syncRunJobs.status);
+}
+
+export async function listActiveOrProblemSyncRunJobs(
+  db: Database,
+  limit: number,
+): Promise<SyncRunJobRow[]> {
+  return db
+    .select()
+    .from(syncRunJobs)
+    .where(
+      inArray(syncRunJobs.status, [
+        "queued",
+        "processing",
+        "deferred",
+        "failed",
+      ]),
+    )
+    .orderBy(desc(syncRunJobs.updatedAt), syncRunJobs.id)
+    .limit(limit);
+}
+
+export async function listLatestProjectsByFirstSeen(
+  db: Database,
+  limit: number,
+): Promise<
+  Array<{
+    firstSeenAt: string;
+    lastSeenAt: string;
+    owner: string;
+    repo: string;
+    repoCreatedAt: string | null;
+    slug: string;
+  }>
+> {
+  return db
+    .select({
+      firstSeenAt: projects.firstSeenAt,
+      lastSeenAt: projects.lastSeenAt,
+      owner: projects.owner,
+      repo: projects.repo,
+      repoCreatedAt: projects.repoCreatedAt,
+      slug: projects.slug,
+    })
+    .from(projects)
+    .orderBy(desc(projects.firstSeenAt), desc(projects.repoCreatedAt))
+    .limit(limit);
 }
 
 export async function finalizeSyncRunFromJobs(

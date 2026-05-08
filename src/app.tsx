@@ -14,6 +14,9 @@ import {
   getLatestSyncRun,
   getProjectByOwnerRepo,
   getSyncRunJob,
+  listActiveOrProblemSyncRunJobs,
+  listLatestProjectsByFirstSeen,
+  listLatestSyncRuns,
   listSyncRunJobCounts,
   listProjectsPage,
   reactivateSyncRunJobForReplay,
@@ -24,6 +27,7 @@ import { FEED_PAGE_SIZE, RSS_ITEM_LIMIT } from "./lib/sync-policy";
 import { runScheduledSync } from "./scheduled";
 
 import { AppShell } from "./components/AppShell";
+import { DashboardPage } from "./components/DashboardPage";
 import { DesignPage } from "./components/DesignPage";
 import { FeedPage } from "./components/FeedPage";
 import type { TeamMemberOverview } from "./components/TeamMemberDirectory";
@@ -180,6 +184,33 @@ export function createApp() {
           <DesignPage
             featuredProject={projects[0] ?? null}
             projects={projects}
+          />
+        </AppShell>,
+      ),
+    );
+  });
+
+  app.get("/dashboard", async (c) => {
+    const db = createDb(c.env.DB);
+    const runs = await listLatestSyncRuns(db, 5);
+    const latestRun = runs[0] ?? null;
+    const latestJobCounts = latestRun
+      ? await listSyncRunJobCounts(db, String(latestRun.id))
+      : [];
+
+    return c.html(
+      renderHtml(
+        <AppShell
+          title="demoscene dashboard"
+          subtitle="A quiet operational readout for crawl, queue, and ingestion health."
+        >
+          <DashboardPage
+            activeJobs={await listActiveOrProblemSyncRunJobs(db, 12)}
+            generatedAt={new Date()}
+            latestJobCounts={latestJobCounts}
+            recentProjects={await listLatestProjectsByFirstSeen(db, 8)}
+            runs={runs}
+            totalProjects={await countProjects(db)}
           />
         </AppShell>,
       ),
