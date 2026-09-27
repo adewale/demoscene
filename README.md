@@ -224,8 +224,10 @@ README preview normalization removes decorative noise before cards are derived. 
 
 ## Testing
 
-- `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests
-- `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection, and secrets scanning
+- `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests. CI (`.github/workflows/ci.yml`) runs it on every push to `main` and every pull request, and `npm run deploy` runs it before touching remote D1.
+- `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection (production code in `src/` only), and secrets scanning
+- Coverage floors are measured over all of `src/`, including files a suite never imports, so they report what is actually untested.
+- Screenshot baselines are platform-specific. Linux baselines are rendered on the CI runner by the manual `Regenerate visual baselines` workflow, which uploads them as an artifact to review and commit; it never commits by itself.
 
 ## Corpus Cache
 
