@@ -17,7 +17,7 @@
     "coverage": "npm run coverage:unit && npm run coverage:worker",
     "audit:deps": "npm audit --audit-level=moderate",
     "audit:dead-code": "knip",
-    "audit:duplicates": "jscpd --threshold 1 src tests --ignore \"**/migrations/**\"",
+    "audit:duplicates": "jscpd --threshold 1 src --ignore \"**/migrations/**\"",
     "audit:secrets": "secretlint \"**/*\"",
     "corpus:refresh": "node scripts/refresh-corpus-cache.mjs",
     "dev:fixture": "npm run e2e:prepare && wrangler dev --local --ip 127.0.0.1 --port 5050 --config wrangler.jsonc",
