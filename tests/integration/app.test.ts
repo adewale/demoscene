@@ -1643,10 +1643,18 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     expect(Date.parse(syncRun?.finished_at ?? "")).toBeGreaterThanOrEqual(
       Date.parse(syncRun?.started_at ?? ""),
     );
-    expect(syncRun?.duration_ms).toBeGreaterThanOrEqual(0);
+    // duration_ms is measured inside the run, so it cannot exceed the
+    // persisted wall-clock window (+1ms for ISO-string truncation).
+    expect(syncRun?.duration_ms).toBeLessThanOrEqual(
+      Date.parse(syncRun?.finished_at ?? "") -
+        Date.parse(syncRun?.started_at ?? "") +
+        1,
+    );
+    // A completed incremental run always advances the owner cursor by one,
+    // whichever owners failed.
     expect(JSON.parse(syncRun?.last_checkpoint_json ?? "null")).toEqual({
       nextOwnerCursor: 1,
-      nextOwnerLogin: failingMember.login,
+      nextOwnerLogin: TEAM_MEMBERS[1].login,
       pendingRepositoryUrls: [],
       phase: "complete",
     });
@@ -1661,6 +1669,90 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
     );
 
     consoleError.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("persists deferred repository work when a scheduled sync hits the rate limit", async () => {
+    // The first owner lists two repos; the second one's Wrangler fetch is rate
+    // limited, so one repo is processed and one is deferred.
+    const [firstMember] = TEAM_MEMBERS;
+    const responses: Record<string, MockResponse> = {};
+
+    for (const member of TEAM_MEMBERS) {
+      responses[buildUserRepositoriesApiUrl(member.login, 1)] =
+        buildUserRepositoriesApiResponse({
+          login: member.login,
+          repositories:
+            member === firstMember
+              ? [
+                  { repo: "demo", repoId: 400 },
+                  { repo: "rate-limited", repoId: 300 },
+                ]
+              : [],
+        });
+    }
+    responses[`https://github.com/${firstMember.login}/demo`] = {
+      body: buildRepositoryHomepageHtml("https://demo.example.com"),
+    };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/wrangler.toml`
+    ] = { body: `name = "demo"` };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/README.md`
+    ] = { body: "# Demo" };
+    for (const fileName of [
+      "wrangler.toml",
+      "wrangler.json",
+      "wrangler.jsonc",
+    ]) {
+      for (const branch of ["main", "master"]) {
+        responses[
+          `https://raw.githubusercontent.com/${firstMember.login}/rate-limited/${branch}/${fileName}`
+        ] = buildRateLimitedResponse();
+      }
+    }
+
+    vi.stubGlobal("fetch", createMockFetch(responses) as typeof fetch);
+
+    const waitUntil = vi.fn();
+
+    worker.scheduled?.(
+      {
+        cron: "0 12 * * *",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await waitUntil.mock.calls[0][0];
+
+    const syncRun = await fetchLatestSyncRun();
+
+    expect(syncRun).toEqual(
+      expect.objectContaining({
+        planned_owner_count: TEAM_MEMBERS.length,
+        planned_repo_count: 2,
+        processed_owner_count: TEAM_MEMBERS.length,
+        processed_repo_count: 1,
+        rate_limited_until: expect.any(String),
+        repos_deferred_by_rate_limit: 1,
+        status: "succeeded",
+      }),
+    );
+    expect(JSON.parse(syncRun?.last_checkpoint_json ?? "null")).toEqual(
+      expect.objectContaining({
+        pendingRepositoryUrls: [
+          `https://github.com/${firstMember.login}/rate-limited`,
+        ],
+        phase: "process",
+      }),
+    );
+
     vi.unstubAllGlobals();
   });
 

@@ -11,6 +11,10 @@ const MIGRATIONS = Object.entries(
   .sort(([left], [right]) => left.localeCompare(right))
   .map(([, sql]) => sql);
 
+if (MIGRATIONS.length === 0) {
+  throw new Error("No migrations found under migrations/*.sql");
+}
+
 async function applyMigrationSql(db: D1Database, migrationSql: string) {
   for (const statement of migrationSql
     .split(";")
@@ -20,19 +24,23 @@ async function applyMigrationSql(db: D1Database, migrationSql: string) {
   }
 }
 
-// Drops every application table (newest first, so children go before the
-// tables they reference) and re-runs all migrations.
+// Drops every application view and table (tables newest first, so children
+// go before the tables they reference) and re-runs all migrations.
 export async function resetDatabase(db: D1Database) {
   const { results } = await db
     .prepare(
-      `SELECT name FROM sqlite_master
-       WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'
-       ORDER BY rowid DESC`,
+      `SELECT name, type FROM sqlite_master
+       WHERE type IN ('table', 'view')
+         AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\'
+         AND name NOT LIKE '\\_cf\\_%' ESCAPE '\\'
+       ORDER BY type = 'table', rowid DESC`,
     )
-    .all<{ name: string }>();
+    .all<{ name: string; type: "table" | "view" }>();
 
-  for (const { name } of results) {
-    await db.prepare(`DROP TABLE IF EXISTS "${name}"`).run();
+  for (const { name, type } of results) {
+    await db
+      .prepare(`DROP ${type === "view" ? "VIEW" : "TABLE"} IF EXISTS "${name}"`)
+      .run();
   }
 
   for (const migrationSql of MIGRATIONS) {
