@@ -1573,12 +1573,37 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
   });
 
   it("persists successful scheduled sync runs", async () => {
-    vi.stubGlobal(
-      "fetch",
-      createMockFetch(
-        buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
-      ) as typeof fetch,
-    );
+    // Hand-derived fixture: the first owner lists one repo, the second owner's
+    // listing fails with a non-rate-limit error, every other owner lists none.
+    const [firstMember, failingMember] = TEAM_MEMBERS;
+    const responses: Record<string, MockResponse> = {};
+
+    for (const member of TEAM_MEMBERS) {
+      responses[buildUserRepositoriesApiUrl(member.login, 1)] =
+        buildUserRepositoriesApiResponse({
+          login: member.login,
+          repositories:
+            member === firstMember ? [{ repo: "demo", repoId: 98765 }] : [],
+        });
+    }
+    responses[buildUserRepositoriesApiUrl(failingMember.login, 1)] = {
+      body: "boom",
+      status: 500,
+    };
+    responses[`https://github.com/${firstMember.login}/demo`] = {
+      body: buildRepositoryHomepageHtml("https://demo.example.com"),
+    };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/wrangler.toml`
+    ] = { body: `name = "demo"` };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/README.md`
+    ] = { body: "# Demo" };
+
+    vi.stubGlobal("fetch", createMockFetch(responses) as typeof fetch);
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     const waitUntil = vi.fn();
 
@@ -1604,18 +1629,38 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
         cron: "0 12 * * *",
         error_message: null,
         mode: "incremental",
+        planned_owner_count: TEAM_MEMBERS.length,
+        planned_repo_count: 1,
+        processed_owner_count: TEAM_MEMBERS.length - 1,
+        processed_repo_count: 1,
+        rate_limit_snapshot_json: null,
+        rate_limited_until: null,
+        repos_deferred_by_rate_limit: 0,
         status: "succeeded",
       }),
     );
-    expect(syncRun?.finished_at).toBeTruthy();
-    expect(syncRun?.started_at).toBeTruthy();
+    expect(Date.parse(syncRun?.started_at ?? "")).not.toBeNaN();
+    expect(Date.parse(syncRun?.finished_at ?? "")).toBeGreaterThanOrEqual(
+      Date.parse(syncRun?.started_at ?? ""),
+    );
     expect(syncRun?.duration_ms).toBeGreaterThanOrEqual(0);
-    expect(syncRun?.planned_owner_count).toBe(TEAM_MEMBERS.length);
-    expect(syncRun?.processed_owner_count).toBeGreaterThan(0);
-    expect(JSON.parse(syncRun?.summary_json ?? "{}")).toEqual(
-      expect.objectContaining({ accountsScanned: expect.any(Number) }),
+    expect(JSON.parse(syncRun?.last_checkpoint_json ?? "null")).toEqual({
+      nextOwnerCursor: 1,
+      nextOwnerLogin: failingMember.login,
+      pendingRepositoryUrls: [],
+      phase: "complete",
+    });
+    expect(JSON.parse(syncRun?.summary_json ?? "null")).toEqual(
+      expect.objectContaining({
+        accountsFailed: 1,
+        accountsScanned: TEAM_MEMBERS.length,
+        accountsSucceeded: TEAM_MEMBERS.length - 1,
+        reposAdded: 1,
+        reposDiscovered: 1,
+      }),
     );
 
+    consoleError.mockRestore();
     vi.unstubAllGlobals();
   });
 
