@@ -4,14 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppEnv } from "../../src/domain";
 import { app } from "../../src/index";
 import worker, { syncRepositories } from "../../src/index";
-import MIGRATION_SQL from "../../migrations/0001_initial.sql?raw";
-import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creation_order.sql?raw";
-import MIGRATION_REPO_CREATED_AT_SQL from "../../migrations/0003_repo_created_at.sql?raw";
-import MIGRATION_REPOSITORY_SCAN_STATE_SQL from "../../migrations/0004_repository_scan_state.sql?raw";
-import MIGRATION_SYNC_RUNS_SQL from "../../migrations/0005_sync_runs.sql?raw";
-import MIGRATION_SYNC_OPERATIONS_SQL from "../../migrations/0006_sync_operations.sql?raw";
-import MIGRATION_QUEUE_COORDINATION_SQL from "../../migrations/0007_queue_coordination.sql?raw";
 import { TEAM_MEMBERS } from "../../src/config/repositories";
+import { resetDatabase as resetD1Database } from "./support/d1";
 
 type MockResponse = {
   body: string;
@@ -266,32 +260,7 @@ function createMockFetch(responses: Record<string, MockResponse>) {
 }
 
 async function resetDatabase() {
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_planner_locks").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_phases").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_jobs").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_runs").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_state").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS github_response_cache").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS repository_scan_state").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS project_products").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS projects").run();
-
-  for (const migrationSql of [
-    MIGRATION_SQL,
-    MIGRATION_REPO_CREATION_ORDER_SQL,
-    MIGRATION_REPO_CREATED_AT_SQL,
-    MIGRATION_REPOSITORY_SCAN_STATE_SQL,
-    MIGRATION_SYNC_RUNS_SQL,
-    MIGRATION_SYNC_OPERATIONS_SQL,
-    MIGRATION_QUEUE_COORDINATION_SQL,
-  ]) {
-    for (const statement of migrationSql
-      .split(";")
-      .map((value: string) => value.trim())
-      .filter(Boolean)) {
-      await testEnv.DB.prepare(statement).run();
-    }
-  }
+  await resetD1Database(testEnv.DB);
 }
 
 async function fetchLatestSyncRun() {
@@ -1604,12 +1573,37 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
   });
 
   it("persists successful scheduled sync runs", async () => {
-    vi.stubGlobal(
-      "fetch",
-      createMockFetch(
-        buildDemoRepositoryResponses({ repoPageBody: "<html></html>" }),
-      ) as typeof fetch,
-    );
+    // Hand-derived fixture: the first owner lists one repo, the second owner's
+    // listing fails with a non-rate-limit error, every other owner lists none.
+    const [firstMember, failingMember] = TEAM_MEMBERS;
+    const responses: Record<string, MockResponse> = {};
+
+    for (const member of TEAM_MEMBERS) {
+      responses[buildUserRepositoriesApiUrl(member.login, 1)] =
+        buildUserRepositoriesApiResponse({
+          login: member.login,
+          repositories:
+            member === firstMember ? [{ repo: "demo", repoId: 98765 }] : [],
+        });
+    }
+    responses[buildUserRepositoriesApiUrl(failingMember.login, 1)] = {
+      body: "boom",
+      status: 500,
+    };
+    responses[`https://github.com/${firstMember.login}/demo`] = {
+      body: buildRepositoryHomepageHtml("https://demo.example.com"),
+    };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/wrangler.toml`
+    ] = { body: `name = "demo"` };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/README.md`
+    ] = { body: "# Demo" };
+
+    vi.stubGlobal("fetch", createMockFetch(responses) as typeof fetch);
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     const waitUntil = vi.fn();
 
@@ -1635,16 +1629,128 @@ Transform any web article into a beautifully formatted Kindle ebook with just on
         cron: "0 12 * * *",
         error_message: null,
         mode: "incremental",
+        planned_owner_count: TEAM_MEMBERS.length,
+        planned_repo_count: 1,
+        processed_owner_count: TEAM_MEMBERS.length - 1,
+        processed_repo_count: 1,
+        rate_limit_snapshot_json: null,
+        rate_limited_until: null,
+        repos_deferred_by_rate_limit: 0,
         status: "succeeded",
       }),
     );
-    expect(syncRun?.finished_at).toBeTruthy();
-    expect(syncRun?.started_at).toBeTruthy();
-    expect(syncRun?.duration_ms).toBeGreaterThanOrEqual(0);
-    expect(syncRun?.planned_owner_count).toBe(TEAM_MEMBERS.length);
-    expect(syncRun?.processed_owner_count).toBeGreaterThan(0);
-    expect(JSON.parse(syncRun?.summary_json ?? "{}")).toEqual(
-      expect.objectContaining({ accountsScanned: expect.any(Number) }),
+    expect(Date.parse(syncRun?.started_at ?? "")).not.toBeNaN();
+    expect(Date.parse(syncRun?.finished_at ?? "")).toBeGreaterThanOrEqual(
+      Date.parse(syncRun?.started_at ?? ""),
+    );
+    // duration_ms is measured inside the run, so it cannot exceed the
+    // persisted wall-clock window (+1ms for ISO-string truncation).
+    expect(syncRun?.duration_ms).toBeLessThanOrEqual(
+      Date.parse(syncRun?.finished_at ?? "") -
+        Date.parse(syncRun?.started_at ?? "") +
+        1,
+    );
+    // A completed incremental run always advances the owner cursor by one,
+    // whichever owners failed.
+    expect(JSON.parse(syncRun?.last_checkpoint_json ?? "null")).toEqual({
+      nextOwnerCursor: 1,
+      nextOwnerLogin: TEAM_MEMBERS[1].login,
+      pendingRepositoryUrls: [],
+      phase: "complete",
+    });
+    expect(JSON.parse(syncRun?.summary_json ?? "null")).toEqual(
+      expect.objectContaining({
+        accountsFailed: 1,
+        accountsScanned: TEAM_MEMBERS.length,
+        accountsSucceeded: TEAM_MEMBERS.length - 1,
+        reposAdded: 1,
+        reposDiscovered: 1,
+      }),
+    );
+
+    consoleError.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("persists deferred repository work when a scheduled sync hits the rate limit", async () => {
+    // The first owner lists two repos; the second one's Wrangler fetch is rate
+    // limited, so one repo is processed and one is deferred.
+    const [firstMember] = TEAM_MEMBERS;
+    const responses: Record<string, MockResponse> = {};
+
+    for (const member of TEAM_MEMBERS) {
+      responses[buildUserRepositoriesApiUrl(member.login, 1)] =
+        buildUserRepositoriesApiResponse({
+          login: member.login,
+          repositories:
+            member === firstMember
+              ? [
+                  { repo: "demo", repoId: 400 },
+                  { repo: "rate-limited", repoId: 300 },
+                ]
+              : [],
+        });
+    }
+    responses[`https://github.com/${firstMember.login}/demo`] = {
+      body: buildRepositoryHomepageHtml("https://demo.example.com"),
+    };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/wrangler.toml`
+    ] = { body: `name = "demo"` };
+    responses[
+      `https://raw.githubusercontent.com/${firstMember.login}/demo/main/README.md`
+    ] = { body: "# Demo" };
+    for (const fileName of [
+      "wrangler.toml",
+      "wrangler.json",
+      "wrangler.jsonc",
+    ]) {
+      for (const branch of ["main", "master"]) {
+        responses[
+          `https://raw.githubusercontent.com/${firstMember.login}/rate-limited/${branch}/${fileName}`
+        ] = buildRateLimitedResponse();
+      }
+    }
+
+    vi.stubGlobal("fetch", createMockFetch(responses) as typeof fetch);
+
+    const waitUntil = vi.fn();
+
+    worker.scheduled?.(
+      {
+        cron: "0 12 * * *",
+        scheduledTime: Date.now(),
+        noRetry: () => {},
+      } as ScheduledController,
+      testEnv,
+      {
+        waitUntil,
+        passThroughOnException: () => {},
+      } as unknown as ExecutionContext,
+    );
+
+    await waitUntil.mock.calls[0][0];
+
+    const syncRun = await fetchLatestSyncRun();
+
+    expect(syncRun).toEqual(
+      expect.objectContaining({
+        planned_owner_count: TEAM_MEMBERS.length,
+        planned_repo_count: 2,
+        processed_owner_count: TEAM_MEMBERS.length,
+        processed_repo_count: 1,
+        rate_limited_until: expect.any(String),
+        repos_deferred_by_rate_limit: 1,
+        status: "succeeded",
+      }),
+    );
+    expect(JSON.parse(syncRun?.last_checkpoint_json ?? "null")).toEqual(
+      expect.objectContaining({
+        pendingRepositoryUrls: [
+          `https://github.com/${firstMember.login}/rate-limited`,
+        ],
+        phase: "process",
+      }),
     );
 
     vi.unstubAllGlobals();
