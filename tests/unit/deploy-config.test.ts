@@ -25,4 +25,11 @@ describe("deployment scripts", () => {
       deployScript.indexOf("wrangler deploy --config wrangler.jsonc"),
     );
   });
+
+  it("runs the fast verification gate before touching remote D1 or deploying", () => {
+    const deployScript = PACKAGE_JSON.scripts.deploy ?? "";
+
+    // `&&` short-circuits, so a red test:fast stops before remote migrations.
+    expect(deployScript.startsWith("npm run test:fast && ")).toBe(true);
+  });
 });

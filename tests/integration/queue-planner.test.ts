@@ -6,13 +6,7 @@ import { TEAM_MEMBERS } from "../../src/config/repositories";
 import { app } from "../../src/index";
 import { processQueueBatch } from "../../src/queue/consumer";
 import { runScheduledSync } from "../../src/scheduled";
-import MIGRATION_INITIAL_SQL from "../../migrations/0001_initial.sql?raw";
-import MIGRATION_REPO_CREATION_ORDER_SQL from "../../migrations/0002_repo_creation_order.sql?raw";
-import MIGRATION_REPO_CREATED_AT_SQL from "../../migrations/0003_repo_created_at.sql?raw";
-import MIGRATION_REPOSITORY_SCAN_STATE_SQL from "../../migrations/0004_repository_scan_state.sql?raw";
-import MIGRATION_SYNC_RUNS_SQL from "../../migrations/0005_sync_runs.sql?raw";
-import MIGRATION_SYNC_OPERATIONS_SQL from "../../migrations/0006_sync_operations.sql?raw";
-import MIGRATION_QUEUE_COORDINATION_SQL from "../../migrations/0007_queue_coordination.sql?raw";
+import { resetDatabase as resetD1Database } from "./support/d1";
 
 const testEnv = env as unknown as AppEnv;
 const DAILY_CRON = "0 12 * * *";
@@ -24,37 +18,8 @@ type MockResponse = {
   status?: number;
 };
 
-async function applyMigrationSql(migrationSql: string) {
-  for (const statement of migrationSql
-    .split(";")
-    .map((value) => value.trim())
-    .filter(Boolean)) {
-    await testEnv.DB.prepare(statement).run();
-  }
-}
-
 async function resetDatabase() {
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_planner_locks").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_phases").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_run_jobs").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_runs").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS sync_state").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS github_response_cache").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS repository_scan_state").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS project_products").run();
-  await testEnv.DB.prepare("DROP TABLE IF EXISTS projects").run();
-
-  for (const migrationSql of [
-    MIGRATION_INITIAL_SQL,
-    MIGRATION_REPO_CREATION_ORDER_SQL,
-    MIGRATION_REPO_CREATED_AT_SQL,
-    MIGRATION_REPOSITORY_SCAN_STATE_SQL,
-    MIGRATION_SYNC_RUNS_SQL,
-    MIGRATION_SYNC_OPERATIONS_SQL,
-    MIGRATION_QUEUE_COORDINATION_SQL,
-  ]) {
-    await applyMigrationSql(migrationSql);
-  }
+  await resetD1Database(testEnv.DB);
 }
 
 function createQueuedEnv() {

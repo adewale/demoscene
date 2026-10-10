@@ -63,16 +63,23 @@ test("keeps every desktop team row within the rail width", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1200 });
   await page.goto("/");
 
-  const overflowingRows = await page.evaluate(() => {
-    return [...document.querySelectorAll(".team-rail .team-card-heading-row")]
-      .map((row) => ({
-        scrollWidth: row.scrollWidth,
-        text: row.textContent?.trim() ?? "",
-        width: row.getBoundingClientRect().width,
-      }))
-      .filter((row) => row.scrollWidth > Math.ceil(row.width));
+  const rows = await page.evaluate(() => {
+    return [
+      ...document.querySelectorAll(".team-rail .team-card-heading-row"),
+    ].map((row) => ({
+      scrollWidth: row.scrollWidth,
+      text: row.textContent?.trim() ?? "",
+      width: row.getBoundingClientRect().width,
+    }));
   });
 
+  const overflowingRows = rows.filter(
+    (row) => row.scrollWidth > Math.ceil(row.width),
+  );
+
+  // Precondition: if the selector matched nothing, the invariant below would
+  // pass vacuously.
+  expect(rows.length).toBeGreaterThan(0);
   expect(overflowingRows).toEqual([]);
 });
 
@@ -82,18 +89,23 @@ test("keeps desktop project names on one line when the card has room", async ({
   await page.setViewportSize({ width: 1440, height: 1600 });
   await page.goto("/");
 
-  const wrappedTitles = await page.evaluate(() => {
-    return [...document.querySelectorAll(".feed-card-title")]
-      .map((title) => {
-        const style = getComputedStyle(title);
-        return {
-          height: title.getBoundingClientRect().height,
-          lineHeight: parseFloat(style.lineHeight),
-          text: title.textContent?.trim() ?? "",
-        };
-      })
-      .filter((title) => title.height > title.lineHeight + 1);
+  const titles = await page.evaluate(() => {
+    return [...document.querySelectorAll(".feed-card-title")].map((title) => {
+      const style = getComputedStyle(title);
+      return {
+        height: title.getBoundingClientRect().height,
+        lineHeight: parseFloat(style.lineHeight),
+        text: title.textContent?.trim() ?? "",
+      };
+    });
   });
 
+  const wrappedTitles = titles.filter(
+    (title) => title.height > title.lineHeight + 1,
+  );
+
+  // Precondition: if the selector matched nothing, the invariant below would
+  // pass vacuously.
+  expect(titles.length).toBeGreaterThan(0);
   expect(wrappedTitles).toEqual([]);
 });
