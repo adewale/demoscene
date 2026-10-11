@@ -224,8 +224,10 @@ README preview normalization removes decorative noise before cards are derived. 
 
 ## Testing
 
-- `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests
-- `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection, and secrets scanning
+- `npm run test:fast` runs format, lint, typecheck, unit tests, and worker tests. There is no CI: run it before pushing. `npm run deploy` runs it before touching remote D1.
+- `npm run test:full` runs the full verification suite, including E2E, coverage, dependency audit, dead-code detection, duplicate-code detection (production code in `src/` only), and secrets scanning
+- Coverage floors are measured over all of `src/`, including files a suite never imports, so they report what is actually untested.
+- Screenshot baselines are platform-specific, and only macOS (`-darwin.png`) baselines are committed, so `npm run test:e2e` screenshot checks pass only on macOS.
 
 ## Corpus Cache
 

@@ -26,7 +26,16 @@ export default defineConfig({
     pool: cloudflarePool(workersOptions),
     coverage: {
       provider: "istanbul",
+      // Same denominator as the unit suite: all of src/, loaded or not.
+      include: ["src/**"],
       reporter: ["text", "lcov"],
+      // Floors are the measured numbers for this suite over all of src/.
+      thresholds: {
+        lines: 84,
+        functions: 92,
+        statements: 84,
+        branches: 68,
+      },
     },
   },
 });
